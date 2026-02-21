@@ -27,7 +27,7 @@ const nodeTypes = { screenshot: ScreenshotNode }
 const edgeTypes = { spring: SpringEdge }
 
 const MAX_ZOOM       = 4
-const PINCH_SPEED    = 0.02  // zoom factor per deltaY unit during pinch (ctrlKey)
+const PINCH_SPEED    = 0.05  // zoom factor per deltaY unit during pinch (ctrlKey)
 const PAN_SPEED      = 1.0   // scroll-to-pan multiplier
 
 // Reads live measured node dimensions from React Flow and re-zooms
