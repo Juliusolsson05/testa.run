@@ -89,37 +89,28 @@ function CloudBackground({ position }: { position: 'top' | 'bottom' }) {
 
       {isTop ? (
         <>
-          {/* Left side — large clouds climbing up */}
-          <CloudShape id="c1-top" className="absolute w-[480px] left-[-180px] top-[180px] opacity-40 blur-[1.5px] cloud-1" />
-          <CloudShape id="c2-top" className="absolute w-[400px] left-[-140px] top-[60px] opacity-38 blur-[2px] cloud-4" />
-          <CloudShape id="c3-top" className="absolute w-[340px] left-[-80px] top-[-20px] opacity-34 blur-[2px] cloud-2" />
+          {/* Left side — clouds clipping out the left edge, each higher one more visible */}
+          <CloudShape id="c1-top" className="absolute w-[480px] left-[-340px] top-[260px] opacity-40 blur-[1.5px] cloud-1" />
+          <CloudShape id="c2-top" className="absolute w-[440px] left-[-300px] top-[140px] opacity-38 blur-[2px] cloud-4" />
+          <CloudShape id="c3-top" className="absolute w-[400px] left-[-260px] top-[40px] opacity-36 blur-[2px] cloud-2" />
+          <CloudShape id="c4-top" className="absolute w-[360px] left-[-220px] top-[-40px] opacity-32 blur-[2.5px] cloud-5" />
 
-          {/* Right side — large clouds climbing up */}
-          <CloudShape id="c4-top" className="absolute w-[480px] right-[-180px] top-[180px] opacity-40 blur-[1.5px] cloud-2" />
-          <CloudShape id="c5-top" className="absolute w-[400px] right-[-140px] top-[60px] opacity-38 blur-[2px] cloud-5" />
-          <CloudShape id="c6-top" className="absolute w-[340px] right-[-80px] top-[-20px] opacity-34 blur-[2px] cloud-3" />
+          {/* Right side — clouds clipping out the right edge */}
+          <CloudShape id="c5-top" className="absolute w-[480px] right-[-340px] top-[260px] opacity-40 blur-[1.5px] cloud-2" />
+          <CloudShape id="c6-top" className="absolute w-[440px] right-[-300px] top-[140px] opacity-38 blur-[2px] cloud-5" />
+          <CloudShape id="c7-top" className="absolute w-[400px] right-[-260px] top-[40px] opacity-36 blur-[2px] cloud-3" />
+          <CloudShape id="c8-top" className="absolute w-[360px] right-[-220px] top-[-40px] opacity-32 blur-[2.5px] cloud-1" />
 
           {/* Top center — smaller clouds bridging the arch */}
-          <CloudShape id="c7-top" className="absolute w-[280px] left-[18%] top-[-30px] opacity-30 blur-[2.5px] cloud-3" />
-          <CloudShape id="c8-top" className="absolute w-[260px] right-[18%] top-[-25px] opacity-28 blur-[2.5px] cloud-5" />
-          <CloudShape id="c9-top" className="absolute w-[220px] left-[38%] top-[-40px] opacity-26 blur-[3px] cloud-4" />
+          <CloudShape id="c9-top" className="absolute w-[280px] left-[20%] top-[-30px] opacity-28 blur-[2.5px] cloud-3" />
+          <CloudShape id="c10-top" className="absolute w-[260px] right-[20%] top-[-25px] opacity-26 blur-[2.5px] cloud-4" />
+          <CloudShape id="c11-top" className="absolute w-[220px] left-[40%] top-[-38px] opacity-24 blur-[3px] cloud-5" />
         </>
       ) : (
         <>
-          {/* Left side */}
-          <CloudShape id="c1-bot" className="absolute w-[480px] left-[-180px] bottom-[180px] opacity-40 blur-[1.5px] cloud-2" />
-          <CloudShape id="c2-bot" className="absolute w-[400px] left-[-140px] bottom-[60px] opacity-38 blur-[2px] cloud-5" />
-          <CloudShape id="c3-bot" className="absolute w-[340px] left-[-80px] bottom-[-20px] opacity-34 blur-[2px] cloud-1" />
-
-          {/* Right side */}
-          <CloudShape id="c4-bot" className="absolute w-[480px] right-[-180px] bottom-[180px] opacity-40 blur-[1.5px] cloud-3" />
-          <CloudShape id="c5-bot" className="absolute w-[400px] right-[-140px] bottom-[60px] opacity-38 blur-[2px] cloud-1" />
-          <CloudShape id="c6-bot" className="absolute w-[340px] right-[-80px] bottom-[-20px] opacity-34 blur-[2px] cloud-4" />
-
-          {/* Bottom center — bridging */}
-          <CloudShape id="c7-bot" className="absolute w-[280px] left-[18%] bottom-[-30px] opacity-30 blur-[2.5px] cloud-5" />
-          <CloudShape id="c8-bot" className="absolute w-[260px] right-[18%] bottom-[-25px] opacity-28 blur-[2.5px] cloud-2" />
-          <CloudShape id="c9-bot" className="absolute w-[220px] left-[38%] bottom-[-40px] opacity-26 blur-[3px] cloud-3" />
+          <CloudShape id="c1-bot" className="absolute w-[500px] left-[-280px] bottom-[-40px] opacity-30 blur-[2px] cloud-1" />
+          <CloudShape id="c2-bot" className="absolute w-[500px] right-[-280px] bottom-[-40px] opacity-30 blur-[2px] cloud-3" />
+          <CloudShape id="c3-bot" className="absolute w-[350px] left-[32%] bottom-[-30px] opacity-22 blur-[3px] cloud-4" />
         </>
       )}
 
