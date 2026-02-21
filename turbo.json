@@ -4,7 +4,9 @@
   "globalEnv": [
     "RESEND_API_KEY",
     "RESEND_FROM_EMAIL",
-    "RESEND_CONTACT_TO"
+    "RESEND_CONTACT_TO",
+    "TESTING_ENGINE_URL",
+    "TESTING_ENGINE_TOKEN"
   ],
   "tasks": {
     "build": {
