@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import { authenticateApiKey } from '@/lib/api-key-auth'
 import { db } from '@/lib/db'
+import { appendRunEvent } from '@/lib/run-events'
 
 // POST /api/agent/runs/:runId/finish — finalize a run
 export async function POST(req: Request, { params }: { params: Promise<{ runId: string }> }) {
@@ -38,6 +39,26 @@ export async function POST(req: Request, { params }: { params: Promise<{ runId: 
       securitySynopsis: body.securitySynopsis ?? null,
       openErrors: openCounts.find((c) => c.severity === 'error')?._count ?? 0,
       openWarnings: openCounts.find((c) => c.severity === 'warning')?._count ?? 0,
+    },
+  })
+
+  await appendRunEvent(runId, 'run.updated', {
+    run: {
+      id: updated.id,
+      status: updated.status,
+      finishedAt: updated.finishedAt?.toISOString() ?? null,
+      durationMs: updated.durationMs,
+      openIssues: { errors: updated.openErrors, warnings: updated.openWarnings },
+      securitySynopsis: updated.securitySynopsis,
+    },
+  })
+
+  await appendRunEvent(runId, updated.status === 'failed' ? 'run.failed' : 'run.completed', {
+    run: {
+      id: updated.id,
+      status: updated.status,
+      finishedAt: updated.finishedAt?.toISOString() ?? null,
+      durationMs: updated.durationMs,
     },
   })
 

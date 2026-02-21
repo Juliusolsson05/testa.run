@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import { authenticateApiKey } from '@/lib/api-key-auth'
 import { db } from '@/lib/db'
+import { appendRunEvent } from '@/lib/run-events'
 
 // POST /api/agent/runs — create a new run for a project
 export async function POST(req: Request) {
@@ -23,6 +24,17 @@ export async function POST(req: Request) {
       targetUrl: apiKey.project.targetUrl,
       label: body.label || null,
       metadata: body.metadata || null,
+    },
+  })
+
+  await appendRunEvent(run.id, 'run.started', {
+    run: {
+      id: run.id,
+      name: run.name,
+      label: run.label,
+      category: run.category,
+      status: run.status,
+      startedAt: run.startedAt.toISOString(),
     },
   })
 
