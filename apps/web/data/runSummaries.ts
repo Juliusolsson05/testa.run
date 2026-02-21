@@ -1,3 +1,6 @@
+import { issues } from "@/data/issues"
+import { runSteps } from "@/data/runs"
+
 export type RunStatus = "passed" | "running" | "failed"
 
 export type RunSummary = {
@@ -13,17 +16,21 @@ export type RunSummary = {
   href: string
 }
 
+const open = issues.filter((i) => i.status === "open")
+const errors = open.filter((i) => i.severity === "error").length
+const warnings = open.filter((i) => i.severity === "warning").length
+
 export const runs = [
   {
     id: "1",
     name: "TimeEdit test #1",
     url: "timeedit.com",
     date: "2026-02-21",
-    duration: "2m 14s",
-    status: "passed",
-    errors: 2,
-    warnings: 2,
-    steps: 3,
+    duration: "14.8s",
+    status: errors > 0 ? "failed" as const : "passed" as const,
+    errors,
+    warnings,
+    steps: runSteps.length,
     href: "/workspace",
   },
 ] satisfies RunSummary[]

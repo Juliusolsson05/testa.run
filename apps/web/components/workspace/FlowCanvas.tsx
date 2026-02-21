@@ -36,7 +36,7 @@ const PAN_SPEED      = 1.0   // scroll-to-pan multiplier
 function FlowController() {
   const { activeNodeId, clearSelection } = useIssueContext()
   const { setCenter } = useReactFlow()
-  const nodes = useNodes<ScreenshotNodeData>()
+  const nodes = useNodes<Node<ScreenshotNodeData>>()
   const lastRef      = useRef<{ nodeId: string; height: number } | null>(null)
   const animatingRef = useRef(false)   // true while a zoom animation is in flight
 
@@ -64,9 +64,11 @@ function FlowController() {
       const centerY = node.position.y + nodeHeight / 2
 
       // Block pan-exit detection for the duration of the animation + a small buffer
+      const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches
+      const duration = reducedMotion ? 0 : 600
       animatingRef.current = true
-      setCenter(centerX, centerY, { zoom: targetZoom, duration: 600 })
-      const cooldown = setTimeout(() => { animatingRef.current = false }, 700)
+      setCenter(centerX, centerY, { zoom: targetZoom, duration })
+      const cooldown = setTimeout(() => { animatingRef.current = false }, duration + 120)
       return () => clearTimeout(cooldown)
     }, 40)
 

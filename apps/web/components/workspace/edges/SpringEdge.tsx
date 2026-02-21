@@ -10,6 +10,7 @@ import {
   type EdgeProps,
 } from "@xyflow/react"
 import { useIssueContext } from "@/context/issue-context"
+import { nodesById } from "@/data/flow"
 
 // Control points match React Flow's getBezierPath: both CPs sit at midX (0.5 × distance)
 function bezierPoint(sx: number, sy: number, tx: number, ty: number, t: number): [number, number] {
@@ -111,6 +112,7 @@ export function SpringEdge({
   const badgeAngle = bezierAngle(sourceX, sourceY, targetX, targetY, t) + (isIncoming ? 180 : 0)
   // Clicking navigates to the other end of the edge
   const navigateTo = isOutgoing ? target : source
+  const navigateLabel = nodesById[navigateTo]?.data.label ?? "node"
 
   const spring = useSpring({
     sx: sourceX,
@@ -148,7 +150,10 @@ export function SpringEdge({
             Nothing inside affects this centering — label is absolutely positioned.
           */}
           <button
+            type="button"
+            aria-label={`Focus ${navigateLabel}`}
             onClick={(e) => { e.stopPropagation(); selectNode(navigateTo) }}
+            onMouseDown={(e) => e.stopPropagation()}
             className="nodrag nopan"
             style={{
               position: "absolute",
