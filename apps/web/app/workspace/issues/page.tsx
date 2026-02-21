@@ -1,6 +1,7 @@
 "use client"
 
 import { useState } from "react"
+import Link from "next/link"
 import { AlertTriangle, Filter, RefreshCw, XCircle } from "lucide-react"
 
 import { AppSidebar } from "@/components/workspace/AppSidebar"
@@ -120,10 +121,11 @@ export default function IssuesPage() {
                   const isResolved = issue.status === "resolved"
 
                   return (
-                    <div
+                    <Link
                       key={issue.id}
+                      href={`/workspace?issueId=${issue.id}`}
                       className={cn(
-                        "group flex items-center gap-5 px-5 py-3.5 transition-colors hover:bg-[#eff6ff]",
+                        "group flex items-center gap-5 px-5 py-3.5 transition-colors hover:bg-[#eff6ff] cursor-pointer",
                         idx !== 0 && "border-t border-[#eff6ff]"
                       )}
                     >
@@ -178,7 +180,10 @@ export default function IssuesPage() {
                       <div className="shrink-0 rounded bg-[#dbeafe] px-2 py-0.5 font-mono text-[10px] font-semibold text-[#1559d4]">
                         Step {meta.step}
                       </div>
-                    </div>
+
+                      {/* Navigate hint */}
+                      <span className="text-[#4a7ab5] opacity-0 transition-opacity group-hover:opacity-100">→</span>
+                    </Link>
                   )
                 })}
               </div>
