@@ -16,6 +16,9 @@ import {
   type NodeMouseHandler,
 } from "@xyflow/react"
 
+const ZOOM_SPEED   = 0.25  // fractional zoom change per scroll tick
+const PAN_SPEED    = 1.0   // horizontal pan multiplier
+
 import { initialEdges, initialNodes } from "@/data/flow"
 import { useIssueContext } from "@/context/issue-context"
 import { NODE_WIDTH, NODE_WIDE } from "@/constants/flow"
@@ -101,6 +104,40 @@ function FlowController() {
     if (visibleFraction < 0.3) clearSelection()
   }, [activeNodeId, nodes, vpX, vpY, vpZoom, containerWidth, containerHeight, clearSelection])
 
+  // ── Custom wheel: vertical = zoom (fast), horizontal = pan ───────────────
+  const rf = useReactFlow()
+  useEffect(() => {
+    const el = document.querySelector(".react-flow") as HTMLElement | null
+    if (!el) return
+
+    const onWheel = (e: WheelEvent) => {
+      e.preventDefault()
+
+      const vp = rf.getViewport()
+
+      if (Math.abs(e.deltaX) > Math.abs(e.deltaY)) {
+        // Horizontal scroll → pan left/right
+        rf.setViewport({ ...vp, x: vp.x - e.deltaX * PAN_SPEED }, { duration: 0 })
+      } else {
+        // Vertical scroll → zoom toward cursor
+        const rect = el.getBoundingClientRect()
+        const mouseX = e.clientX - rect.left
+        const mouseY = e.clientY - rect.top
+
+        const direction  = e.deltaY > 0 ? -1 : 1
+        const scale      = 1 + direction * ZOOM_SPEED
+        const newZoom    = Math.max(0.2, Math.min(MAX_ZOOM, vp.zoom * scale))
+        const newX       = mouseX - (mouseX - vp.x) * (newZoom / vp.zoom)
+        const newY       = mouseY - (mouseY - vp.y) * (newZoom / vp.zoom)
+
+        rf.setViewport({ x: newX, y: newY, zoom: newZoom }, { duration: 0 })
+      }
+    }
+
+    el.addEventListener("wheel", onWheel, { passive: false })
+    return () => el.removeEventListener("wheel", onWheel)
+  }, [rf])
+
   return null
 }
 
@@ -141,8 +178,8 @@ export function FlowCanvas() {
         fitViewOptions={{ padding: 0.22 }}
         minZoom={0.2}
         maxZoom={MAX_ZOOM}
-        panOnScroll
-        panOnScrollSpeed={0.8}
+        zoomOnScroll={false}
+        panOnScroll={false}
         proOptions={{ hideAttribution: true }}
       >
         <Background
