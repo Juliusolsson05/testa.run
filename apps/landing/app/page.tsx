@@ -84,33 +84,28 @@ function CloudBackground({ position }: { position: 'top' | 'bottom' }) {
   const isTop = position === 'top'
   return (
     <div className="absolute inset-0 -z-10 overflow-hidden pointer-events-none">
-      {/* subtle ambient wash behind shapes */}
-      <div className="absolute inset-0 bg-[radial-gradient(1200px_380px_at_50%_0%,rgba(191,219,254,0.45),transparent_72%)]" />
-
       {isTop ? (
         <>
-          {/* Left side — clouds clipping out the left edge, each higher one more visible */}
-          <CloudShape id="c1-top" className="absolute w-[480px] left-[-340px] top-[260px] opacity-40 blur-[1.5px] cloud-1" />
-          <CloudShape id="c2-top" className="absolute w-[440px] left-[-300px] top-[140px] opacity-38 blur-[2px] cloud-4" />
-          <CloudShape id="c3-top" className="absolute w-[400px] left-[-260px] top-[40px] opacity-36 blur-[2px] cloud-2" />
-          <CloudShape id="c4-top" className="absolute w-[360px] left-[-220px] top-[-40px] opacity-32 blur-[2.5px] cloud-5" />
+          {/* Arch clouds: each side is ~50% clipped outside viewport */}
+          <CloudShape id="c1-top" className="absolute w-[460px] left-[-230px] top-[230px] opacity-34 blur-[2px] cloud-1" />
+          <CloudShape id="c2-top" className="absolute w-[410px] left-[-205px] top-[120px] opacity-32 blur-[2px] cloud-4" />
+          <CloudShape id="c3-top" className="absolute w-[360px] left-[-180px] top-[24px] opacity-30 blur-[2.5px] cloud-2" />
 
-          {/* Right side — clouds clipping out the right edge */}
-          <CloudShape id="c5-top" className="absolute w-[480px] right-[-340px] top-[260px] opacity-40 blur-[1.5px] cloud-2" />
-          <CloudShape id="c6-top" className="absolute w-[440px] right-[-300px] top-[140px] opacity-38 blur-[2px] cloud-5" />
-          <CloudShape id="c7-top" className="absolute w-[400px] right-[-260px] top-[40px] opacity-36 blur-[2px] cloud-3" />
-          <CloudShape id="c8-top" className="absolute w-[360px] right-[-220px] top-[-40px] opacity-32 blur-[2.5px] cloud-1" />
+          <CloudShape id="c4-top" className="absolute w-[460px] right-[-230px] top-[230px] opacity-34 blur-[2px] cloud-2" />
+          <CloudShape id="c5-top" className="absolute w-[410px] right-[-205px] top-[120px] opacity-32 blur-[2px] cloud-5" />
+          <CloudShape id="c6-top" className="absolute w-[360px] right-[-180px] top-[24px] opacity-30 blur-[2.5px] cloud-3" />
 
-          {/* Top center — smaller clouds bridging the arch */}
-          <CloudShape id="c9-top" className="absolute w-[280px] left-[20%] top-[-30px] opacity-28 blur-[2.5px] cloud-3" />
-          <CloudShape id="c10-top" className="absolute w-[260px] right-[20%] top-[-25px] opacity-26 blur-[2.5px] cloud-4" />
-          <CloudShape id="c11-top" className="absolute w-[220px] left-[40%] top-[-38px] opacity-24 blur-[3px] cloud-5" />
+          {/* bridge across the top of the arch */}
+          <CloudShape id="c7-top" className="absolute w-[230px] left-[27%] top-[-26px] opacity-24 blur-[3px] cloud-3" />
+          <CloudShape id="c8-top" className="absolute w-[220px] right-[27%] top-[-22px] opacity-22 blur-[3px] cloud-4" />
+          <CloudShape id="c9-top" className="absolute w-[190px] left-[42%] top-[-32px] opacity-20 blur-[3.5px] cloud-5" />
         </>
       ) : (
         <>
-          <CloudShape id="c1-bot" className="absolute w-[500px] left-[-280px] bottom-[-40px] opacity-30 blur-[2px] cloud-1" />
-          <CloudShape id="c2-bot" className="absolute w-[500px] right-[-280px] bottom-[-40px] opacity-30 blur-[2px] cloud-3" />
-          <CloudShape id="c3-bot" className="absolute w-[350px] left-[32%] bottom-[-30px] opacity-22 blur-[3px] cloud-4" />
+          {/* Footer: keep simple, no side arch */}
+          <CloudShape id="c1-bot" className="absolute w-[420px] left-[-180px] bottom-[-34px] opacity-26 blur-[2.5px] cloud-1" />
+          <CloudShape id="c2-bot" className="absolute w-[420px] right-[-180px] bottom-[-34px] opacity-26 blur-[2.5px] cloud-3" />
+          <CloudShape id="c3-bot" className="absolute w-[280px] left-[36%] bottom-[-26px] opacity-18 blur-[3px] cloud-4" />
         </>
       )}
 
