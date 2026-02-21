@@ -1,40 +1,42 @@
 /**
- * TestaRunLogo
- * "tr" initials (t white, r blue) floating on dark background — no fill.
- * "testa.run" wordmark below.
+ * TestaRunLogo — single SVG, dark sidebar variant.
+ * "tr" initials (t white, r blue) on top; "testa.run" wordmark below.
+ * Public Sans, normal weight.
  */
 export function TestaRunLogo() {
+  const font = "var(--font-public-sans), 'Public Sans', ui-sans-serif, system-ui, sans-serif"
   return (
-    <div className="flex flex-col items-start gap-2">
-      {/* Badge mark — no background, letters only */}
-      <svg
-        width="48"
-        height="36"
-        viewBox="0 0 48 36"
-        fill="none"
-        xmlns="http://www.w3.org/2000/svg"
+    <svg
+      width="68"
+      height="50"
+      viewBox="0 0 68 50"
+      fill="none"
+      xmlns="http://www.w3.org/2000/svg"
+    >
+      {/* Initials — large, on top */}
+      <text
+        x="0"
+        y="26"
+        fontFamily={font}
+        fontSize="26"
+        fontWeight="400"
+        letterSpacing="-0.5"
       >
-        <text
-          x="24"
-          y="28"
-          textAnchor="middle"
-          fontFamily="var(--font-geist-sans), Geist, ui-sans-serif, system-ui, sans-serif"
-          fontSize="26"
-          fontWeight="700"
-          letterSpacing="-0.5"
-        >
-          <tspan fill="#ffffff">t</tspan>
-          <tspan fill="#1d6ef5">r</tspan>
-        </text>
-      </svg>
-
-      {/* Wordmark */}
-      <span
-        className="text-[13px] font-bold leading-none tracking-tight text-[#e8edf5]"
-        style={{ fontFamily: "var(--font-geist-sans), sans-serif" }}
+        <tspan fill="#ffffff">t</tspan>
+        <tspan fill="#1d6ef5">r</tspan>
+      </text>
+      {/* Wordmark — below */}
+      <text
+        x="0"
+        y="44"
+        fontFamily={font}
+        fontSize="13"
+        fontWeight="400"
+        letterSpacing="-0.3"
       >
-        testa<span className="text-[#1d6ef5]">.run</span>
-      </span>
-    </div>
+        <tspan fill="#e8edf5">testa</tspan>
+        <tspan fill="#1d6ef5">.run</tspan>
+      </text>
+    </svg>
   )
 }

@@ -94,8 +94,15 @@ export default function Home() {
 
       {/* ── Nav ── */}
       <nav className="fixed top-0 inset-x-0 z-50 h-14 flex items-center justify-between px-8 bg-white/80 backdrop-blur-md border-b border-gray-100">
-        <Link href="/" className="text-sm tracking-tight text-gray-900">
-          testa<span className="text-brand">.run</span>
+        <Link href="/">
+          <svg width="88" height="18" viewBox="0 0 88 18" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <text y="14" fontFamily="var(--font-public-sans), 'Public Sans', ui-sans-serif, system-ui, sans-serif" fontSize="14" fontWeight="400" letterSpacing="-0.3">
+              <tspan fill="#111827">t</tspan><tspan fill="#1d6ef5">r</tspan>
+            </text>
+            <text x="22" y="14" fontFamily="var(--font-public-sans), 'Public Sans', ui-sans-serif, system-ui, sans-serif" fontSize="14" fontWeight="400" letterSpacing="-0.3">
+              <tspan fill="#111827">testa</tspan><tspan fill="#1d6ef5">.run</tspan>
+            </text>
+          </svg>
         </Link>
         <ul className="hidden md:flex items-center gap-8 list-none">
           <li><a href="#how-it-works" className="text-[13px] text-gray-500 hover:text-gray-900 transition-colors">How it works</a></li>
@@ -376,8 +383,15 @@ export default function Home() {
       <footer className="border-t border-gray-100">
         <div className="max-w-5xl mx-auto px-8 py-10 flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
           <div>
-            <Link href="/" className="text-sm tracking-tight text-gray-900">
-              testa<span className="text-brand">.run</span>
+            <Link href="/">
+              <svg width="88" height="18" viewBox="0 0 88 18" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <text y="14" fontFamily="var(--font-public-sans), 'Public Sans', ui-sans-serif, system-ui, sans-serif" fontSize="14" fontWeight="400" letterSpacing="-0.3">
+                  <tspan fill="#111827">t</tspan><tspan fill="#1d6ef5">r</tspan>
+                </text>
+                <text x="22" y="14" fontFamily="var(--font-public-sans), 'Public Sans', ui-sans-serif, system-ui, sans-serif" fontSize="14" fontWeight="400" letterSpacing="-0.3">
+                  <tspan fill="#111827">testa</tspan><tspan fill="#1d6ef5">.run</tspan>
+                </text>
+              </svg>
             </Link>
             <p className="text-[13px] text-gray-400 mt-1">QA and security testing that runs itself.</p>
           </div>

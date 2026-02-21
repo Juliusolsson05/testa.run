@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import localFont from "next/font/local";
+import { Public_Sans } from "next/font/google";
 import "./globals.css";
 
 const geistSans = localFont({
@@ -9,6 +10,11 @@ const geistSans = localFont({
 const geistMono = localFont({
   src: "./fonts/GeistMonoVF.woff",
   variable: "--font-geist-mono",
+});
+const publicSans = Public_Sans({
+  subsets: ["latin"],
+  variable: "--font-public-sans",
+  display: "swap",
 });
 
 export const metadata: Metadata = {
@@ -23,7 +29,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={`${geistSans.variable} ${geistMono.variable}`}>
+      <body className={`${geistSans.variable} ${geistMono.variable} ${publicSans.variable}`}>
         {children}
       </body>
     </html>
