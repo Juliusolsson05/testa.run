@@ -65,7 +65,7 @@ export const initialEdges: Edge[] = [
       fontFamily: "var(--font-geist-mono), ui-monospace, SFMono-Regular, monospace",
       fontSize: 11,
     },
-    labelBgStyle: { fill: "rgba(255,255,255,0.88)", rx: 6, ry: 6 },
+    labelBgStyle: { fill: "rgba(255,255,255,0.88)" },
     labelBgPadding: [6, 8],
   },
   {
@@ -81,7 +81,7 @@ export const initialEdges: Edge[] = [
       fontFamily: "var(--font-geist-mono), ui-monospace, SFMono-Regular, monospace",
       fontSize: 11,
     },
-    labelBgStyle: { fill: "rgba(255,255,255,0.88)", rx: 6, ry: 6 },
+    labelBgStyle: { fill: "rgba(255,255,255,0.88)" },
     labelBgPadding: [6, 8],
   },
 ]
