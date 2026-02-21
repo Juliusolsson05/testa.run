@@ -122,10 +122,6 @@
 }
 
 @layer utilities {
-  .react-flow__edges {
-    z-index: 1000 !important;
-  }
-
   .flow-handle {
     width: 12px !important;
     height: 12px !important;

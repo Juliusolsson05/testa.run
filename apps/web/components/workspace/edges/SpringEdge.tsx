@@ -158,6 +158,7 @@ export function SpringEdge({
             style={{
               transform: `translate(-50%, -50%) translate(${badgeX}px, ${badgeY}px)`,
               pointerEvents: "all",
+              zIndex: 1000,
             }}
           >
             {/* Circle rotated to match the edge tangent (180° flip for back-step) */}
