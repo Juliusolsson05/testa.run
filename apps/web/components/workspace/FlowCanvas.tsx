@@ -72,8 +72,8 @@ function FlowController() {
   const containerHeight = useStore((s) => s.height)
 
   useEffect(() => {
-    // Only fire after the initial zoom has settled (lastRef is set)
-    if (!activeNodeId || !lastRef.current) return
+    // Only fire after the zoom has settled for THIS node specifically
+    if (!activeNodeId || lastRef.current?.nodeId !== activeNodeId) return
 
     const node = nodes.find((n) => n.id === activeNodeId)
     if (!node?.measured?.height) return
