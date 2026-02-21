@@ -135,12 +135,13 @@ export function SpringEdge({
           */}
           <button
             onClick={() => selectNode(navigateTo)}
+            className="nodrag nopan"
             style={{
               position: "absolute",
               width: 28,
               height: 28,
               transform: `translate(-50%, -50%) translate(${badgeX}px, ${badgeY}px)`,
-              pointerEvents: "auto",
+              pointerEvents: "all",
               cursor: "pointer",
               background: "none",
               border: "none",
