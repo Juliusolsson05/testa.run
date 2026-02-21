@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { Handle, Position, type NodeProps } from '@xyflow/react'
+import { Handle, Position, useUpdateNodeInternals, type NodeProps } from '@xyflow/react'
 import { useIssueContext } from '../context/IssueContext'
 import { issues } from '../data/issues'
 
@@ -21,9 +21,12 @@ const statusConfig = {
   pending: { color: '#6366f1', bg: 'rgba(99,102,241,0.12)',  label: '◦ Pending' },
 }
 
+const CHROME_H = 36 // px — height of the browser chrome bar
+
 export function ScreenshotNode({ id, data, selected }: NodeProps) {
   const nodeData = data as ScreenshotNodeData
   const status   = statusConfig[nodeData.status]
+  const updateNodeInternals = useUpdateNodeInternals()
 
   const { activeIssueId, activeNodeId, selectIssue, clearSelection } = useIssueContext()
 
@@ -34,7 +37,12 @@ export function ScreenshotNode({ id, data, selected }: NodeProps) {
   const [localOpen, setLocalOpen] = useState(false)
   const panelOpen = localOpen || isContextActive
 
-  // Close this node's panel when another node is targeted
+  // Notify React Flow whenever the panel open state changes so it
+  // re-measures the node and repositions handles correctly
+  useEffect(() => {
+    updateNodeInternals(id)
+  }, [panelOpen, id, updateNodeInternals])
+
   useEffect(() => {
     if (activeNodeId !== null && activeNodeId !== id) setLocalOpen(false)
   }, [activeNodeId, id])
@@ -54,6 +62,12 @@ export function ScreenshotNode({ id, data, selected }: NodeProps) {
     selectIssue(issueId)
   }
 
+  // Pin the target handle at the vertical center of the screenshot area
+  // so it never moves when the dropdown expands below it.
+  const nodeWidth    = (nodeData.isMain || nodeData.isLarge) ? 460 : 260
+  const screenshotH  = nodeWidth * (10 / 16)
+  const targetHandleTop = CHROME_H + screenshotH / 2  // fixed px from node top
+
   return (
     <div
       className={[
@@ -65,7 +79,13 @@ export function ScreenshotNode({ id, data, selected }: NodeProps) {
         isContextActive   ? 'node-active' : '',
       ].filter(Boolean).join(' ')}
     >
-      <Handle type="target" position={Position.Left} className="flow-handle" />
+      {/* Target handle pinned to screenshot center — never moves with dropdown */}
+      <Handle
+        type="target"
+        position={Position.Left}
+        className="flow-handle"
+        style={{ top: targetHandleTop }}
+      />
 
       {/* Browser chrome */}
       <div className="browser-chrome">
@@ -142,6 +162,7 @@ export function ScreenshotNode({ id, data, selected }: NodeProps) {
         </div>
       )}
 
+      {/* Source handle — fixed px so it doesn't drift when dropdown opens */}
       <Handle
         type="source"
         position={Position.Right}
@@ -151,7 +172,7 @@ export function ScreenshotNode({ id, data, selected }: NodeProps) {
           left:      nodeData.sourceHandleOffset.left,
           right:     'auto',
           transform: 'translate(-50%, -50%)',
-        } : undefined}
+        } : { top: targetHandleTop }}
       />
     </div>
   )

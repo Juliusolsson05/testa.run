@@ -33,7 +33,7 @@ const initialNodes: Node<ScreenshotNodeData>[] = [
       duration: '1.2s',
       isMain: true,
       imageSrc: '/screenshots/landing.png',
-      sourceHandleOffset: { top: '12%', left: '78%' },
+      sourceHandleOffset: { top: '47px', left: '78%' },
     },
   },
   {
@@ -47,7 +47,7 @@ const initialNodes: Node<ScreenshotNodeData>[] = [
       step: 2,
       duration: '0.8s',
       imageSrc: '/screenshots/login.png',
-      sourceHandleOffset: { top: '58%', left: '84%' },
+      sourceHandleOffset: { top: '158px', left: '84%' },
     },
   },
   {
