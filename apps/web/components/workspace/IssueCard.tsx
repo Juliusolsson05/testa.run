@@ -52,7 +52,7 @@ export function IssueCard({ issue, variant = "open" }: { issue: Issue; variant?:
       </div>
 
       {media?.imageSrc && (
-        <div className="flex shrink-0 items-center justify-center border-l border-[#eff6ff] p-3" style={{ maxWidth: 160 }}>
+        <div className="flex max-w-[160px] shrink-0 items-center justify-center border-l border-[#eff6ff] p-3">
           <Image src={media.imageSrc} alt={media.label} width={320} height={200} className={cn("h-auto w-full", isResolved && "grayscale")} />
         </div>
       )}

@@ -44,7 +44,7 @@ function findTForFlowX(sx: number, sy: number, tx: number, ty: number, targetFlo
 
 function ArrowIcon() {
   return (
-    <svg width="15" height="9" viewBox="0 0 20 12" fill="none" style={{ display: "block" }}>
+    <svg width="15" height="9" viewBox="0 0 20 12" fill="none" className="block">
       <path d="M 0 4.5 L 12 4.5 L 12 2 L 20 6 L 12 10 L 12 7.5 L 0 7.5 Z" fill="white" />
     </svg>
   )
@@ -154,32 +154,17 @@ export function SpringEdge({
             aria-label={`Focus ${navigateLabel}`}
             onClick={(e) => { e.stopPropagation(); selectNode(navigateTo) }}
             onMouseDown={(e) => e.stopPropagation()}
-            className="nodrag nopan"
+            className="nodrag nopan absolute h-7 w-7 cursor-pointer border-none bg-transparent p-0"
             style={{
-              position: "absolute",
-              width: 28,
-              height: 28,
               transform: `translate(-50%, -50%) translate(${badgeX}px, ${badgeY}px)`,
               pointerEvents: "all",
-              cursor: "pointer",
-              background: "none",
-              border: "none",
-              padding: 0,
             }}
           >
             {/* Circle rotated to match the edge tangent (180° flip for back-step) */}
             <div
+              className="flex h-7 w-7 items-center justify-center rounded-full bg-brand shadow-[0_0_0_2.5px_#fff,0_0_10px_rgba(29,110,245,0.45)] transition-[transform,box-shadow] duration-150"
               style={{
                 transform: `rotate(${badgeAngle}deg)`,
-                width: 28,
-                height: 28,
-                borderRadius: "50%",
-                background: "#1d6ef5",
-                boxShadow: "0 0 0 2.5px #fff, 0 0 10px rgba(29,110,245,0.45)",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                transition: "transform 0.15s, box-shadow 0.15s",
               }}
             >
               <ArrowIcon />
@@ -188,22 +173,7 @@ export function SpringEdge({
             {/* Label floats below the circle; absolutely positioned so it can't shift the circle */}
             {label && (
               <div
-                style={{
-                  position: "absolute",
-                  top: "calc(100% + 7px)",
-                  left: "50%",
-                  transform: "translateX(-50%)",
-                  whiteSpace: "nowrap",
-                  background: "rgba(255,255,255,0.93)",
-                  border: "1px solid rgba(29,110,245,0.22)",
-                  borderRadius: 4,
-                  padding: "3px 8px",
-                  color: "#1D4ED8",
-                  fontSize: 11,
-                  fontFamily: "var(--font-geist-mono), ui-monospace, SFMono-Regular, monospace",
-                  boxShadow: "0 1px 4px rgba(29,110,245,0.1)",
-                  pointerEvents: "none",
-                }}
+                className="pointer-events-none absolute left-1/2 top-[calc(100%+7px)] -translate-x-1/2 whitespace-nowrap rounded border border-[rgba(29,110,245,0.22)] bg-white/95 px-2 py-0.5 font-mono text-[11px] text-[#1D4ED8] shadow-[0_1px_4px_rgba(29,110,245,0.1)]"
               >
                 {String(label)}
               </div>

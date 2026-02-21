@@ -14,6 +14,7 @@ import {
 } from "lucide-react"
 import type { RunStatus } from "@/types/domain"
 import { Wordmark } from "@/components/ui/TestaRunLogo"
+import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
 
 const NAV = [
@@ -49,14 +50,18 @@ export function AppSidebar() {
 
       {/* Project selector */}
       <div className="mx-3 mb-4">
-        <button className="flex w-full items-center justify-between rounded border border-white/10 bg-white/5 px-3 py-2.5 text-left transition hover:bg-white/10">
+        <Button
+          type="button"
+          variant="ghost"
+          className="h-auto w-full justify-between rounded border border-white/10 bg-white/5 px-3 py-2.5 text-left hover:bg-white/10"
+        >
           <div className="min-w-0">
             <div className="text-[11px] font-bold uppercase tracking-[0.6px] text-white/40">Project</div>
             <div className="truncate text-[13px] font-semibold text-[#e8edf5]">TimeEdit</div>
             <div className="truncate font-mono text-[10px] text-white/40">timeedit.com</div>
           </div>
           <ChevronDown className="h-3.5 w-3.5 shrink-0 text-white/40" />
-        </button>
+        </Button>
       </div>
 
       <div className="mx-3 mb-4 border-t border-white/8" />
@@ -120,9 +125,11 @@ export function AppSidebar() {
         </div>
         <div className="flex flex-col gap-0.5">
           {RECENT_RUNS.map((run) => (
-            <button
+            <Button
               key={run.id}
-              className="flex w-full items-center gap-2.5 rounded px-2.5 py-2 text-left transition hover:bg-white/8"
+              type="button"
+              variant="ghost"
+              className="h-auto w-full justify-start gap-2.5 rounded px-2.5 py-2 text-left hover:bg-white/8"
             >
               <span className={cn("h-1.5 w-1.5 shrink-0 rounded-full", runStatusDot[run.status])} />
               <div className="min-w-0 flex-1">
@@ -130,7 +137,7 @@ export function AppSidebar() {
                 <div className="font-mono text-[10px] text-white/30">#{run.id}</div>
               </div>
               <span className="shrink-0 text-[10px] text-white/30">{run.ago}</span>
-            </button>
+            </Button>
           ))}
         </div>
       </div>
@@ -145,9 +152,15 @@ export function AppSidebar() {
             <div className="truncate text-[12px] font-semibold text-[#e8edf5]">Julius O.</div>
             <div className="truncate font-mono text-[10px] text-white/40">julius@testa.run</div>
           </div>
-          <button className="text-white/30 transition hover:text-white/60">
+          <Button
+            type="button"
+            size="icon-xs"
+            variant="ghost"
+            className="text-white/30 hover:text-white/60"
+            aria-label="Log out"
+          >
             <LogOut className="h-3.5 w-3.5" />
-          </button>
+          </Button>
         </div>
 
         <Link
