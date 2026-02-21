@@ -9,8 +9,6 @@ import {
   applyNodeChanges,
   useNodes,
   useReactFlow,
-  useViewport,
-  useStore,
   type Node,
   type NodeChange,
   type NodeMouseHandler,
@@ -75,35 +73,6 @@ function FlowController() {
     return () => clearTimeout(timer)
   }, [activeNodeId, nodes, setCenter])
 
-  // ── Exit focus when user pans the node mostly off-screen ─────────────────
-  const { x: vpX, y: vpY, zoom: vpZoom } = useViewport()
-  const containerWidth = useStore((s) => s.width)
-  const containerHeight = useStore((s) => s.height)
-
-  useEffect(() => {
-    // Only fire after the zoom has settled for THIS node, and not during an animation
-    if (!activeNodeId || lastRef.current?.nodeId !== activeNodeId || animatingRef.current) return
-
-    const node = nodes.find((n) => n.id === activeNodeId)
-    if (!node?.measured?.height) return
-
-    const nodeWidth = node.data.isMain || node.data.isLarge ? NODE_WIDE : NODE_WIDTH
-    const nodeHeight = node.measured.height
-
-    // Node bounding box in screen (canvas-relative) pixels
-    const screenLeft   = node.position.x * vpZoom + vpX
-    const screenTop    = node.position.y * vpZoom + vpY
-    const screenRight  = screenLeft + nodeWidth  * vpZoom
-    const screenBottom = screenTop  + nodeHeight * vpZoom
-
-    // Overlap with the canvas rect
-    const overlapX = Math.max(0, Math.min(screenRight, containerWidth)  - Math.max(screenLeft, 0))
-    const overlapY = Math.max(0, Math.min(screenBottom, containerHeight) - Math.max(screenTop,  0))
-    const visibleFraction = (overlapX * overlapY) / (nodeWidth * vpZoom * nodeHeight * vpZoom)
-
-    // Exit focus when less than 5 % of the node is still visible
-    if (visibleFraction < 0.05) clearSelection()
-  }, [activeNodeId, nodes, vpX, vpY, vpZoom, containerWidth, containerHeight, clearSelection])
 
   // ── Custom wheel: pinch = zoom (fast), scroll = pan (all directions) ───────
   const rf = useReactFlow()
@@ -176,6 +145,7 @@ export function FlowCanvas() {
         onNodesChange={onNodesChange}
         onNodeClick={onNodeClick}
         onPaneClick={clearSelection}
+        onMoveStart={clearSelection}
         fitView
         fitViewOptions={{ padding: 0.22 }}
         minZoom={0.2}
