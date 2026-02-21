@@ -68,9 +68,10 @@ export function SpringEdge({
   const { activeNodeId, selectNode } = useIssueContext()
 
   // Reactive viewport: x/y = canvas pan offset in px, zoom = scale
-  const { x: vpX, zoom: vpZoom } = useViewport()
-  // Width of the ReactFlow container element in px
-  const containerWidth = useStore((s) => s.width)
+  const { x: vpX, y: vpY, zoom: vpZoom } = useViewport()
+  // Dimensions of the ReactFlow container element in px
+  const containerWidth  = useStore((s) => s.width)
+  const containerHeight = useStore((s) => s.height)
 
   const isOutgoing = activeNodeId === source
   const isIncoming = activeNodeId === target
@@ -79,6 +80,19 @@ export function SpringEdge({
   // Recompute t whenever the viewport pans/zooms so the badge stays visually centred
   const t = useMemo(() => {
     if (!isFocused || containerWidth === 0) return 0.5
+
+    // Convert flow-space handle positions to screen pixels
+    const srcScreenX = sourceX * vpZoom + vpX
+    const srcScreenY = sourceY * vpZoom + vpY
+    const tgtScreenX = targetX * vpZoom + vpX
+    const tgtScreenY = targetY * vpZoom + vpY
+
+    const onScreen = (sx: number, sy: number) =>
+      sx >= 0 && sx <= containerWidth && sy >= 0 && sy <= containerHeight
+
+    // Both handles visible → simply centre on the bezier midpoint
+    if (onScreen(srcScreenX, srcScreenY) && onScreen(tgtScreenX, tgtScreenY)) return 0.5
+
     if (isOutgoing) {
       // Right edge of canvas in flow coordinates
       const rightFlowX = (containerWidth - vpX) / vpZoom
@@ -90,7 +104,7 @@ export function SpringEdge({
       const midFlowX = (leftFlowX + targetX) / 2
       return findTForFlowX(sourceX, sourceY, targetX, targetY, midFlowX)
     }
-  }, [isFocused, isOutgoing, sourceX, sourceY, targetX, targetY, vpX, vpZoom, containerWidth])
+  }, [isFocused, isOutgoing, sourceX, sourceY, targetX, targetY, vpX, vpY, vpZoom, containerWidth, containerHeight])
 
   const [badgeX, badgeY] = bezierPoint(sourceX, sourceY, targetX, targetY, t)
   // Incoming edges point back (←), so flip 180°
