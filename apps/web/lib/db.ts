@@ -1,7 +1,4 @@
 import { PrismaClient } from '@prisma/client'
-import { requireEnv } from '@/lib/env'
-
-requireEnv('DATABASE_URL')
 
 declare global {
   // eslint-disable-next-line no-var

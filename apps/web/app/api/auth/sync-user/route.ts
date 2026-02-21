@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server'
 import { getRequestSupabaseUser } from '@/lib/supabase-auth'
-import { upsertAppUserFromSupabaseUser } from '@/lib/auth'
+import { upsertAppUser } from '@/lib/auth'
 
 export async function POST() {
   const supabaseUser = await getRequestSupabaseUser()
@@ -8,16 +8,15 @@ export async function POST() {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
-  const appUser = await upsertAppUserFromSupabaseUser(supabaseUser)
+  const appUser = await upsertAppUser(supabaseUser)
 
   return NextResponse.json({
     ok: true,
     user: {
       id: appUser.id,
       email: appUser.email,
-      plan: appUser.plan,
-      supabaseAuthId: appUser.supabaseAuthId,
-      lastSeenAt: appUser.lastSeenAt,
+      name: appUser.name,
+      avatarUrl: appUser.avatarUrl,
     },
   })
 }
