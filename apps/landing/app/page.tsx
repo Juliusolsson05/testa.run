@@ -125,14 +125,14 @@ export default function Home() {
           </p>
 
           {/* URL input CTA */}
-          <div className="max-w-2xl mx-auto rounded-2xl bg-gray-900 p-5">
+          <div className="max-w-2xl mx-auto rounded-2xl bg-gray-900 p-4 flex items-center gap-3">
             <input
               type="url"
               aria-label="Website URL"
               placeholder="https://your-app.com"
-              className="w-full bg-transparent text-[15px] text-white placeholder:text-white/50 focus:outline-none mb-8"
+              className="flex-1 bg-transparent text-[15px] text-white placeholder:text-white/50 focus:outline-none"
             />
-            <div className="flex justify-end">
+            <div className="flex items-center">
               <Button size="icon" className="h-9 w-9 rounded-full bg-brand hover:bg-brand/90 text-white">
                 <ArrowRight className="w-4 h-4" />
               </Button>
@@ -293,14 +293,14 @@ export default function Home() {
           <p className="text-[15px] text-gray-500 max-w-md mx-auto mb-8 leading-relaxed">
             Paste a URL and find out in minutes. No setup, no scripts, no waiting.
           </p>
-          <div className="max-w-2xl mx-auto rounded-2xl bg-gray-900 p-5">
+          <div className="max-w-2xl mx-auto rounded-2xl bg-gray-900 p-4 flex items-center gap-3">
             <input
               type="url"
               aria-label="Website URL"
               placeholder="https://your-app.com"
-              className="w-full bg-transparent text-[15px] text-white placeholder:text-white/50 focus:outline-none mb-8"
+              className="flex-1 bg-transparent text-[15px] text-white placeholder:text-white/50 focus:outline-none"
             />
-            <div className="flex justify-end">
+            <div className="flex items-center">
               <Button size="icon" className="h-9 w-9 rounded-full bg-brand hover:bg-brand/90 text-white">
                 <ArrowRight className="w-4 h-4" />
               </Button>
