@@ -1,6 +1,8 @@
 import type { Metadata } from 'next'
 import { Public_Sans } from 'next/font/google'
 import './globals.css'
+import { CookieConsentBanner } from './components/CookieConsentBanner'
+import { ConsentAwareScripts } from './components/ConsentAwareScripts'
 
 const publicSans = Public_Sans({
   subsets: ['latin'],
@@ -17,7 +19,11 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en" className={publicSans.variable}>
-      <body>{children}</body>
+      <body>
+        {children}
+        <CookieConsentBanner />
+        <ConsentAwareScripts />
+      </body>
     </html>
   )
 }
