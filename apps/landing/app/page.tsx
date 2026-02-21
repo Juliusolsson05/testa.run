@@ -201,7 +201,7 @@ export default function Home() {
                 { name: 'Linear', logo: '/logos/linear.svg' },
                 { name: 'Supabase', logo: '/logos/supabase.svg' },
               ].map((company, i) => (
-                <div key={`${setIdx}-${i}`} className="flex items-center gap-2.5 shrink-0 opacity-50 grayscale mx-7">
+                <div key={`${setIdx}-${i}`} className="flex items-center gap-2.5 shrink-0 opacity-70 mx-7">
                   <img src={company.logo} alt={company.name} className="w-6 h-6 object-contain" />
                   <span className="text-[15px] text-gray-800 tracking-tight">{company.name}</span>
                 </div>
