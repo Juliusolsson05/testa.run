@@ -12,6 +12,7 @@ export function FloatingNav() {
     { label: "Home", href: "/" },
     { label: "Issues", href: "/workspace/issues" },
     { label: "Runs", href: "/workspace/runs" },
+    { label: "Security", href: "/workspace/security" },
   ]
 
   return (

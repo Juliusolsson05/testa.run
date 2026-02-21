@@ -3,6 +3,7 @@
 import { IssueProvider } from "@/context/issue-context"
 import { FlowCanvas } from "@/components/workspace/FlowCanvas"
 import { FloatingNav } from "@/components/workspace/FloatingNav"
+import { SecurityOverlay } from "@/components/workspace/SecurityOverlay"
 import { Sidebar } from "@/components/workspace/Sidebar"
 
 export function WorkspacePage({
@@ -18,6 +19,7 @@ export function WorkspacePage({
         <Sidebar />
         <div className="relative flex flex-1 overflow-hidden">
           <FloatingNav />
+          <SecurityOverlay />
           <FlowCanvas />
         </div>
       </main>
