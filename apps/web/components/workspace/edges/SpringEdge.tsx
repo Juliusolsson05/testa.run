@@ -72,7 +72,7 @@ export function SpringEdge({
               borderRadius: 6,
             }}
           >
-            <span style={labelStyle}>{label as string}</span>
+            <span style={labelStyle}>{label}</span>
           </animated.div>
         </EdgeLabelRenderer>
       )}

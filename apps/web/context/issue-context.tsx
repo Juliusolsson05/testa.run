@@ -39,7 +39,7 @@ export function IssueProvider({ children }: { children: ReactNode }) {
 
   const value = useMemo(
     () => ({ issues, activeIssueId, activeNodeId, selectIssue, clearSelection }),
-    [activeIssueId, activeNodeId, selectIssue, clearSelection]
+    [activeIssueId, activeNodeId, selectIssue, clearSelection, issues]
   )
 
   return <IssueContext.Provider value={value}>{children}</IssueContext.Provider>

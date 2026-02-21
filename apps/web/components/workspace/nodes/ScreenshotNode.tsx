@@ -53,7 +53,7 @@ export function ScreenshotNode({
 
   const nodeIssues = useMemo(
     () => issues.filter((issue) => issue.nodeId === id),
-    [id]
+    [id, issues]
   )
   const openCount = nodeIssues.filter((issue) => issue.status === "open").length
 

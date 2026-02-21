@@ -127,7 +127,7 @@ export default function Home() {
           </p>
 
           {/* URL input CTA */}
-          <div className="max-w-2xl mx-auto rounded-2xl bg-gray-900 px-6 py-5 flex items-center gap-3">
+          <div className="max-w-2xl mx-auto rounded-2xl bg-gray-900 px-6 py-5 flex items-center gap-3" data-spot="cta-input">
             <input
               type="url"
               aria-label="Website URL"
@@ -174,7 +174,7 @@ export default function Home() {
       </section>
 
       {/* ── What it does ── */}
-      <section className="py-20 bg-white">
+      <section className="py-20 bg-white" data-spot="platform">
         <div className="max-w-5xl mx-auto px-8 grid grid-cols-1 md:grid-cols-2 gap-16 items-center">
           <div>
             <h2 className="text-3xl tracking-tight leading-tight mb-4">
@@ -213,7 +213,7 @@ export default function Home() {
       <Separator className="max-w-5xl mx-auto" />
 
       {/* ── How it works ── */}
-      <section id="how-it-works" className="py-20 bg-white">
+      <section id="how-it-works" className="py-20 bg-white" data-spot="steps">
         <div className="max-w-5xl mx-auto px-8">
           <div className="text-center mb-14">
             <h2 className="text-3xl tracking-tight">
@@ -235,7 +235,7 @@ export default function Home() {
       <Separator className="max-w-5xl mx-auto" />
 
       {/* ── Pricing ── */}
-      <section id="pricing" className="py-20 bg-white">
+      <section id="pricing" className="py-20 bg-white" data-spot="pricing">
         <div className="max-w-5xl mx-auto px-8">
           <div className="text-center mb-14">
             <h2 className="text-3xl tracking-tight">
