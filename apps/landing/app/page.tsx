@@ -7,6 +7,7 @@ import {
   ArrowRight,
   Check,
 } from 'lucide-react'
+import PitchDeck from '@/components/pitch-deck'
 import { SiteNav, SiteFooter } from '@/app/components/SiteNav'
 
 const steps = [
@@ -113,17 +114,18 @@ export default function Home() {
           </p>
 
           {/* URL input CTA */}
-          <div className="max-w-lg mx-auto flex items-center gap-2">
+          <div className="max-w-2xl mx-auto rounded-2xl bg-gray-900 px-6 py-5 flex items-center gap-3">
             <input
               type="url"
+              aria-label="Website URL"
               placeholder="https://your-app.com"
-              className="flex-1 h-12 px-4 rounded-lg border border-gray-200 bg-white text-[14px] text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-brand/30 focus:border-brand"
+              className="flex-1 bg-transparent text-[15px] text-white placeholder:text-white/50 focus:outline-none"
             />
-            <Button size="lg" className="h-12 px-6 shrink-0">
-              Test my site <ArrowRight className="w-4 h-4 ml-1.5" />
+            <Button size="icon" className="h-9 w-9 rounded-full bg-brand hover:bg-brand/90 text-white shrink-0">
+              <ArrowRight className="w-4 h-4" />
             </Button>
           </div>
-          <p className="text-[12px] text-gray-400 mt-3">Free to start. No credit card required.</p>
+          <p className="text-[12px] text-gray-400 mt-4">Free to start. No credit card required.</p>
         </div>
       </section>
 
@@ -155,6 +157,9 @@ export default function Home() {
           </div>
         </div>
       </section>
+
+      {/* ── Pitch Deck ── */}
+      <PitchDeck />
 
       {/* ── What it does ── */}
       <section className="py-20 bg-white">
@@ -278,14 +283,15 @@ export default function Home() {
           <p className="text-[15px] text-gray-500 max-w-md mx-auto mb-8 leading-relaxed">
             Paste a URL and find out in minutes. No setup, no scripts, no waiting.
           </p>
-          <div className="max-w-lg mx-auto flex items-center gap-2">
+          <div className="max-w-2xl mx-auto rounded-2xl bg-gray-900 px-6 py-5 flex items-center gap-3">
             <input
               type="url"
+              aria-label="Website URL"
               placeholder="https://your-app.com"
-              className="flex-1 h-12 px-4 rounded-lg border border-gray-200 bg-white text-[14px] text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-brand/30 focus:border-brand"
+              className="flex-1 bg-transparent text-[15px] text-white placeholder:text-white/50 focus:outline-none"
             />
-            <Button size="lg" className="h-12 px-6 shrink-0">
-              Test my site <ArrowRight className="w-4 h-4 ml-1.5" />
+            <Button size="icon" className="h-9 w-9 rounded-full bg-brand hover:bg-brand/90 text-white shrink-0">
+              <ArrowRight className="w-4 h-4" />
             </Button>
           </div>
         </div>
