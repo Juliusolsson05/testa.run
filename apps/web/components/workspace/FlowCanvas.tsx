@@ -60,7 +60,7 @@ function FlowController() {
 
       const nodeWidth = node.data.isMain || node.data.isLarge ? NODE_WIDE : NODE_WIDTH
       const targetZoom = Math.min((window.innerHeight * 0.8) / nodeHeight, MAX_ZOOM)
-      const centerX = node.position.x + nodeWidth / 2 + 200 / targetZoom
+      const centerX = node.position.x + nodeWidth / 2
       const centerY = node.position.y + nodeHeight / 2
 
       // Block pan-exit detection for the duration of the animation + a small buffer
