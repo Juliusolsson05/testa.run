@@ -9,7 +9,7 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Separator } from "@/components/ui/separator"
 import { useIssueContext } from "@/context/issue-context"
-import { initialNodes, nodesById } from "@/data/flow"
+import { useWorkspaceData } from "@/context/workspace-data-context"
 import { cn } from "@/lib/utils"
 
 export function Sidebar() {
@@ -17,6 +17,8 @@ export function Sidebar() {
     selectIssue, selectNode, activeIssueId, activeNodeId, clearSelection,
     issues, issuesByNodeId, openIssues, resolvedIssues,
   } = useIssueContext()
+  const { run, nodes } = useWorkspaceData()
+  const nodesById = Object.fromEntries(nodes.map((n) => [n.id, n])) as Record<string, (typeof nodes)[number]>
 
   // ── Global stats ────────────────────────────────────────────────────────
   const errorCount = openIssues.filter((issue) => issue.severity === "error").length
@@ -25,7 +27,7 @@ export function Sidebar() {
 
   // ── Focused node ─────────────────────────────────────────────────────────
   const focusedNode = activeNodeId
-    ? initialNodes.find((n) => n.id === activeNodeId) ?? null
+    ? nodes.find((n) => n.id === activeNodeId) ?? null
     : null
   const nodeIssues = activeNodeId ? (issuesByNodeId[activeNodeId] ?? []) : []
   const nodeOpenIssues = nodeIssues.filter((i) => i.status === "open")
@@ -260,9 +262,9 @@ export function Sidebar() {
                 <Clock className="h-3.5 w-3.5 text-white/70" />
               </div>
               <div className="min-w-0 flex-1">
-                <div className="text-[13px] font-semibold">TimeEdit</div>
+                <div className="text-[13px] font-semibold">{run.name}</div>
                 <div className="truncate font-mono text-[11px] text-white/50">
-                  timeedit.com
+                  {run.label ?? run.id}
                 </div>
               </div>
               <span className="h-2 w-2 rounded-full bg-emerald-500 shadow-[0_0_6px_rgba(34,197,94,0.5)]" />
@@ -274,12 +276,12 @@ export function Sidebar() {
               <div className="flex items-center justify-between">
                 <span className="text-[11px] text-white/50">Run</span>
                 <span className="font-mono text-[12px] font-semibold text-[#7eb3f5]">
-                  #a3f7c1
+                  {run.label ?? run.id.slice(0, 8)}
                 </span>
               </div>
               <div className="flex items-center justify-between">
                 <span className="text-[11px] text-white/50">Started</span>
-                <span className="text-[11px] text-white/60">2m 14s ago</span>
+                <span className="text-[11px] text-white/60">{new Date(run.startedAt).toLocaleString("sv-SE")}</span>
               </div>
               <Button
                 type="button"

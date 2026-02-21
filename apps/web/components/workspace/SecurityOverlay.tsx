@@ -2,29 +2,30 @@
 
 import Link from "next/link"
 import { ShieldAlert, ShieldCheck } from "lucide-react"
-import { cn } from "@/lib/utils"
-import { issues } from "@/data/issues"
-
-const securityIssues = issues.filter((i) => i.category === "security")
-const openSec        = securityIssues.filter((i) => i.status === "open")
-const criticalCount  = openSec.filter((i) => i.severity === "error").length
-
-const riskLevel = criticalCount > 0
-  ? "Critical"
-  : openSec.length > 0
-    ? "High"
-    : securityIssues.length > 0
-      ? "Low"
-      : "None"
-
-const riskStyle = {
-  Critical: { label: "CRITICAL", dot: "bg-red-500",     text: "text-red-600",     bg: "bg-red-500/10",    border: "border-red-200"    },
-  High:     { label: "HIGH",     dot: "bg-amber-400",   text: "text-amber-600",   bg: "bg-amber-400/10",  border: "border-amber-200"  },
-  Low:      { label: "LOW",      dot: "bg-emerald-500", text: "text-emerald-600", bg: "bg-emerald-500/10",border: "border-emerald-200" },
-  None:     { label: "NONE",     dot: "bg-slate-300",   text: "text-slate-500",   bg: "bg-slate-100",     border: "border-slate-200"  },
-}[riskLevel]
+import { useIssueContext } from "@/context/issue-context"
 
 export function SecurityOverlay() {
+  const { issues } = useIssueContext()
+
+  const securityIssues = issues.filter((i) => i.category === "security")
+  const openSec = securityIssues.filter((i) => i.status === "open")
+  const criticalCount = openSec.filter((i) => i.severity === "error").length
+
+  const riskLevel = criticalCount > 0
+    ? "Critical"
+    : openSec.length > 0
+      ? "High"
+      : securityIssues.length > 0
+        ? "Low"
+        : "None"
+
+  const riskStyle = {
+    Critical: { label: "CRITICAL" },
+    High: { label: "HIGH" },
+    Low: { label: "LOW" },
+    None: { label: "NONE" },
+  }[riskLevel]
+
   return (
     <Link
       href="/workspace/security"

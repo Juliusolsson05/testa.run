@@ -1,6 +1,6 @@
 "use client"
 
-import { useCallback, useEffect, useMemo, useRef, useState } from "react"
+import { useCallback, useEffect, useRef, useState } from "react"
 import {
   Background,
   BackgroundVariant,
@@ -15,8 +15,8 @@ import {
   type NodeMouseHandler,
 } from "@xyflow/react"
 
-import { initialEdges, initialNodes } from "@/data/flow"
 import { useIssueContext } from "@/context/issue-context"
+import { useWorkspaceData } from "@/context/workspace-data-context"
 import { NODE_WIDTH, NODE_WIDE } from "@/constants/flow"
 import type { ScreenshotNodeData } from "@/types/flow"
 import { ScreenshotNode } from "@/components/workspace/nodes/ScreenshotNode"
@@ -126,8 +126,13 @@ function FlowController() {
 }
 
 export function FlowCanvas() {
-  const [nodes, setNodes] = useState(initialNodes)
+  const { nodes: workspaceNodes, edges } = useWorkspaceData()
+  const [nodes, setNodes] = useState(workspaceNodes)
   const { selectNode, clearSelection } = useIssueContext()
+
+  useEffect(() => {
+    setNodes(workspaceNodes)
+  }, [workspaceNodes])
 
   const onNodesChange = useCallback(
     (changes: NodeChange<Node<ScreenshotNodeData>>[]) => {
@@ -144,8 +149,6 @@ export function FlowCanvas() {
     },
     [selectNode]
   )
-
-  const edges = useMemo(() => initialEdges, [])
 
   return (
     <div className="relative flex h-full flex-1 flex-col overflow-hidden bg-white">

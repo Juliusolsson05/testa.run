@@ -231,7 +231,7 @@ function RunsHome() {
                 return (
                   <Link
                     key={run.id}
-                    href="/workspace"
+                    href={`/workspace/${run.id}`}
                     className="group flex items-center gap-5 border border-ui-border bg-white px-5 py-4 transition-shadow hover:shadow-[0_4px_16px_rgba(29,110,245,0.12)]"
                   >
                     <span className={cn("h-2.5 w-2.5 shrink-0 rounded-full", s.dot)} />

@@ -10,14 +10,7 @@ import {
 } from "react"
 
 import type { Issue } from "@/types/domain"
-import { issues } from "@/data/issues"
-
-// ── Derived from static data — computed once at module scope ───────────────
-const issuesByNodeId: Record<string, Issue[]> = {}
-for (const issue of issues) (issuesByNodeId[issue.nodeId] ||= []).push(issue)
-
-const openIssues = issues.filter((i) => i.status === "open")
-const resolvedIssues = issues.filter((i) => i.status === "resolved")
+import { useWorkspaceData } from "@/context/workspace-data-context"
 
 type IssueContextValue = {
   issues: Issue[]
@@ -42,20 +35,34 @@ export function IssueProvider({
   initialIssueId?: string
   initialNodeId?: string
 }) {
+  const { issues } = useWorkspaceData()
+
+  const issuesByNodeId = useMemo<Record<string, Issue[]>>(() => {
+    const byNode: Record<string, Issue[]> = {}
+    for (const issue of issues) (byNode[issue.nodeId] ||= []).push(issue)
+    return byNode
+  }, [issues])
+
+  const openIssues = useMemo(() => issues.filter((i) => i.status === "open"), [issues])
+  const resolvedIssues = useMemo(() => issues.filter((i) => i.status === "resolved"), [issues])
+
   const seedIssue = initialIssueId ?? null
-  const seedNode  = initialIssueId
+  const seedNode = initialIssueId
     ? (issues.find((i) => i.id === initialIssueId)?.nodeId ?? null)
     : (initialNodeId ?? null)
 
   const [activeIssueId, setActiveIssueId] = useState<string | null>(seedIssue)
-  const [activeNodeId,  setActiveNodeId]  = useState<string | null>(seedNode)
+  const [activeNodeId, setActiveNodeId] = useState<string | null>(seedNode)
 
-  const selectIssue = useCallback((issueId: string) => {
-    const issue = issues.find((item) => item.id === issueId)
-    if (!issue) return
-    setActiveIssueId(issueId)
-    setActiveNodeId(issue.nodeId)
-  }, [])
+  const selectIssue = useCallback(
+    (issueId: string) => {
+      const issue = issues.find((item) => item.id === issueId)
+      if (!issue) return
+      setActiveIssueId(issueId)
+      setActiveNodeId(issue.nodeId)
+    },
+    [issues]
+  )
 
   const selectNode = useCallback((nodeId: string) => {
     setActiveIssueId(null)
@@ -79,7 +86,7 @@ export function IssueProvider({
       selectNode,
       clearSelection,
     }),
-    [activeIssueId, activeNodeId, selectIssue, selectNode, clearSelection]
+    [issues, issuesByNodeId, openIssues, resolvedIssues, activeIssueId, activeNodeId, selectIssue, selectNode, clearSelection]
   )
 
   return <IssueContext.Provider value={value}>{children}</IssueContext.Provider>
