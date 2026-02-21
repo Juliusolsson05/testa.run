@@ -9,7 +9,8 @@ import {
   type ReactNode,
 } from "react"
 
-import { issues, type Issue } from "@/data/issues"
+import type { Issue } from "@/types/domain"
+import { issues } from "@/data/issues"
 
 // ── Derived from static data — computed once at module scope ───────────────
 const issuesByNodeId: Record<string, Issue[]> = {}

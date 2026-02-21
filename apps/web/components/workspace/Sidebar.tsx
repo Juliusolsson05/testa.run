@@ -1,7 +1,9 @@
 "use client"
 
-import { AlertTriangle, Clock, Sparkles, XCircle } from "lucide-react"
+import { useState } from "react"
+import { AlertTriangle, Clock, XCircle } from "lucide-react"
 
+import { Wordmark } from "@/components/ui/TestaRunLogo"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
@@ -12,7 +14,7 @@ import { cn } from "@/lib/utils"
 
 export function Sidebar() {
   const {
-    selectIssue, activeIssueId, activeNodeId, clearSelection,
+    selectIssue, selectNode, activeIssueId, activeNodeId, clearSelection,
     issues, issuesByNodeId, openIssues, resolvedIssues,
   } = useIssueContext()
 
@@ -29,19 +31,97 @@ export function Sidebar() {
   const nodeOpenIssues = nodeIssues.filter((i) => i.status === "open")
   const nodeResolvedIssues = nodeIssues.filter((i) => i.status === "resolved")
 
+  // ── Show-more state for global issue lists ───────────────────────────────
+  const [showAllOpen,     setShowAllOpen]     = useState(false)
+  const [showAllResolved, setShowAllResolved] = useState(false)
+  const ISSUE_LIMIT = 3
+
+  // ── Active issue ─────────────────────────────────────────────────────────
+  const activeIssue = activeIssueId ? issues.find((i) => i.id === activeIssueId) ?? null : null
+
+  const sidebarWidth = activeIssue ? 480 : focusedNode ? 420 : 320
+
   return (
     <aside
-      className="flex h-full shrink-0 flex-col gap-4 overflow-y-auto border-r border-white/10 bg-[#111318] px-5 py-5 text-white transition-[width] duration-300 ease-in-out"
-      style={{ width: focusedNode ? 420 : 320 }}
+      className="flex h-full shrink-0 flex-col gap-4 overflow-y-auto border-r border-white/10 bg-[#1c2030] px-5 py-5 text-white transition-[width] duration-300 ease-in-out"
+      style={{ width: sidebarWidth }}
     >
-      <div className="flex items-center gap-2 text-[17px] font-bold tracking-tight">
-        <Sparkles className="h-5 w-5 text-[#1d6ef5]" />
-        <span className="text-[#e8edf5]">
-          testa<span className="text-[#1d6ef5]">.run</span>
-        </span>
-      </div>
+      <Wordmark variant="dark" className="text-[22px] font-normal" />
 
-      {focusedNode ? (
+      {activeIssue ? (
+        // ── ISSUE DETAIL VIEW ───────────────────────────────────────────────
+        <div key={activeIssueId} className="node-focus-in flex w-[440px] flex-col gap-4">
+          {/* Back */}
+          <button
+            onClick={() => selectNode(activeIssue.nodeId)}
+            className="flex items-center gap-1.5 text-[11px] text-white/50 hover:text-white/80 transition-colors w-fit"
+          >
+            ← Node issues
+          </button>
+
+          {/* Header */}
+          <div className="flex flex-col gap-2">
+            <div className="flex items-start gap-2">
+              <span
+                className={cn(
+                  "mt-0.5 h-2 w-2 shrink-0 rounded-full",
+                  activeIssue.severity === "error" ? "bg-red-500" : "bg-amber-400",
+                  activeIssue.status === "resolved" && "bg-emerald-500"
+                )}
+              />
+              <h2 className="text-[15px] font-semibold leading-snug text-[#e8edf5]">
+                {activeIssue.title}
+              </h2>
+            </div>
+
+            <div className="flex flex-wrap items-center gap-2">
+              <Badge
+                variant="outline"
+                className={cn(
+                  "rounded-none border-transparent px-2 py-0.5 text-[10px] uppercase",
+                  activeIssue.status === "resolved"
+                    ? "bg-emerald-500/20 text-emerald-300"
+                    : activeIssue.severity === "error"
+                    ? "bg-red-500/20 text-red-300"
+                    : "bg-amber-400/20 text-amber-300"
+                )}
+              >
+                {activeIssue.status === "resolved"
+                  ? "✓ resolved"
+                  : activeIssue.severity === "error"
+                  ? "error"
+                  : "warning"}
+              </Badge>
+              <code className="font-mono text-[11px] text-white/40">{activeIssue.element}</code>
+            </div>
+          </div>
+
+          <Separator className="bg-white/10" />
+
+          {/* Description */}
+          <div className="flex flex-col gap-1.5">
+            <div className="text-[10px] font-bold uppercase tracking-[0.6px] text-white/40">
+              Summary
+            </div>
+            <p className="text-[13px] leading-relaxed text-white/80">
+              {activeIssue.description}
+            </p>
+          </div>
+
+          <Separator className="bg-white/10" />
+
+          {/* Reasoning */}
+          <div className="flex flex-col gap-1.5">
+            <div className="text-[10px] font-bold uppercase tracking-[0.6px] text-white/40">
+              Agent reasoning
+            </div>
+            <p className="text-[12px] leading-relaxed text-white/60">
+              {activeIssue.reasoning}
+            </p>
+          </div>
+        </div>
+
+      ) : focusedNode ? (
         // ── FOCUSED NODE VIEW ───────────────────────────────────────────────
         <div key={activeNodeId} className="node-focus-in flex flex-col gap-4">
           {/* Back button + node header */}
@@ -164,6 +244,7 @@ export function Sidebar() {
             </div>
           )}
         </div>
+
       ) : (
         // ── GLOBAL VIEW ─────────────────────────────────────────────────────
         <>
@@ -268,7 +349,7 @@ export function Sidebar() {
               <div className="mb-2 rounded-none bg-[#1d6ef5]/20 px-2 py-1 text-center text-[10px] font-bold uppercase text-[#7eb3f5]">
                 Open
               </div>
-              {openIssues.map((issue) => {
+              {(showAllOpen ? openIssues : openIssues.slice(0, ISSUE_LIMIT)).map((issue) => {
                 const nd = nodesById[issue.nodeId]; const meta = { step: nd?.data.step ?? 0, label: nd?.data.label ?? "Unknown" }
                 const isActive = activeIssueId === issue.id
                 return (
@@ -310,13 +391,21 @@ export function Sidebar() {
                   </button>
                 )
               })}
+              {openIssues.length > ISSUE_LIMIT && (
+                <button
+                  onClick={() => setShowAllOpen((v) => !v)}
+                  className="w-full py-1 text-[10px] text-white/30 hover:text-white/60 transition-colors"
+                >
+                  {showAllOpen ? "Show less" : `Show ${openIssues.length - ISSUE_LIMIT} more`}
+                </button>
+              )}
             </div>
 
             <div>
               <div className="mb-2 rounded-none bg-emerald-500/20 px-2 py-1 text-center text-[10px] font-bold uppercase text-emerald-300">
                 Resolved
               </div>
-              {resolvedIssues.map((issue) => {
+              {(showAllResolved ? resolvedIssues : resolvedIssues.slice(0, ISSUE_LIMIT)).map((issue) => {
                 const nd = nodesById[issue.nodeId]; const meta = { step: nd?.data.step ?? 0, label: nd?.data.label ?? "Unknown" }
                 const isActive = activeIssueId === issue.id
                 return (
@@ -338,6 +427,14 @@ export function Sidebar() {
                   </button>
                 )
               })}
+              {resolvedIssues.length > ISSUE_LIMIT && (
+                <button
+                  onClick={() => setShowAllResolved((v) => !v)}
+                  className="w-full py-1 text-[10px] text-white/30 hover:text-white/60 transition-colors"
+                >
+                  {showAllResolved ? "Show less" : `Show ${resolvedIssues.length - ISSUE_LIMIT} more`}
+                </button>
+              )}
             </div>
           </div>
         </>

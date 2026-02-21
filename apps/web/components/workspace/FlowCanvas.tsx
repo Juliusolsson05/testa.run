@@ -8,9 +8,8 @@ import {
   ReactFlow,
   applyNodeChanges,
   useNodes,
+  useOnViewportChange,
   useReactFlow,
-  useViewport,
-  useStore,
   type Node,
   type NodeChange,
   type NodeMouseHandler,
@@ -60,7 +59,7 @@ function FlowController() {
 
       const nodeWidth = node.data.isMain || node.data.isLarge ? NODE_WIDE : NODE_WIDTH
       const targetZoom = Math.min((window.innerHeight * 0.8) / nodeHeight, MAX_ZOOM)
-      const centerX = node.position.x + nodeWidth / 2 + 200 / targetZoom
+      const centerX = node.position.x + nodeWidth / 2
       const centerY = node.position.y + nodeHeight / 2
 
       // Block pan-exit detection for the duration of the animation + a small buffer
@@ -75,35 +74,12 @@ function FlowController() {
     return () => clearTimeout(timer)
   }, [activeNodeId, nodes, setCenter])
 
-  // ── Exit focus when user pans the node mostly off-screen ─────────────────
-  const { x: vpX, y: vpY, zoom: vpZoom } = useViewport()
-  const containerWidth = useStore((s) => s.width)
-  const containerHeight = useStore((s) => s.height)
-
-  useEffect(() => {
-    // Only fire after the zoom has settled for THIS node, and not during an animation
-    if (!activeNodeId || lastRef.current?.nodeId !== activeNodeId || animatingRef.current) return
-
-    const node = nodes.find((n) => n.id === activeNodeId)
-    if (!node?.measured?.height) return
-
-    const nodeWidth = node.data.isMain || node.data.isLarge ? NODE_WIDE : NODE_WIDTH
-    const nodeHeight = node.measured.height
-
-    // Node bounding box in screen (canvas-relative) pixels
-    const screenLeft   = node.position.x * vpZoom + vpX
-    const screenTop    = node.position.y * vpZoom + vpY
-    const screenRight  = screenLeft + nodeWidth  * vpZoom
-    const screenBottom = screenTop  + nodeHeight * vpZoom
-
-    // Overlap with the canvas rect
-    const overlapX = Math.max(0, Math.min(screenRight, containerWidth)  - Math.max(screenLeft, 0))
-    const overlapY = Math.max(0, Math.min(screenBottom, containerHeight) - Math.max(screenTop,  0))
-    const visibleFraction = (overlapX * overlapY) / (nodeWidth * vpZoom * nodeHeight * vpZoom)
-
-    // Exit focus when less than 30 % of the node is still visible
-    if (visibleFraction < 0.3) clearSelection()
-  }, [activeNodeId, nodes, vpX, vpY, vpZoom, containerWidth, containerHeight, clearSelection])
+  // ── Unfocus when user initiates any viewport move (pan or zoom) ──────────
+  useOnViewportChange({
+    onStart: () => {
+      if (!animatingRef.current) clearSelection()
+    },
+  })
 
   // ── Custom wheel: pinch = zoom (fast), scroll = pan (all directions) ───────
   const rf = useReactFlow()

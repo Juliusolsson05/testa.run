@@ -1,6 +1,6 @@
 import Image from "next/image"
 import { nodesById, nodeMediaById } from "@/data/flow"
-import type { RunStep } from "@/data/runs"
+import type { RunStep } from "@/types/domain"
 import { actionIcons, stepStatusConfig } from "@/constants/status"
 
 export function RunStepCard({ step }: { step: RunStep }) {

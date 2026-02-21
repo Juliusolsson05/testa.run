@@ -12,7 +12,8 @@ import {
   Settings,
   User,
 } from "lucide-react"
-import { TestaRunLogo } from "@/components/ui/TestaRunLogo"
+import type { RunStatus } from "@/types/domain"
+import { Wordmark } from "@/components/ui/TestaRunLogo"
 import { cn } from "@/lib/utils"
 
 const NAV = [
@@ -26,23 +27,24 @@ const RECENT_RUNS = [
   { id: "a3f7c1", label: "Security Audit",            ago: "2m ago", status: "running" },
   { id: "f7b3d1", label: "Button & Interaction Test", ago: "1h ago", status: "warning" },
   { id: "c9a2e3", label: "UX & Accessibility Review", ago: "1d ago", status: "warning" },
-]
+] satisfies Array<{ id: string; label: string; ago: string; status: RunStatus }>
 
-const runStatusDot: Record<string, string> = {
+const runStatusDot = {
   running: "bg-amber-400 shadow-[0_0_5px_rgba(245,158,11,0.6)]",
+  warning: "bg-amber-400",
   passed:  "bg-emerald-500",
   failed:  "bg-red-500",
-}
+} satisfies Record<RunStatus, string>
 
 export function AppSidebar() {
   const pathname = usePathname()
 
   return (
-    <aside className="flex h-full w-[240px] shrink-0 flex-col border-r border-white/8 bg-[#111318] text-white">
+    <aside className="flex h-full w-[240px] shrink-0 flex-col border-r border-white/8 bg-[#1c2030] text-white">
 
       {/* Logo */}
       <div className="px-5 py-5">
-        <TestaRunLogo />
+        <Wordmark variant="dark" className="text-[15px]" />
       </div>
 
       {/* Project selector */}

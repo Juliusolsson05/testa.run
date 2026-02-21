@@ -10,7 +10,8 @@ import {
 } from "lucide-react"
 
 import { AppSidebar } from "@/components/workspace/AppSidebar"
-import { runs, type Run } from "@/data/runs"
+import type { Run, RunStepAction, RunStepStatus } from "@/types/domain"
+import { runs } from "@/data/runs"
 import { issues } from "@/data/issues"
 import { cn } from "@/lib/utils"
 
@@ -35,13 +36,13 @@ const runStatusBadge: Record<Run["status"], { label: string; color: string; bg: 
   failed:  { label: "Failed",  color: "text-red-600",    bg: "bg-red-500/10",     dot: "bg-red-500"    },
 }
 
-const stepStatusDot: Record<string, string> = {
+const stepStatusDot = {
   passed:  "bg-emerald-500",
   warning: "bg-amber-400",
   failed:  "bg-red-500",
-}
+} satisfies Record<RunStepStatus, string>
 
-const actionIcon: Record<string, string> = {
+const actionIcon = {
   navigate:   "→",
   scroll:     "↕",
   audit:      "◎",
@@ -50,7 +51,7 @@ const actionIcon: Record<string, string> = {
   fill:       "✎",
   resize:     "⤢",
   screenshot: "▣",
-}
+} satisfies Record<RunStepAction, string>
 
 function issueCountsForRun(run: Run) {
   const runIssues = issues.filter((i) => i.runId === run.id && i.status === "open")

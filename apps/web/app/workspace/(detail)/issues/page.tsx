@@ -42,7 +42,11 @@ export default function IssuesPage() {
       acc[issue.nodeId] = bucket
       return acc
     }, {})
-  ).sort(([a], [b]) => Number(a) - Number(b))
+  ).sort(([a], [b]) => {
+    const sa = nodesById[a]?.data.step ?? 0
+    const sb = nodesById[b]?.data.step ?? 0
+    return sa - sb
+  })
 
   return (
     <div className="flex h-dvh bg-[#eff6ff] font-sans">

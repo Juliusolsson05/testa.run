@@ -1,42 +1,36 @@
+import { cn } from "@/lib/utils"
+
 /**
- * TestaRunLogo — single SVG, dark sidebar variant.
- * "tr" initials (t white, r blue) on top; "testa.run" wordmark below.
- * Public Sans, normal weight.
+ * Wordmark — "testa.run" text in two variants:
+ *   variant="dark"  → white text, blue ".run" (for dark backgrounds)
+ *   variant="light" → gray-900 text, brand blue ".run" (for light backgrounds)
+ */
+export function Wordmark({
+  variant = "dark",
+  className,
+}: {
+  variant?: "dark" | "light"
+  className?: string
+}) {
+  return (
+    <span
+      className={cn(
+        "text-sm font-bold tracking-tight",
+        variant === "dark" ? "text-[#e8edf5]" : "text-gray-900",
+        className
+      )}
+    >
+      testa
+      <span className={variant === "dark" ? "text-[#1d6ef5]" : "text-brand"}>
+        .run
+      </span>
+    </span>
+  )
+}
+
+/**
+ * @deprecated Use <Wordmark /> instead.
  */
 export function TestaRunLogo() {
-  const font = "var(--font-public-sans), 'Public Sans', ui-sans-serif, system-ui, sans-serif"
-  return (
-    <svg
-      width="68"
-      height="50"
-      viewBox="0 0 68 50"
-      fill="none"
-      xmlns="http://www.w3.org/2000/svg"
-    >
-      {/* Initials — large, on top */}
-      <text
-        x="0"
-        y="26"
-        fontFamily={font}
-        fontSize="26"
-        fontWeight="400"
-        letterSpacing="-0.5"
-      >
-        <tspan fill="#ffffff">t</tspan>
-        <tspan fill="#1d6ef5">r</tspan>
-      </text>
-      {/* Wordmark — below */}
-      <text
-        x="0"
-        y="44"
-        fontFamily={font}
-        fontSize="13"
-        fontWeight="400"
-        letterSpacing="-0.3"
-      >
-        <tspan fill="#e8edf5">testa</tspan>
-        <tspan fill="#1d6ef5">.run</tspan>
-      </text>
-    </svg>
-  )
+  return <Wordmark variant="dark" className="text-[15px]" />
 }

@@ -1,6 +1,6 @@
 import Image from "next/image"
 import { nodesById, nodeMediaById } from "@/data/flow"
-import type { Issue } from "@/data/issues"
+import type { Issue } from "@/types/domain"
 import { cn } from "@/lib/utils"
 
 export function IssueCard({ issue, variant = "open" }: { issue: Issue; variant?: "open" | "resolved" }) {
