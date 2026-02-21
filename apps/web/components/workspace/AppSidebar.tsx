@@ -23,11 +23,9 @@ const NAV = [
 ]
 
 const RECENT_RUNS = [
-  { id: "a3f7c1", ago: "2m ago",  status: "running" },
-  { id: "b2e8d0", ago: "1h ago",  status: "passed"  },
-  { id: "c1f3a9", ago: "3h ago",  status: "passed"  },
-  { id: "d9e2b7", ago: "6h ago",  status: "failed"  },
-  { id: "e4c8f2", ago: "1d ago",  status: "passed"  },
+  { id: "a3f7c1", label: "Security Audit",            ago: "2m ago", status: "running" },
+  { id: "f7b3d1", label: "Button & Interaction Test", ago: "1h ago", status: "warning" },
+  { id: "c9a2e3", label: "UX & Accessibility Review", ago: "1d ago", status: "warning" },
 ]
 
 const runStatusDot: Record<string, string> = {
@@ -128,9 +126,10 @@ export function AppSidebar() {
               className="flex w-full items-center gap-2.5 rounded px-2.5 py-2 text-left transition hover:bg-white/8"
             >
               <span className={cn("h-1.5 w-1.5 shrink-0 rounded-full", runStatusDot[run.status])} />
-              <span className="flex-1 font-mono text-[11px] font-medium text-white/70">
-                #{run.id}
-              </span>
+              <div className="min-w-0 flex-1">
+                <div className="truncate text-[11px] font-medium text-white/70">{run.label}</div>
+                <div className="font-mono text-[10px] text-white/30">#{run.id}</div>
+              </div>
               <span className="shrink-0 text-[10px] text-white/30">{run.ago}</span>
             </button>
           ))}
