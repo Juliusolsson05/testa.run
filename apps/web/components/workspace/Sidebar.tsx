@@ -209,12 +209,10 @@ export function Sidebar() {
               {nodeIssues.map((issue) => {
                 const isActive = activeIssueId === issue.id
                 return (
-                  <Button
+                  <button
                     key={issue.id}
-                    type="button"
-                    variant="ghost"
                     className={cn(
-                      "h-auto w-full flex-col items-start justify-start gap-0 rounded-none border border-white/10 bg-white/5 px-2 py-2 text-left text-[11px] text-white/80",
+                      "w-full rounded-none border border-white/10 bg-white/5 px-2 py-2 text-left text-[11px] text-white/80",
                       "transition hover:-translate-y-0.5 hover:bg-white/10",
                       issue.status === "resolved" && "opacity-60",
                       issue.severity === "error" && issue.status === "open" && "border-l-4 border-l-red-500",
@@ -226,7 +224,7 @@ export function Sidebar() {
                     <div className="mb-1 font-medium text-white">
                       {issue.title}
                     </div>
-                    <p className="mb-2 line-clamp-2 break-all text-[11px] leading-relaxed text-white/40">
+                    <p className="mb-2 line-clamp-2 text-[11px] leading-relaxed text-white/40">
                       {issue.reasoning}
                     </p>
                     <div className="flex items-center gap-2 text-[10px] text-white/50">
@@ -246,7 +244,7 @@ export function Sidebar() {
                       </Badge>
                       <span className="truncate font-mono">{issue.element}</span>
                     </div>
-                  </Button>
+                  </button>
                 )
               })}
             </div>
