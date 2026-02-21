@@ -1,0 +1,6 @@
+# Copy to terraform.tfvars and fill in real values
+# NEVER commit terraform.tfvars — it contains secrets
+
+stripe_api_key    = "sk_test_..."
+webhook_url       = "https://app.testa.run/api/stripe/webhook"
+portal_return_url = "https://app.testa.run/settings/billing"
