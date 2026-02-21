@@ -158,7 +158,7 @@ function KanbanColumn({
 // ── Page ──────────────────────────────────────────────────────────────────────
 export default function IssuesPage() {
   const [filter,   setFilter]   = useState<FilterType>("all")
-  const [viewMode, setViewMode] = useState<ViewMode>("list")
+  const [viewMode, setViewMode] = useState<ViewMode>("kanban")
 
   const totalOpen     = issues.filter((i) => i.status === "open").length
   const totalErrors   = issues.filter((i) => i.severity === "error"   && i.status === "open").length
