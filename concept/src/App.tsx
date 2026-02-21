@@ -102,10 +102,7 @@ function FlowController({ nodes }: { nodes: Node<ScreenshotNodeData>[] }) {
     const node = nodes.find(n => n.id === activeNodeId)
     if (!node) return
     const w = (node.data.isMain || node.data.isLarge) ? 460 : 260
-    const SIDEBAR_WIDTH = 300
-    const cx = node.position.x + w / 2 - SIDEBAR_WIDTH / 2
-    const cy = node.position.y + 160
-    setCenter(cx, cy, { zoom: 0.85, duration: 600 })
+    setCenter(node.position.x + w / 2, node.position.y + 160, { zoom: 0.85, duration: 600 })
   }, [activeNodeId, nodes, setCenter])
 
   return null
