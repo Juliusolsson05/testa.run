@@ -1,17 +1,4 @@
-export type IssueSeverity = "error" | "warning"
-export type IssueStatus   = "open" | "resolved"
-
-export type Issue = {
-  id: string
-  runId: string
-  nodeId: string
-  title: string
-  description: string
-  reasoning: string
-  severity: IssueSeverity
-  status: IssueStatus
-  element: string
-}
+import type { Issue } from "@/types/domain"
 
 export const issues: Issue[] = [
 

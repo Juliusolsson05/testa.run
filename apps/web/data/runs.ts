@@ -1,30 +1,4 @@
-export type RunStatus     = "passed" | "failed" | "running" | "warning"
-export type RunStepStatus = "passed" | "failed" | "warning"
-
-export type RunStep = {
-  id: string
-  index: number
-  action: string
-  target: string
-  description: string
-  reasoning: string
-  duration: string
-  status: RunStepStatus
-  nodeId: string
-}
-
-export type Run = {
-  id: string        // internal key
-  label: string     // display hash e.g. #a3f7c1
-  name: string
-  category: "security" | "buttons" | "ux"
-  url: string
-  date: string
-  ago: string
-  duration: string
-  status: RunStatus
-  steps: RunStep[]
-}
+import type { Run, RunStep } from "@/types/domain"
 
 // ─── Security Audit ───────────────────────────────────────────────────────────
 

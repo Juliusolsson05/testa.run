@@ -1,20 +1,6 @@
 import { issues } from "@/data/issues"
 import { runSteps } from "@/data/runs"
-
-export type RunStatus = "passed" | "running" | "failed"
-
-export type RunSummary = {
-  id: string
-  name: string
-  url: string
-  date: string
-  duration: string
-  status: RunStatus
-  errors: number
-  warnings: number
-  steps: number
-  href: string
-}
+import type { RunStatus, RunSummary } from "@/types/domain"
 
 const open = issues.filter((i) => i.status === "open")
 const errors = open.filter((i) => i.severity === "error").length
@@ -27,7 +13,7 @@ export const runs = [
     url: "timeedit.com",
     date: "2026-02-21",
     duration: "14.8s",
-    status: errors > 0 ? "failed" as const : "passed" as const,
+    status: (errors > 0 ? "failed" : "passed") as RunStatus,
     errors,
     warnings,
     steps: runSteps.length,

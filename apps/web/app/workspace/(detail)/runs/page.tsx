@@ -10,7 +10,8 @@ import {
 } from "lucide-react"
 
 import { AppSidebar } from "@/components/workspace/AppSidebar"
-import { runs, type Run } from "@/data/runs"
+import type { Run } from "@/types/domain"
+import { runs } from "@/data/runs"
 import { issues } from "@/data/issues"
 import { cn } from "@/lib/utils"
 
