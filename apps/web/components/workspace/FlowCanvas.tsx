@@ -8,7 +8,6 @@ import {
   ReactFlow,
   applyNodeChanges,
   useReactFlow,
-  type Edge,
   type Node,
   type NodeChange,
 } from "@xyflow/react"
@@ -60,11 +59,12 @@ export function FlowCanvas() {
     []
   )
 
-  const edges = useMemo(() => initialEdges as Edge[], [])
+  const edges = useMemo(() => initialEdges, [])
 
   return (
     <div className="relative flex h-full flex-1 flex-col overflow-hidden bg-white">
       <ReactFlow
+        className="h-full w-full"
         nodes={nodes}
         edges={edges}
         nodeTypes={nodeTypes}

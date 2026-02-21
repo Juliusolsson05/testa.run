@@ -3,12 +3,22 @@ import { Badge } from '@/components/ui/badge'
 import { Separator } from '@/components/ui/separator'
 import { Card, CardContent } from '@/components/ui/card'
 import Image from 'next/image'
+import {
+  Search,
+  Shield,
+  Camera,
+  Zap,
+  Globe,
+  BarChart3,
+  ArrowRight,
+  Check,
+} from 'lucide-react'
 
 const stats = [
   { value: '50k+', label: 'Test runs completed' },
   { value: '12k+', label: 'Bugs detected' },
   { value: '3.2k', label: 'Security issues found' },
-  { value: '89%',  label: 'Faster than manual QA' },
+  { value: '89%', label: 'Faster than manual QA' },
 ]
 
 const steps = [
@@ -18,12 +28,12 @@ const steps = [
 ]
 
 const features = [
-  { icon: '🔍', title: 'End-to-end journey testing', desc: 'The agent executes real user flows — login, search, checkout — and validates every step automatically.' },
-  { icon: '🛡️', title: 'Security vulnerability scanning', desc: 'Detects auth bypass, rate limit gaps, exposed endpoints, and data leaks in the same test run.' },
-  { icon: '📸', title: 'Screenshot evidence', desc: 'Every action is captured with full-page screenshots so you can see exactly what the agent saw.' },
-  { icon: '⚡', title: 'Lightning fast execution', desc: 'Complete test suites run in minutes, not hours. Get results before your deploy finishes.' },
-  { icon: '🔗', title: 'API & network monitoring', desc: 'Catches 4xx/5xx errors, slow responses, and failed requests across every endpoint your app touches.' },
-  { icon: '📊', title: 'Severity-ranked reports', desc: 'Findings are categorized from Critical to Low with full traces, so you fix what matters first.' },
+  { icon: Search, title: 'End-to-end journey testing', desc: 'The agent executes real user flows — login, search, checkout — and validates every step automatically.' },
+  { icon: Shield, title: 'Security vulnerability scanning', desc: 'Detects auth bypass, rate limit gaps, exposed endpoints, and data leaks in the same test run.' },
+  { icon: Camera, title: 'Screenshot evidence', desc: 'Every action is captured with full-page screenshots so you can see exactly what the agent saw.' },
+  { icon: Zap, title: 'Lightning fast execution', desc: 'Complete test suites run in minutes, not hours. Get results before your deploy finishes.' },
+  { icon: Globe, title: 'API & network monitoring', desc: 'Catches 4xx/5xx errors, slow responses, and failed requests across every endpoint your app touches.' },
+  { icon: BarChart3, title: 'Severity-ranked reports', desc: 'Findings are categorized from Critical to Low with full traces, so you fix what matters first.' },
 ]
 
 const findings = [
@@ -38,6 +48,73 @@ const pricing = [
   { name: 'Pro', price: '$49', period: '/mo', desc: 'For teams shipping fast and breaking nothing.', features: ['Unlimited test runs', '10 user journeys', 'Security scanning included', 'Screenshot evidence', 'API monitoring', 'Priority support'], cta: 'Start free trial', highlighted: true },
   { name: 'Enterprise', price: 'Custom', period: '', desc: 'For organizations with compliance needs.', features: ['Everything in Pro', 'Unlimited journeys', 'SSO & audit logs', 'Custom integrations', 'Dedicated support', 'SLA guarantee'], cta: 'Contact us', highlighted: false },
 ]
+
+function CloudBackground({ position }: { position: 'top' | 'bottom' }) {
+  const isTop = position === 'top'
+  return (
+    <div className="absolute inset-0 -z-10 overflow-hidden">
+      {/* SVG filter for realistic cloud texture */}
+      <svg className="absolute" width="0" height="0">
+        <filter id={`cloud-filter-${position}`}>
+          <feTurbulence type="fractalNoise" baseFrequency="0.012" numOctaves="4" seed={isTop ? 2 : 7} result="noise" />
+          <feDisplacementMap in="SourceGraphic" in2="noise" scale="120" />
+        </filter>
+      </svg>
+
+      {/* Cloud layers */}
+      <div
+        className="absolute rounded-full"
+        style={{
+          width: 900,
+          height: 500,
+          top: isTop ? -220 : undefined,
+          bottom: isTop ? undefined : -220,
+          left: '50%',
+          transform: 'translateX(-50%)',
+          background: 'radial-gradient(ellipse at center, rgba(147,197,253,0.5) 0%, rgba(191,219,254,0.3) 40%, transparent 70%)',
+          filter: `url(#cloud-filter-${position})`,
+        }}
+      />
+      <div
+        className="absolute rounded-full"
+        style={{
+          width: 700,
+          height: 400,
+          top: isTop ? -100 : undefined,
+          bottom: isTop ? undefined : -100,
+          left: isTop ? -80 : undefined,
+          right: isTop ? undefined : -80,
+          background: 'radial-gradient(ellipse at center, rgba(96,165,250,0.35) 0%, rgba(147,197,253,0.2) 50%, transparent 75%)',
+          filter: `url(#cloud-filter-${position})`,
+        }}
+      />
+      <div
+        className="absolute rounded-full"
+        style={{
+          width: 600,
+          height: 350,
+          top: isTop ? -60 : undefined,
+          bottom: isTop ? undefined : -60,
+          right: isTop ? -60 : undefined,
+          left: isTop ? undefined : -60,
+          background: 'radial-gradient(ellipse at center, rgba(59,130,246,0.2) 0%, rgba(147,197,253,0.15) 50%, transparent 75%)',
+          filter: `url(#cloud-filter-${position})`,
+        }}
+      />
+
+      {/* Fade to white */}
+      <div
+        className="absolute left-0 right-0 h-40"
+        style={{
+          [isTop ? 'bottom' : 'top']: 0,
+          background: isTop
+            ? 'linear-gradient(to bottom, transparent, white)'
+            : 'linear-gradient(to top, transparent, white)',
+        }}
+      />
+    </div>
+  )
+}
 
 export default function Home() {
   return (
@@ -60,15 +137,8 @@ export default function Home() {
       </nav>
 
       {/* ── Hero ─────────────────────────────────────────── */}
-      <section className="relative pt-36 pb-24 text-center overflow-hidden">
-        {/* Blue cloud background */}
-        <div className="absolute inset-0 -z-10">
-          <div className="absolute top-[-200px] left-[-100px] w-[700px] h-[700px] rounded-full bg-blue-200/40 blur-[120px]" />
-          <div className="absolute top-[-100px] right-[-150px] w-[600px] h-[600px] rounded-full bg-sky-200/50 blur-[100px]" />
-          <div className="absolute top-[100px] left-[30%] w-[500px] h-[400px] rounded-full bg-blue-100/60 blur-[80px]" />
-          <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-b from-transparent to-white" />
-        </div>
-
+      <section className="relative pt-36 pb-24 text-center">
+        <CloudBackground position="top" />
         <div className="max-w-3xl mx-auto px-6">
           <Badge variant="outline" className="mb-5 text-brand border-brand/20 bg-brand/5">
             Now in early access
@@ -125,7 +195,9 @@ export default function Home() {
             <ul className="space-y-3">
               {['No test scripts to write or maintain', 'Runs on every deploy automatically', 'Security + QA in a single pass'].map(item => (
                 <li key={item} className="flex items-center gap-3 text-[14px] text-gray-600">
-                  <span className="w-5 h-5 rounded-full bg-brand/10 text-brand flex items-center justify-center text-[11px] font-bold">✓</span>
+                  <span className="w-5 h-5 rounded-full bg-brand/10 text-brand flex items-center justify-center">
+                    <Check className="w-3 h-3" />
+                  </span>
                   {item}
                 </li>
               ))}
@@ -141,11 +213,12 @@ export default function Home() {
                 className="w-full h-auto"
               />
             </div>
-            {/* Floating stat card */}
             <div className="absolute -bottom-5 -left-5 bg-white rounded-xl border border-gray-200 shadow-lg px-5 py-3">
               <div className="text-[11px] text-gray-400 mb-1">Issues found this week</div>
               <div className="text-2xl font-bold text-gray-900">142</div>
-              <div className="text-[11px] text-emerald-600 font-medium">↑ 23% from last week</div>
+              <div className="text-[11px] text-emerald-600 font-medium flex items-center gap-1">
+                <ArrowRight className="w-3 h-3 -rotate-45" /> 23% from last week
+              </div>
             </div>
           </div>
         </div>
@@ -162,7 +235,6 @@ export default function Home() {
               Test your app in 3 steps
             </h2>
           </div>
-
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             {steps.map(step => (
               <div key={step.num} className="relative p-7 rounded-xl border border-gray-200 bg-gray-50/50">
@@ -189,12 +261,13 @@ export default function Home() {
               Everything you need to ship confidently — functional QA and security testing in one platform.
             </p>
           </div>
-
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             {features.map(f => (
               <Card key={f.title} className="border-gray-200 shadow-none hover:shadow-md hover:border-gray-300 transition-all">
                 <CardContent className="p-6">
-                  <span className="text-2xl mb-3 block">{f.icon}</span>
+                  <div className="w-10 h-10 rounded-lg bg-brand/10 flex items-center justify-center mb-4">
+                    <f.icon className="w-5 h-5 text-brand" />
+                  </div>
                   <h3 className="text-[14px] font-bold mb-2">{f.title}</h3>
                   <p className="text-[13px] text-gray-500 leading-relaxed">{f.desc}</p>
                 </CardContent>
@@ -218,7 +291,6 @@ export default function Home() {
               Every result includes severity, the step that triggered it, and the exact trace.
             </p>
           </div>
-
           <Card className="max-w-3xl mx-auto">
             {findings.map((f, i) => (
               <div key={f.title}>
@@ -259,7 +331,6 @@ export default function Home() {
               Start free. Upgrade when you need more.
             </p>
           </div>
-
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-4xl mx-auto">
             {pricing.map(plan => (
               <Card
@@ -288,7 +359,7 @@ export default function Home() {
                   <ul className="space-y-2.5">
                     {plan.features.map(f => (
                       <li key={f} className="flex items-center gap-2.5 text-[13px] text-gray-600">
-                        <span className="text-brand text-[12px]">✓</span>
+                        <Check className="w-3.5 h-3.5 text-brand flex-shrink-0" />
                         {f}
                       </li>
                     ))}
@@ -301,15 +372,8 @@ export default function Home() {
       </section>
 
       {/* ── Final CTA ────────────────────────────────────── */}
-      <section className="relative py-28 text-center overflow-hidden">
-        {/* Blue cloud background */}
-        <div className="absolute inset-0 -z-10">
-          <div className="absolute bottom-[-200px] right-[-100px] w-[700px] h-[700px] rounded-full bg-blue-200/40 blur-[120px]" />
-          <div className="absolute bottom-[-100px] left-[-150px] w-[600px] h-[600px] rounded-full bg-sky-200/50 blur-[100px]" />
-          <div className="absolute bottom-[50px] left-[30%] w-[500px] h-[400px] rounded-full bg-blue-100/60 blur-[80px]" />
-          <div className="absolute top-0 left-0 right-0 h-32 bg-gradient-to-t from-transparent to-white" />
-        </div>
-
+      <section className="relative py-28 text-center">
+        <CloudBackground position="bottom" />
         <div className="max-w-2xl mx-auto px-6">
           <h2 className="text-4xl md:text-5xl font-extrabold tracking-tight leading-tight mb-4">
             Ship with confidence —<br />try testa.run now
@@ -361,7 +425,7 @@ export default function Home() {
           </div>
         </div>
         <div className="max-w-5xl mx-auto px-8 py-5 border-t border-gray-100 flex items-center justify-between">
-          <span className="text-[12px] text-gray-400">© 2026 testa.run. All rights reserved.</span>
+          <span className="text-[12px] text-gray-400">&copy; 2026 testa.run. All rights reserved.</span>
           <div className="flex gap-4">
             {['Twitter', 'GitHub', 'Discord'].map(s => (
               <a key={s} href="#" className="text-[12px] text-gray-400 hover:text-gray-900 transition-colors">{s}</a>
@@ -369,7 +433,6 @@ export default function Home() {
           </div>
         </div>
       </footer>
-
     </div>
   )
 }

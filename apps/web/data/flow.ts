@@ -12,7 +12,7 @@ export const initialNodes: Node<ScreenshotNodeData>[] = [
   {
     id: "1",
     type: "screenshot",
-    position: { x: 80, y: 180 },
+    position: { x: 100, y: 200 },
     data: {
       label: "Landing Page",
       url: "https://testa.run",
@@ -21,13 +21,12 @@ export const initialNodes: Node<ScreenshotNodeData>[] = [
       duration: "1.2s",
       isMain: true,
       imageSrc: "/screenshots/landing.svg",
-      sourceHandleOffset: { top: 180, left: 78 },
     },
   },
   {
     id: "2",
     type: "screenshot",
-    position: { x: 740, y: 40 },
+    position: { x: 760, y: 60 },
     data: {
       label: "Login Flow",
       url: "https://testa.run/login",
@@ -35,13 +34,12 @@ export const initialNodes: Node<ScreenshotNodeData>[] = [
       step: 2,
       duration: "0.8s",
       imageSrc: "/screenshots/login.svg",
-      sourceHandleOffset: { top: 230, left: 84 },
     },
   },
   {
     id: "3",
     type: "screenshot",
-    position: { x: 1380, y: 200 },
+    position: { x: 1460, y: 220 },
     data: {
       label: "User Dashboard",
       url: "https://testa.run/dashboard",
