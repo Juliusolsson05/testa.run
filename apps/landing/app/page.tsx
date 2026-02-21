@@ -186,6 +186,54 @@ export default function Home() {
         </div>
       </section>
 
+      {/* ── Future customer logo band ───────────────────── */}
+      <section className="py-10 bg-white border-y border-gray-100">
+        <div className="max-w-5xl mx-auto px-8">
+          <div className="text-center mb-4">
+            <p className="text-[13px] font-semibold text-gray-700">
+              Will be used by:
+            </p>
+            <p className="text-[11px] text-gray-400 mt-1">
+              Disclaimer: these companies are not using us at the moment, but our product is so good they will soon be customers.
+            </p>
+          </div>
+
+          <div className="logo-marquee overflow-hidden [mask-image:linear-gradient(to_right,transparent,black_10%,black_90%,transparent)]">
+            <div className="logo-marquee-track gap-3 py-2">
+              {[
+                'Lovable',
+                'Vercel',
+                'Stripe',
+                'Notion',
+                'Linear',
+                'Supabase',
+                'OpenAI',
+                'Cloudflare',
+                'Shopify',
+                'Figma',
+                'Lovable',
+                'Vercel',
+                'Stripe',
+                'Notion',
+                'Linear',
+                'Supabase',
+                'OpenAI',
+                'Cloudflare',
+                'Shopify',
+                'Figma',
+              ].map((name, i) => (
+                <div
+                  key={`${name}-${i}`}
+                  className="h-10 px-5 rounded-full border border-gray-200 bg-gray-50 text-gray-600 text-[12px] font-medium flex items-center"
+                >
+                  {name}
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* ── Platform section ─────────────────────────────── */}
       <section className="py-20 bg-white">
         <div className="max-w-5xl mx-auto px-8 grid grid-cols-1 md:grid-cols-2 gap-16 items-center">
