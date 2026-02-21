@@ -146,3 +146,30 @@
 .logo-marquee:hover .logo-marquee-track {
   animation-play-state: paused;
 }
+
+@keyframes cloud-drift-1 {
+  0%, 100% { transform: translateX(0) translateY(0); }
+  50%      { transform: translateX(18px) translateY(-6px); }
+}
+@keyframes cloud-drift-2 {
+  0%, 100% { transform: translateX(0) translateY(0); }
+  50%      { transform: translateX(-14px) translateY(5px); }
+}
+@keyframes cloud-drift-3 {
+  0%, 100% { transform: translateX(0) translateY(0); }
+  50%      { transform: translateX(10px) translateY(-8px); }
+}
+@keyframes cloud-drift-4 {
+  0%, 100% { transform: translateX(0) translateY(0); }
+  50%      { transform: translateX(-8px) translateY(4px); }
+}
+@keyframes cloud-drift-5 {
+  0%, 100% { transform: translateX(0) translateY(0); }
+  50%      { transform: translateX(12px) translateY(6px); }
+}
+
+.cloud-1 { animation: cloud-drift-1 22s ease-in-out infinite; }
+.cloud-2 { animation: cloud-drift-2 26s ease-in-out infinite; }
+.cloud-3 { animation: cloud-drift-3 30s ease-in-out infinite; }
+.cloud-4 { animation: cloud-drift-4 24s ease-in-out infinite; }
+.cloud-5 { animation: cloud-drift-5 28s ease-in-out infinite; }
