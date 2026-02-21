@@ -176,52 +176,54 @@ export default function Home() {
       {/* ── Anonymous security case ── */}
       <section className="py-20 bg-white border-b border-gray-100">
         <div className="max-w-5xl mx-auto px-8">
-          <h2 className="text-3xl tracking-tight text-center mb-4">
-            Most websites are leaking security
-          </h2>
-          <p className="text-[15px] text-gray-500 max-w-3xl mx-auto text-center leading-relaxed mb-10">
-            Most devs think their website is fully secure. Most websites are not.
-            This was a website built by a senior developer, and critical issues still slipped through.
-            Do not take the risk. Let us run the same tests for you.
-          </p>
+          <div className="max-w-3xl mx-auto text-center mb-10">
+            <h2 className="text-3xl tracking-tight mb-4">Most websites are leaking security</h2>
+            <p className="text-[15px] text-gray-500 leading-relaxed">
+              Most devs think their website is fully secure. Most websites are not.
+              This anonymous case was built by a senior developer, and critical issues still slipped through.
+              Do not take the risk — let us run the same assessment on your app.
+            </p>
+          </div>
 
-          <div className="rounded-2xl border border-gray-200 bg-white overflow-hidden">
-            <div className="px-6 py-4 border-b border-gray-100 bg-gray-50">
-              <p className="text-[14px] text-gray-700">Anonymous Security Assessment — Full Review</p>
+          <div className="rounded-2xl border border-gray-200 bg-white overflow-hidden shadow-sm">
+            <div className="grid md:grid-cols-[1.2fr_0.8fr] border-b border-gray-100">
+              <div className="px-6 py-4 border-r border-gray-100">
+                <p className="text-[12px] text-gray-400 uppercase tracking-[0.12em]">Anonymous report</p>
+                <p className="text-[15px] text-gray-800 mt-1">What we caught in one production deployment</p>
+              </div>
+              <div className="px-6 py-4">
+                <p className="text-[12px] text-gray-400 uppercase tracking-[0.12em]">Severity summary</p>
+                <div className="mt-2 flex items-center gap-2 text-[13px]">
+                  <span className="px-2 py-0.5 rounded bg-red-50 text-red-700 border border-red-200">3 Critical</span>
+                  <span className="px-2 py-0.5 rounded bg-amber-50 text-amber-700 border border-amber-200">4 High</span>
+                  <span className="px-2 py-0.5 rounded bg-blue-50 text-blue-700 border border-blue-200">2 Medium</span>
+                </div>
+              </div>
             </div>
 
-            <div className="px-6 py-6 grid md:grid-cols-2 gap-6">
-              <div className="space-y-3">
-                <p className="text-[13px] text-gray-400">Summary of what we found</p>
-                <ul className="space-y-2 text-[14px] text-gray-700 leading-relaxed">
-                  <li>• Infrastructure endpoint exposed outside intended protection layer</li>
-                  <li>• Login flow returned different errors, enabling account enumeration</li>
-                  <li>• Registration lacked effective rate limiting controls</li>
-                  <li>• Internal integration configuration data exposed without auth</li>
-                  <li>• Premium-gated data could be fetched without valid session</li>
-                  <li>• Public automation webhook accepted unauthenticated requests</li>
+            <div className="grid md:grid-cols-[1.2fr_0.8fr]">
+              <div className="px-6 py-5 border-r border-gray-100">
+                <ul className="space-y-3 text-[14px] text-gray-700 leading-relaxed">
+                  <li><span className="text-gray-900">Cloud/WAF bypass:</span> backend endpoint directly reachable outside the intended protection path.</li>
+                  <li><span className="text-gray-900">Account enumeration:</span> different auth error responses revealed whether an email exists.</li>
+                  <li><span className="text-gray-900">No registration throttling:</span> account creation could be automated at high speed.</li>
+                  <li><span className="text-gray-900">Internal config exposure:</span> integration metadata returned without authentication.</li>
+                  <li><span className="text-gray-900">Access control gap:</span> premium-gated listing data retrievable without a valid session.</li>
+                  <li><span className="text-gray-900">Open automation webhook:</span> chatbot endpoint accepted unauthenticated external requests.</li>
                 </ul>
               </div>
 
-              <div className="space-y-3">
-                <p className="text-[13px] text-gray-400">Severity distribution</p>
-                <div className="space-y-2 text-[14px]">
-                  <div className="flex items-center justify-between rounded-lg border border-red-200 bg-red-50 px-3 py-2">
-                    <span className="text-red-700">Critical</span>
-                    <span className="text-red-700">3 findings</span>
-                  </div>
-                  <div className="flex items-center justify-between rounded-lg border border-amber-200 bg-amber-50 px-3 py-2">
-                    <span className="text-amber-700">High</span>
-                    <span className="text-amber-700">4 findings</span>
-                  </div>
-                  <div className="flex items-center justify-between rounded-lg border border-blue-200 bg-blue-50 px-3 py-2">
-                    <span className="text-blue-700">Medium</span>
-                    <span className="text-blue-700">2 findings</span>
-                  </div>
-                </div>
-                <p className="text-[13px] text-gray-500 leading-relaxed pt-2">
-                  Full assessment included architecture review, auth path testing,
-                  rate-limit validation, access-control checks, and webhook exposure tests.
+              <div className="px-6 py-5">
+                <p className="text-[12px] text-gray-400 uppercase tracking-[0.12em] mb-3">Assessment coverage</p>
+                <ul className="space-y-2 text-[13px] text-gray-600">
+                  <li>• Infrastructure exposure validation</li>
+                  <li>• Authentication flow abuse tests</li>
+                  <li>• Rate limit & automation checks</li>
+                  <li>• Access control verification</li>
+                  <li>• Public endpoint discovery</li>
+                </ul>
+                <p className="text-[13px] text-gray-500 mt-5 leading-relaxed">
+                  This is exactly the same workflow we run for every new customer assessment.
                 </p>
               </div>
             </div>
