@@ -1,7 +1,7 @@
 "use client"
 
 import Link from "next/link"
-import { usePathname } from "next/navigation"
+import { usePathname, useRouter } from "next/navigation"
 import {
   AlertTriangle,
   ChevronDown,
@@ -16,6 +16,7 @@ import type { RunStatus } from "@/types/domain"
 import { Wordmark } from "@/components/ui/TestaRunLogo"
 import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
+import { useAuth } from "@/components/auth/AuthProvider"
 
 const NAV = [
   { label: "Runs",     href: "/",                   icon: CirclePlay   },
@@ -39,6 +40,9 @@ const runStatusDot = {
 
 export function AppSidebar() {
   const pathname = usePathname()
+  const router = useRouter()
+  const { user, signOut } = useAuth()
+  const initials = (user?.email?.slice(0, 2) || "TR").toUpperCase()
 
   return (
     <aside className="flex h-full w-[240px] shrink-0 flex-col border-r border-white/8 bg-[#1c2030] text-white">
@@ -146,11 +150,11 @@ export function AppSidebar() {
       <div className="mx-3 mt-3 border-t border-white/8 py-3">
         <div className="flex items-center gap-2.5 rounded px-2 py-2">
           <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-[#1d6ef5]/30 text-[11px] font-bold text-[#7eb3f5]">
-            JO
+            {initials}
           </div>
           <div className="min-w-0 flex-1">
-            <div className="truncate text-[12px] font-semibold text-[#e8edf5]">Julius O.</div>
-            <div className="truncate font-mono text-[10px] text-white/40">julius@testa.run</div>
+            <div className="truncate text-[12px] font-semibold text-[#e8edf5]">{user?.user_metadata?.full_name || "testa.run user"}</div>
+            <div className="truncate font-mono text-[10px] text-white/40">{user?.email || ""}</div>
           </div>
           <Button
             type="button"
@@ -158,6 +162,10 @@ export function AppSidebar() {
             variant="ghost"
             className="text-white/30 hover:text-white/60"
             aria-label="Log out"
+            onClick={async () => {
+              await signOut()
+              router.replace("/sign-in")
+            }}
           >
             <LogOut className="h-3.5 w-3.5" />
           </Button>
