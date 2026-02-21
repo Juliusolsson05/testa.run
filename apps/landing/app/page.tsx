@@ -49,56 +49,55 @@ const pricing = [
   { name: 'Enterprise', price: 'Custom', period: '', desc: 'For organizations with compliance needs.', features: ['Everything in Pro', 'Unlimited journeys', 'SSO & audit logs', 'Custom integrations', 'Dedicated support', 'SLA guarantee'], cta: 'Contact us', highlighted: false },
 ]
 
+function CloudShape({ className }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 420 220" className={className} aria-hidden>
+      <defs>
+        <linearGradient id="cloudFill" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stopColor="#bfdbfe" stopOpacity="0.9" />
+          <stop offset="100%" stopColor="#dbeafe" stopOpacity="0.65" />
+        </linearGradient>
+      </defs>
+      <path
+        d="M58 162c-23 0-41-18-41-40s18-40 41-40c8 0 15 2 21 6 7-26 31-45 59-45 21 0 40 11 50 28 7-5 16-8 25-8 25 0 45 20 45 45v2h5c23 0 42 19 42 42s-19 42-42 42H96c-21 0-38-17-38-38 0-2 0-4 0-6z"
+        fill="url(#cloudFill)"
+      />
+      <path
+        d="M58 162c-23 0-41-18-41-40s18-40 41-40c8 0 15 2 21 6 7-26 31-45 59-45 21 0 40 11 50 28 7-5 16-8 25-8 25 0 45 20 45 45v2h5c23 0 42 19 42 42s-19 42-42 42H96c-21 0-38-17-38-38 0-2 0-4 0-6z"
+        fill="none"
+        stroke="#93c5fd"
+        strokeOpacity="0.35"
+        strokeWidth="2"
+      />
+    </svg>
+  )
+}
+
 function CloudBackground({ position }: { position: 'top' | 'bottom' }) {
   const isTop = position === 'top'
-  const id = `cloud-displace-${position}`
   return (
-    <div className="absolute inset-0 -z-10 overflow-hidden">
-      {/* SVG filter: feTurbulence distorts edges so blobs look like clouds, not circles */}
-      <svg className="absolute w-0 h-0">
-        <filter id={id}>
-          <feTurbulence type="fractalNoise" baseFrequency="0.015" numOctaves="3" seed={isTop ? 3 : 8} result="noise" />
-          <feDisplacementMap in="SourceGraphic" in2="noise" scale="45" xChannelSelector="R" yChannelSelector="G" />
-        </filter>
-      </svg>
+    <div className="absolute inset-0 -z-10 overflow-hidden pointer-events-none">
+      {isTop ? (
+        <>
+          <CloudShape className="absolute w-[560px] left-[-110px] top-[-70px] opacity-65" />
+          <CloudShape className="absolute w-[520px] right-[-120px] top-[-40px] opacity-55" />
+          <CloudShape className="absolute w-[420px] left-[34%] top-[10px] opacity-45" />
+        </>
+      ) : (
+        <>
+          <CloudShape className="absolute w-[560px] right-[-110px] bottom-[-70px] opacity-65" />
+          <CloudShape className="absolute w-[520px] left-[-120px] bottom-[-40px] opacity-55" />
+          <CloudShape className="absolute w-[420px] left-[36%] bottom-[10px] opacity-45" />
+        </>
+      )}
 
-      <div
-        className="absolute rounded-full"
-        style={{
-          width: 900, height: 500,
-          top: isTop ? -220 : undefined, bottom: isTop ? undefined : -220,
-          left: '50%', transform: 'translateX(-50%)',
-          background: 'radial-gradient(ellipse at center, rgba(147,197,253,0.5) 0%, rgba(191,219,254,0.3) 40%, transparent 70%)',
-          filter: `url(#${id})`,
-        }}
-      />
-      <div
-        className="absolute rounded-full"
-        style={{
-          width: 700, height: 400,
-          top: isTop ? -100 : undefined, bottom: isTop ? undefined : -100,
-          left: isTop ? -80 : undefined, right: isTop ? undefined : -80,
-          background: 'radial-gradient(ellipse at center, rgba(96,165,250,0.35) 0%, rgba(147,197,253,0.2) 50%, transparent 75%)',
-          filter: `url(#${id})`,
-        }}
-      />
-      <div
-        className="absolute rounded-full"
-        style={{
-          width: 600, height: 350,
-          top: isTop ? -60 : undefined, bottom: isTop ? undefined : -60,
-          right: isTop ? -60 : undefined, left: isTop ? undefined : -60,
-          background: 'radial-gradient(ellipse at center, rgba(59,130,246,0.2) 0%, rgba(147,197,253,0.15) 50%, transparent 75%)',
-          filter: `url(#${id})`,
-        }}
-      />
       <div
         className="absolute left-0 right-0 h-40"
         style={{
           [isTop ? 'bottom' : 'top']: 0,
           background: isTop
-            ? 'linear-gradient(to bottom, transparent, white)'
-            : 'linear-gradient(to top, transparent, white)',
+            ? 'linear-gradient(to bottom, transparent, white 85%)'
+            : 'linear-gradient(to top, transparent, white 85%)',
         }}
       />
     </div>
