@@ -16,39 +16,42 @@ const initialNodes: Node<ScreenshotNodeData>[] = [
   {
     id: '1',
     type: 'screenshot',
-    position: { x: 60, y: 200 },
+    position: { x: 80, y: 120 },
     data: {
       label: 'Landing Page',
       url: 'https://testa.run',
       status: 'passed',
       step: 1,
       duration: '1.2s',
-      // imageSrc: '/screenshots/landing.png',
+      isMain: true,
+      imageSrc: '/screenshots/landing.png',
+      sourceHandleOffset: '12%',
     },
   },
   {
     id: '2',
     type: 'screenshot',
-    position: { x: 560, y: 80 },
+    position: { x: 660, y: 20 },
     data: {
       label: 'Login Flow',
       url: 'https://testa.run/login',
       status: 'passed',
       step: 2,
       duration: '0.8s',
-      // imageSrc: '/screenshots/login.png',
+      imageSrc: '/screenshots/login.png',
+      sourceHandleOffset: '58%',
     },
   },
   {
     id: '3',
     type: 'screenshot',
-    position: { x: 1060, y: 200 },
+    position: { x: 1110, y: 120 },
     data: {
       label: 'User Dashboard',
       url: 'https://testa.run/dashboard',
       status: 'running',
       step: 3,
-      // imageSrc: '/screenshots/dashboard.png',
+      imageSrc: '/screenshots/dashboard.png',
     },
   },
 ]
@@ -59,10 +62,10 @@ const initialEdges: Edge[] = [
     source: '1',
     target: '2',
     animated: true,
-    style: { stroke: '#6366f1', strokeWidth: 2 },
+    style: { stroke: '#2563EB', strokeWidth: 2 },
     label: 'Click "Get Started"',
-    labelStyle: { fill: '#a5b4fc', fontFamily: 'monospace', fontSize: 11 },
-    labelBgStyle: { fill: 'rgba(15,15,28,0.85)', rx: 6, ry: 6 },
+    labelStyle: { fill: '#1D4ED8', fontFamily: 'monospace', fontSize: 11 },
+    labelBgStyle: { fill: 'rgba(255,255,255,0.92)', rx: 6, ry: 6 },
     labelBgPadding: [6, 8],
   },
   {
@@ -70,10 +73,10 @@ const initialEdges: Edge[] = [
     source: '2',
     target: '3',
     animated: true,
-    style: { stroke: '#6366f1', strokeWidth: 2 },
+    style: { stroke: '#2563EB', strokeWidth: 2 },
     label: 'Submit credentials',
-    labelStyle: { fill: '#a5b4fc', fontFamily: 'monospace', fontSize: 11 },
-    labelBgStyle: { fill: 'rgba(15,15,28,0.85)', rx: 6, ry: 6 },
+    labelStyle: { fill: '#1D4ED8', fontFamily: 'monospace', fontSize: 11 },
+    labelBgStyle: { fill: 'rgba(255,255,255,0.92)', rx: 6, ry: 6 },
     labelBgPadding: [6, 8],
   },
 ]
@@ -81,45 +84,45 @@ const initialEdges: Edge[] = [
 export default function App() {
   return (
     <div className="workspace">
-      {/* Header */}
-      <header className="workspace-header">
-        <div className="header-left">
-          <div className="logo">
-            <span className="logo-icon">◈</span>
-            <span className="logo-text">testa<span className="logo-dot">.run</span></span>
+      {/* Sidebar */}
+      <aside className="workspace-sidebar">
+        <div className="logo">
+          <span className="logo-icon">◈</span>
+          <span className="logo-text">testa<span className="logo-dot">.run</span></span>
+        </div>
+
+        <div className="run-info">
+          <span className="run-label">Run</span>
+          <span className="run-id">#a3f7c1</span>
+          <span className="run-time">2m 14s ago</span>
+        </div>
+
+        <div className="sidebar-divider" />
+
+        <div className="progress-track">
+          <div className="progress-step done">
+            <span>1</span>
+            <label>Landing</label>
           </div>
-          <div className="header-divider" />
-          <div className="run-info">
-            <span className="run-label">Run</span>
-            <span className="run-id">#a3f7c1</span>
-            <span className="run-time">· 2m 14s ago</span>
+          <div className="progress-line done" />
+          <div className="progress-step done">
+            <span>2</span>
+            <label>Login</label>
+          </div>
+          <div className="progress-line active" />
+          <div className="progress-step active">
+            <span>3</span>
+            <label>Dashboard</label>
           </div>
         </div>
-        <div className="header-center">
-          <div className="progress-track">
-            <div className="progress-step done">
-              <span>1</span>
-              <label>Landing</label>
-            </div>
-            <div className="progress-line done" />
-            <div className="progress-step done">
-              <span>2</span>
-              <label>Login</label>
-            </div>
-            <div className="progress-line active" />
-            <div className="progress-step active">
-              <span>3</span>
-              <label>Dashboard</label>
-            </div>
-          </div>
+
+        <div className="sidebar-spacer" />
+
+        <div className="agent-pill">
+          <span className="agent-dot" />
+          Agent running
         </div>
-        <div className="header-right">
-          <div className="agent-pill">
-            <span className="agent-dot" />
-            Agent running
-          </div>
-        </div>
-      </header>
+      </aside>
 
       {/* Canvas */}
       <div className="canvas-wrapper">
@@ -135,9 +138,9 @@ export default function App() {
         >
           <Background
             variant={BackgroundVariant.Dots}
-            color="rgba(99,102,241,0.15)"
+            color="#2563EB"
             gap={28}
-            size={1.5}
+            size={2.5}
           />
           <Controls
             className="flow-controls"

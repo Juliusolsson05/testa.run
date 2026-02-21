@@ -7,6 +7,8 @@ export type ScreenshotNodeData = {
   step: number
   imageSrc?: string
   duration?: string
+  isMain?: boolean
+  sourceHandleOffset?: string  // CSS top value e.g. '12%'
 }
 
 const statusConfig = {
@@ -21,9 +23,9 @@ export function ScreenshotNode({ data, selected }: NodeProps) {
 
   return (
     <div
-      className={`screenshot-node ${selected ? 'selected' : ''} status-${nodeData.status}`}
+      className={`screenshot-node ${selected ? 'selected' : ''} status-${nodeData.status} ${nodeData.isMain ? 'main-node' : ''}`}
     >
-      {/* Top handle (target) */}
+      {/* Target handle — always vertically centered on the left */}
       <Handle type="target" position={Position.Left} className="flow-handle" />
 
       {/* Browser chrome bar */}
@@ -58,8 +60,13 @@ export function ScreenshotNode({ data, selected }: NodeProps) {
         </div>
       </div>
 
-      {/* Bottom handle (source) */}
-      <Handle type="source" position={Position.Right} className="flow-handle" />
+      {/* Source handle — offset to align with the action element in the screenshot */}
+      <Handle
+        type="source"
+        position={Position.Right}
+        className="flow-handle"
+        style={nodeData.sourceHandleOffset ? { top: nodeData.sourceHandleOffset } : undefined}
+      />
     </div>
   )
 }
