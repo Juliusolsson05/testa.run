@@ -58,7 +58,7 @@ export const initialEdges: Edge[] = [
     target: "2",
     type: "spring",
     zIndex: 10,
-    style: { stroke: "rgba(37,99,235,0.45)", strokeWidth: 2 },
+    style: { stroke: "rgba(29,110,245,0.45)", strokeWidth: 2 },
     label: 'Click "Get Started"',
     labelStyle: {
       fill: "#1D4ED8",
@@ -74,7 +74,7 @@ export const initialEdges: Edge[] = [
     target: "3",
     type: "spring",
     zIndex: 10,
-    style: { stroke: "rgba(37,99,235,0.45)", strokeWidth: 2 },
+    style: { stroke: "rgba(29,110,245,0.45)", strokeWidth: 2 },
     label: "Submit credentials",
     labelStyle: {
       fill: "#1D4ED8",

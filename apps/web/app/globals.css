@@ -7,9 +7,9 @@
 @theme {
   --font-sans: var(--font-geist-sans), system-ui, sans-serif;
   --font-mono: var(--font-geist-mono), ui-monospace, SFMono-Regular, monospace;
-  --color-brand: #2563eb;
+  --color-brand: #1d6ef5;
   --color-brand-soft: #dbeafe;
-  --color-brand-dark: #1d4ed8;
+  --color-brand-dark: #1559d4;
 }
 
 @theme inline {
@@ -122,7 +122,7 @@
   .flow-handle {
     width: 12px !important;
     height: 12px !important;
-    background: #2563eb !important;
+    background: #1d6ef5 !important;
     border: 2px solid #ffffff !important;
     box-shadow: 0 0 6px rgba(37, 99, 235, 0.5) !important;
   }
@@ -148,7 +148,7 @@
 
   .react-flow__controls-button:hover {
     background: #eff6ff !important;
-    color: #1d4ed8 !important;
+    color: #1559d4 !important;
   }
 }
 

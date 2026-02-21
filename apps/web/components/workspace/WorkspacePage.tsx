@@ -2,6 +2,7 @@
 
 import { IssueProvider } from "@/context/issue-context"
 import { FlowCanvas } from "@/components/workspace/FlowCanvas"
+import { FloatingNav } from "@/components/workspace/FloatingNav"
 import { Sidebar } from "@/components/workspace/Sidebar"
 
 export function WorkspacePage() {
@@ -9,7 +10,10 @@ export function WorkspacePage() {
     <IssueProvider>
       <main className="flex h-dvh w-full overflow-hidden bg-[#eff6ff]">
         <Sidebar />
-        <FlowCanvas />
+        <div className="relative flex flex-1 overflow-hidden">
+          <FloatingNav />
+          <FlowCanvas />
+        </div>
       </main>
     </IssueProvider>
   )

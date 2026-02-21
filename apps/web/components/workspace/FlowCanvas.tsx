@@ -1,15 +1,17 @@
 "use client"
 
-import { useCallback, useEffect, useMemo, useState } from "react"
+import { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import {
   Background,
   BackgroundVariant,
   Controls,
   ReactFlow,
   applyNodeChanges,
+  useNodes,
   useReactFlow,
   type Node,
   type NodeChange,
+  type NodeMouseHandler,
 } from "@xyflow/react"
 
 import { initialEdges, initialNodes } from "@/data/flow"
@@ -21,26 +23,48 @@ import { SpringEdge } from "@/components/workspace/edges/SpringEdge"
 const nodeTypes = { screenshot: ScreenshotNode }
 const edgeTypes = { spring: SpringEdge }
 
-const CHROME_HEIGHT = 36
 const NODE_WIDTH = 280
 const NODE_WIDE = 480
-const SCREENSHOT_RATIO = 10 / 16
+const MAX_ZOOM = 4
 
-function FlowController({ nodes }: { nodes: Node<ScreenshotNodeData>[] }) {
+// Reads live measured node dimensions from React Flow and re-zooms
+// whenever the active node's height changes (e.g. dropdown opens/closes).
+// Debounced so we wait for the node to fully expand before animating.
+function FlowController() {
   const { activeNodeId } = useIssueContext()
   const { setCenter } = useReactFlow()
+  const nodes = useNodes<ScreenshotNodeData>()
+  const lastRef = useRef<{ nodeId: string; height: number } | null>(null)
 
   useEffect(() => {
-    if (!activeNodeId) return
-    const node = nodes.find((item) => item.id === activeNodeId)
-    if (!node) return
+    if (!activeNodeId) {
+      lastRef.current = null
+      return
+    }
 
-    const width = node.data.isMain || node.data.isLarge ? NODE_WIDE : NODE_WIDTH
-    const screenshotHeight = width * SCREENSHOT_RATIO
-    const centerX = node.position.x + width / 2
-    const centerY = node.position.y + CHROME_HEIGHT + screenshotHeight / 2
+    const node = nodes.find((n) => n.id === activeNodeId)
+    if (!node?.measured?.height || !node.measured.width) return
 
-    setCenter(centerX, centerY, { zoom: 0.85, duration: 600 })
+    const nodeHeight = node.measured.height
+    const prev = lastRef.current
+
+    // Skip if same node and height hasn't shifted meaningfully
+    if (prev?.nodeId === activeNodeId && Math.abs(prev.height - nodeHeight) < 2) return
+
+    // Debounce: wait for the node (and its dropdown) to finish rendering
+    // before committing to the zoom. The timer resets on every height change.
+    const timer = setTimeout(() => {
+      lastRef.current = { nodeId: activeNodeId, height: nodeHeight }
+
+      const nodeWidth = node.data.isMain || node.data.isLarge ? NODE_WIDE : NODE_WIDTH
+      const targetZoom = Math.min((window.innerHeight * 0.8) / nodeHeight, MAX_ZOOM)
+      const centerX = node.position.x + nodeWidth / 2
+      const centerY = node.position.y + nodeHeight / 2
+
+      setCenter(centerX, centerY, { zoom: targetZoom, duration: 600 })
+    }, 40)
+
+    return () => clearTimeout(timer)
   }, [activeNodeId, nodes, setCenter])
 
   return null
@@ -48,7 +72,7 @@ function FlowController({ nodes }: { nodes: Node<ScreenshotNodeData>[] }) {
 
 export function FlowCanvas() {
   const [nodes, setNodes] = useState(initialNodes)
-  const { clearSelection } = useIssueContext()
+  const { selectNode, clearSelection } = useIssueContext()
 
   const onNodesChange = useCallback(
     (changes: NodeChange[]) => {
@@ -57,6 +81,13 @@ export function FlowCanvas() {
       )
     },
     []
+  )
+
+  const onNodeClick: NodeMouseHandler = useCallback(
+    (_event, node) => {
+      selectNode(node.id)
+    },
+    [selectNode]
   )
 
   const edges = useMemo(() => initialEdges, [])
@@ -70,11 +101,12 @@ export function FlowCanvas() {
         nodeTypes={nodeTypes}
         edgeTypes={edgeTypes}
         onNodesChange={onNodesChange}
+        onNodeClick={onNodeClick}
         onPaneClick={clearSelection}
         fitView
         fitViewOptions={{ padding: 0.22 }}
         minZoom={0.2}
-        maxZoom={2}
+        maxZoom={MAX_ZOOM}
         proOptions={{ hideAttribution: true }}
       >
         <Background
@@ -84,7 +116,7 @@ export function FlowCanvas() {
           size={2.5}
         />
         <Controls className="flow-controls" showInteractive={false} />
-        <FlowController nodes={nodes} />
+        <FlowController />
       </ReactFlow>
     </div>
   )

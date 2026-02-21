@@ -104,18 +104,18 @@ export function ScreenshotNode({ id, data, selected }: NodeProps) {
   return (
     <div
       className={cn(
-        "relative overflow-hidden rounded-none border-[1.5px] border-[#4a7ab5]",
-        "bg-white/70 backdrop-blur-sm shadow-[0_1px_3px_rgba(37,99,235,0.08),0_4px_20px_rgba(37,99,235,0.1)]",
+        "relative overflow-hidden rounded-none border-[3px] border-[#4a7ab5]",
+        "bg-white/70 backdrop-blur-sm shadow-[0_1px_3px_rgba(29,110,245,0.08),0_4px_20px_rgba(29,110,245,0.1)]",
         "transition-shadow transition-colors",
-        selected && "border-[#2563eb]",
+        selected && "border-[#1d6ef5]",
         nodeData.isMain || nodeData.isLarge ? "w-[480px]" : "w-[280px]",
         nodeData.isMain &&
-          "border-[#2d5a9e] shadow-[0_2px_6px_rgba(37,99,235,0.1),0_8px_32px_rgba(37,99,235,0.16)]",
+          "border-[#2d5a9e] shadow-[0_2px_6px_rgba(29,110,245,0.1),0_8px_32px_rgba(29,110,245,0.16)]",
         nodeData.status === "running" && "border-[#3a6fa0]",
         selected &&
-          "shadow-[0_2px_6px_rgba(37,99,235,0.14),0_8px_32px_rgba(37,99,235,0.22)]",
+          "shadow-[0_2px_6px_rgba(29,110,245,0.14),0_8px_32px_rgba(29,110,245,0.22)]",
         isContextActive &&
-          "border-[#2563eb] shadow-[0_0_0_3px_rgba(37,99,235,0.2),0_4px_24px_rgba(37,99,235,0.2)]"
+          "border-[#1d6ef5] shadow-[0_0_0_3px_rgba(29,110,245,0.2),0_4px_24px_rgba(29,110,245,0.2)]"
       )}
     >
       <Handle
@@ -125,11 +125,11 @@ export function ScreenshotNode({ id, data, selected }: NodeProps) {
         style={{ top: targetHandleTop }}
       />
 
-      <div className="flex items-center gap-2 border-b-[1.5px] border-[#4a7ab5] bg-[#c7d9f0] px-3 py-2">
+      <div className="flex items-center gap-2 border-b-[3px] border-[#4a7ab5] bg-[#c7d9f0] px-3 py-2">
         <div className="flex-1 truncate rounded-none border border-[#7aaad4] bg-white/60 px-2.5 py-1 text-[11px] font-mono text-[#2d5282]">
           {displayUrl}
         </div>
-        <span className="rounded-none border border-[#7aaad4] bg-[#dbeafe] px-2 py-0.5 text-[10px] font-semibold text-[#1d4ed8]">
+        <span className="rounded-none border border-[#7aaad4] bg-[#dbeafe] px-2 py-0.5 text-[10px] font-semibold text-[#1559d4]">
           Step {nodeData.step}
         </span>
       </div>
@@ -151,7 +151,7 @@ export function ScreenshotNode({ id, data, selected }: NodeProps) {
         )}
       </div>
 
-      <div className="flex items-center justify-between border-t-[1.5px] border-[#4a7ab5] bg-[#c7d9f0] px-3 py-2">
+      <div className="flex items-center justify-between border-t-[3px] border-[#4a7ab5] bg-[#c7d9f0] px-3 py-2">
         <div className="text-[13px] font-semibold tracking-[-0.2px] text-[#1a2a33]">
           {nodeData.label}
         </div>
@@ -178,7 +178,7 @@ export function ScreenshotNode({ id, data, selected }: NodeProps) {
           size="sm"
           onClick={handleToggle}
           className={cn(
-            "h-auto w-full justify-start gap-2 rounded-none border-t-[1.5px] border-[#4a7ab5] bg-[#d4e5f7] px-3 py-2 text-[11px] font-medium text-[#2d5282]",
+            "h-auto w-full justify-start gap-2 rounded-none border-t-[3px] border-[#4a7ab5] bg-[#d4e5f7] px-3 py-2 text-[11px] font-medium text-[#2d5282]",
             "hover:bg-[#c0d4ec]",
             panelOpen && "bg-[#c0d4ec]",
             openCount > 0 && "text-[#dc2626]"
@@ -214,7 +214,7 @@ export function ScreenshotNode({ id, data, selected }: NodeProps) {
                 "flex w-full items-start gap-2 border-b border-[#dbeafe] px-3 py-2 text-left text-[11px] transition-colors",
                 "hover:bg-[#eff6ff]",
                 activeIssueId === issue.id &&
-                  "bg-[#eff6ff] shadow-[inset_3px_0_0_#2563eb]",
+                  "bg-[#eff6ff] shadow-[inset_3px_0_0_#1d6ef5]",
                 issue.status === "resolved" && "opacity-60"
               )}
               onClick={(event) => handleIssueClick(event, issue.id)}
