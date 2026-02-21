@@ -2,7 +2,6 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Separator } from '@/components/ui/separator'
 import { Card, CardContent } from '@/components/ui/card'
-import { BrowserInspector } from './components/AnimatedConcepts'
 import { HeroBrowser } from './components/HeroBrowser'
 
 const findings = [
@@ -74,15 +73,6 @@ export default function Home() {
         </div>
         <div className="w-1/2 h-full border-l border-gray-100">
           <HeroBrowser />
-        </div>
-      </section>
-
-      <Separator className="max-w-5xl mx-auto" />
-
-      {/* ── Animated SVG concept ─────────────────────────── */}
-      <section className="py-20 bg-white">
-        <div className="max-w-5xl mx-auto px-10 flex justify-center">
-          <BrowserInspector />
         </div>
       </section>
 
