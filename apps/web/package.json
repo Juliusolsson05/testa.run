@@ -9,13 +9,19 @@
     "start": "next start",
     "lint": "eslint --max-warnings 0",
     "check-types": "next typegen && tsc --noEmit",
-    "ci": "next typegen && tsc --noEmit && eslint --max-warnings 0 && next build"
+    "ci": "next typegen && tsc --noEmit && eslint --max-warnings 0 && next build",
+    "prisma:generate": "prisma generate",
+    "prisma:migrate:dev": "prisma migrate dev",
+    "prisma:migrate:deploy": "prisma migrate deploy",
+    "prisma:studio": "prisma studio"
   },
   "dependencies": {
     "@react-spring/web": "^10.0.3",
     "@repo/testing": "workspace:*",
     "@tailwindcss/postcss": "^4.2.0",
     "@xyflow/react": "^12.8.5",
+    "@prisma/client": "^6.6.0",
+    "@supabase/supabase-js": "^2.49.8",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "lucide-react": "^0.575.0",
@@ -35,6 +41,7 @@
     "@types/react": "19.2.2",
     "@types/react-dom": "19.2.2",
     "eslint": "^9.39.1",
+    "prisma": "^6.6.0",
     "typescript": "5.9.2"
   }
 }

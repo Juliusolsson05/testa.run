@@ -40,6 +40,23 @@ All demo data lives in `data/`:
 
 `context/issue-context.tsx` manages selection state (active issue/node) shared between the sidebar and flow canvas.
 
+## Prisma + Supabase setup
+
+```bash
+# From repo root
+pnpm install
+
+# Generate prisma client
+pnpm -C apps/web prisma:generate
+
+# Create first migration (after DATABASE_URL is set in apps/web/.env.local)
+pnpm -C apps/web prisma:migrate:dev --name init
+```
+
+- Prisma schema: `apps/web/prisma/schema.prisma`
+- Prisma client singleton: `apps/web/lib/db.ts`
+- Supabase clients: `apps/web/lib/supabase.ts`
+
 ## Conventions
 
 - **No `nodeStepMap`** — derive step/label from `nodesById[id].data`
