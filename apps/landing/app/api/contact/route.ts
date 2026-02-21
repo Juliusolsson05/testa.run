@@ -2,8 +2,8 @@ import { NextResponse } from 'next/server'
 import { Resend } from 'resend'
 
 const resendKey = process.env.RESEND_API_KEY
-const from = process.env.RESEND_FROM_EMAIL || 'Testa Run <onboarding@resend.dev>'
-const to = process.env.RESEND_CONTACT_TO || 'testarun@gmail.com'
+const from = process.env.RESEND_FROM_EMAIL || 'onboarding@resend.dev'
+const to = process.env.RESEND_CONTACT_TO || 'testa.run.contact@gmail.com'
 
 export async function POST(req: Request) {
   if (!resendKey) {
