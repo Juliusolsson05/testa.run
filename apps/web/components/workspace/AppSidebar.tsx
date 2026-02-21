@@ -12,7 +12,7 @@ import {
   Settings,
   User,
 } from "lucide-react"
-import { TestaRunLogo } from "@/components/ui/TestaRunLogo"
+import { Wordmark } from "@/components/ui/TestaRunLogo"
 import { cn } from "@/lib/utils"
 
 const NAV = [
@@ -42,7 +42,7 @@ export function AppSidebar() {
 
       {/* Logo */}
       <div className="px-5 py-5">
-        <TestaRunLogo />
+        <Wordmark variant="dark" className="text-[15px]" />
       </div>
 
       {/* Project selector */}
