@@ -12,7 +12,7 @@ import { cn } from "@/lib/utils"
 
 export function Sidebar() {
   const {
-    selectIssue, activeIssueId, activeNodeId, clearSelection,
+    selectIssue, selectNode, activeIssueId, activeNodeId, clearSelection,
     issues, issuesByNodeId, openIssues, resolvedIssues,
   } = useIssueContext()
 
@@ -29,10 +29,15 @@ export function Sidebar() {
   const nodeOpenIssues = nodeIssues.filter((i) => i.status === "open")
   const nodeResolvedIssues = nodeIssues.filter((i) => i.status === "resolved")
 
+  // ── Active issue ─────────────────────────────────────────────────────────
+  const activeIssue = activeIssueId ? issues.find((i) => i.id === activeIssueId) ?? null : null
+
+  const sidebarWidth = activeIssue ? 480 : focusedNode ? 420 : 320
+
   return (
     <aside
       className="flex h-full shrink-0 flex-col gap-4 overflow-y-auto border-r border-white/10 bg-[#111318] px-5 py-5 text-white transition-[width] duration-300 ease-in-out"
-      style={{ width: focusedNode ? 420 : 320 }}
+      style={{ width: sidebarWidth }}
     >
       <div className="text-[22px] font-normal tracking-tight">
         <span className="text-[#e8edf5]">
@@ -40,7 +45,80 @@ export function Sidebar() {
         </span>
       </div>
 
-      {focusedNode ? (
+      {activeIssue ? (
+        // ── ISSUE DETAIL VIEW ───────────────────────────────────────────────
+        <div key={activeIssueId} className="node-focus-in flex flex-col gap-4">
+          {/* Back */}
+          <button
+            onClick={() => selectNode(activeIssue.nodeId)}
+            className="flex items-center gap-1.5 text-[11px] text-white/50 hover:text-white/80 transition-colors w-fit"
+          >
+            ← Node issues
+          </button>
+
+          {/* Header */}
+          <div className="flex flex-col gap-2">
+            <div className="flex items-start gap-2">
+              <span
+                className={cn(
+                  "mt-0.5 h-2 w-2 shrink-0 rounded-full",
+                  activeIssue.severity === "error" ? "bg-red-500" : "bg-amber-400",
+                  activeIssue.status === "resolved" && "bg-emerald-500"
+                )}
+              />
+              <h2 className="text-[15px] font-semibold leading-snug text-[#e8edf5]">
+                {activeIssue.title}
+              </h2>
+            </div>
+
+            <div className="flex flex-wrap items-center gap-2">
+              <Badge
+                variant="outline"
+                className={cn(
+                  "rounded-none border-transparent px-2 py-0.5 text-[10px] uppercase",
+                  activeIssue.status === "resolved"
+                    ? "bg-emerald-500/20 text-emerald-300"
+                    : activeIssue.severity === "error"
+                    ? "bg-red-500/20 text-red-300"
+                    : "bg-amber-400/20 text-amber-300"
+                )}
+              >
+                {activeIssue.status === "resolved"
+                  ? "✓ resolved"
+                  : activeIssue.severity === "error"
+                  ? "error"
+                  : "warning"}
+              </Badge>
+              <code className="font-mono text-[11px] text-white/40">{activeIssue.element}</code>
+            </div>
+          </div>
+
+          <Separator className="bg-white/10" />
+
+          {/* Description */}
+          <div className="flex flex-col gap-1.5">
+            <div className="text-[10px] font-bold uppercase tracking-[0.6px] text-white/40">
+              Summary
+            </div>
+            <p className="text-[13px] leading-relaxed text-white/80">
+              {activeIssue.description}
+            </p>
+          </div>
+
+          <Separator className="bg-white/10" />
+
+          {/* Reasoning */}
+          <div className="flex flex-col gap-1.5">
+            <div className="text-[10px] font-bold uppercase tracking-[0.6px] text-white/40">
+              Agent reasoning
+            </div>
+            <p className="text-[12px] leading-relaxed text-white/60">
+              {activeIssue.reasoning}
+            </p>
+          </div>
+        </div>
+
+      ) : focusedNode ? (
         // ── FOCUSED NODE VIEW ───────────────────────────────────────────────
         <div key={activeNodeId} className="node-focus-in flex flex-col gap-4">
           {/* Back button + node header */}
@@ -163,6 +241,7 @@ export function Sidebar() {
             </div>
           )}
         </div>
+
       ) : (
         // ── GLOBAL VIEW ─────────────────────────────────────────────────────
         <>
