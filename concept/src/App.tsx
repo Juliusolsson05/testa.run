@@ -102,13 +102,10 @@ function FlowController({ nodes }: { nodes: Node<ScreenshotNodeData>[] }) {
     const node = nodes.find(n => n.id === activeNodeId)
     if (!node) return
     const w = (node.data.isMain || node.data.isLarge) ? 460 : 260
-    // Always center on collapsed height so the node doesn't appear to shift
-    // when the dropdown opens: chrome(36) + screenshot(w*10/16) + footer(41) + toggle(32)
-    const collapsedH = 36 + (w * 10 / 16) + 41 + 32
-    const cx = node.position.x + w / 2
-    const cy = node.position.y + collapsedH / 2
-    // Small delay so setCenter fires before the dropdown animation shifts the node's measured height
-    setTimeout(() => setCenter(cx, cy, { zoom: 0.85, duration: 600 }), 10)
+    const SIDEBAR_WIDTH = 300
+    const cx = node.position.x + w / 2 - SIDEBAR_WIDTH / 2
+    const cy = node.position.y + 160
+    setCenter(cx, cy, { zoom: 0.85, duration: 600 })
   }, [activeNodeId, nodes, setCenter])
 
   return null
