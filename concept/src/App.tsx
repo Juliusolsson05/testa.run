@@ -1,10 +1,11 @@
-import { useState, useCallback } from 'react'
+import { useState, useCallback, useEffect } from 'react'
 import {
   ReactFlow,
   Background,
   BackgroundVariant,
   Controls,
   applyNodeChanges,
+  useReactFlow,
   type Edge,
   type Node,
   type NodeChange,
@@ -13,26 +14,11 @@ import '@xyflow/react/dist/style.css'
 import './App.css'
 import { ScreenshotNode, type ScreenshotNodeData } from './nodes/ScreenshotNode'
 import { SpringEdge } from './edges/SpringEdge'
+import { IssueProvider, useIssueContext } from './context/IssueContext'
+import { issues } from './data/issues'
 
 const nodeTypes = { screenshot: ScreenshotNode }
 const edgeTypes = { spring: SpringEdge }
-
-type ErrorCard = {
-  id: string
-  title: string
-  step: number
-  stepLabel: string
-  severity: 'error' | 'warning'
-  status: 'open' | 'resolved'
-}
-
-const errors: ErrorCard[] = [
-  { id: 'err1', title: 'Login timeout > 3s',      step: 2, stepLabel: 'Login',     severity: 'error',   status: 'open' },
-  { id: 'err2', title: 'Dashboard render lag',     step: 3, stepLabel: 'Dashboard', severity: 'error',   status: 'open' },
-  { id: 'err3', title: 'Low contrast on CTA',      step: 1, stepLabel: 'Landing',   severity: 'warning', status: 'open' },
-  { id: 'err4', title: 'Missing alt text on hero', step: 1, stepLabel: 'Landing',   severity: 'warning', status: 'resolved' },
-  { id: 'err5', title: 'Form label not bound',     step: 2, stepLabel: 'Login',     severity: 'warning', status: 'resolved' },
-]
 
 const initialNodes: Node<ScreenshotNodeData>[] = [
   {
@@ -106,21 +92,47 @@ const initialEdges: Edge[] = [
   },
 ]
 
-export default function App() {
+// Lives inside <ReactFlow> so it can call useReactFlow()
+function FlowController({ nodes }: { nodes: Node<ScreenshotNodeData>[] }) {
+  const { activeNodeId } = useIssueContext()
+  const { setCenter }    = useReactFlow()
+
+  useEffect(() => {
+    if (!activeNodeId) return
+    const node = nodes.find(n => n.id === activeNodeId)
+    if (!node) return
+    const w = (node.data.isMain || node.data.isLarge) ? 460 : 260
+    setCenter(node.position.x + w / 2, node.position.y + 160, { zoom: 0.85, duration: 600 })
+  }, [activeNodeId, nodes, setCenter])
+
+  return null
+}
+
+const nodeStepMap: Record<string, { step: number; label: string }> = {
+  '1': { step: 1, label: 'Landing' },
+  '2': { step: 2, label: 'Login' },
+  '3': { step: 3, label: 'Dashboard' },
+}
+
+function Workspace() {
   const [nodes, setNodes] = useState(initialNodes)
+  const { selectIssue, activeIssueId } = useIssueContext()
 
   const onNodesChange = useCallback(
-    (changes: NodeChange[]) => setNodes(nds => applyNodeChanges(changes, nds) as Node<ScreenshotNodeData>[]),
+    (changes: NodeChange[]) =>
+      setNodes(nds => applyNodeChanges(changes, nds) as Node<ScreenshotNodeData>[]),
     [],
   )
 
-  const openErrors    = errors.filter(e => e.status === 'open')
-  const resolvedErrors = errors.filter(e => e.status === 'resolved')
+  const openIssues     = issues.filter(i => i.status === 'open')
+  const resolvedIssues = issues.filter(i => i.status === 'resolved')
+  const errorCount     = issues.filter(i => i.severity === 'error'   && i.status === 'open').length
+  const warningCount   = issues.filter(i => i.severity === 'warning' && i.status === 'open').length
+  const sitesChecked   = new Set(issues.map(i => i.nodeId)).size
 
   return (
     <div className="workspace">
 
-      {/* Sidebar */}
       <aside className="workspace-sidebar">
 
         {/* Logo */}
@@ -153,73 +165,92 @@ export default function App() {
             <span className="run-label">Started</span>
             <span className="run-time">2m 14s ago</span>
           </div>
-          <div className="run-row">
-            <span className="run-label">Steps</span>
-            <span className="run-steps">3 / 3</span>
+        </div>
+
+        <div className="sidebar-divider" />
+
+        {/* Stats */}
+        <div className="section-label">Stats</div>
+        <div className="stats-grid">
+          <div className="stat-card">
+            <div className="stat-value">{sitesChecked}</div>
+            <div className="stat-label">Sites checked</div>
+          </div>
+          <div className="stat-card">
+            <div className="stat-value stat-error">{errorCount}</div>
+            <div className="stat-label">Errors</div>
+          </div>
+          <div className="stat-card">
+            <div className="stat-value stat-warning">{warningCount}</div>
+            <div className="stat-label">Warnings</div>
+          </div>
+          <div className="stat-card">
+            <div className="stat-value stat-resolved">{resolvedIssues.length}</div>
+            <div className="stat-label">Resolved</div>
           </div>
         </div>
 
         <div className="sidebar-divider" />
 
-        {/* Progress track */}
-        <div className="section-label">Flow</div>
-        <div className="progress-track">
-          <div className="progress-step done">
-            <span>1</span>
-            <label>Landing</label>
-          </div>
-          <div className="progress-line done" />
-          <div className="progress-step done">
-            <span>2</span>
-            <label>Login</label>
-          </div>
-          <div className="progress-line active" />
-          <div className="progress-step active">
-            <span>3</span>
-            <label>Dashboard</label>
-          </div>
-        </div>
-
-        <div className="sidebar-divider" />
-
-        {/* Kanban errors */}
+        {/* Kanban */}
         <div className="section-label">
           Issues
-          <span className="issue-count">{openErrors.length}</span>
+          <span className="issue-count">{openIssues.length}</span>
         </div>
 
         <div className="kanban">
           <div className="kanban-col">
             <div className="kanban-col-header open">Open</div>
-            {openErrors.map(e => (
-              <div key={e.id} className={`kanban-card severity-${e.severity}`}>
-                <div className="kanban-card-title">{e.title}</div>
-                <div className="kanban-card-meta">
-                  <span className="kanban-step">Step {e.step} · {e.stepLabel}</span>
-                  <span className={`kanban-badge ${e.severity}`}>
-                    {e.severity === 'error' ? '✕' : '⚠'} {e.severity}
-                  </span>
+            {openIssues.map(issue => {
+              const meta     = nodeStepMap[issue.nodeId]
+              const isActive = activeIssueId === issue.id
+              return (
+                <div
+                  key={issue.id}
+                  className={['kanban-card', `severity-${issue.severity}`, isActive ? 'kanban-card--active' : ''].filter(Boolean).join(' ')}
+                  role="button"
+                  tabIndex={0}
+                  onClick={() => selectIssue(issue.id)}
+                  onKeyDown={e => e.key === 'Enter' && selectIssue(issue.id)}
+                >
+                  <div className="kanban-card-title">{issue.title}</div>
+                  <div className="kanban-card-meta">
+                    <span className="kanban-step">Step {meta.step} · {meta.label}</span>
+                    <span className={`kanban-badge ${issue.severity}`}>
+                      {issue.severity === 'error' ? '✕' : '⚠'} {issue.severity}
+                    </span>
+                  </div>
                 </div>
-              </div>
-            ))}
+              )
+            })}
           </div>
 
           <div className="kanban-col">
             <div className="kanban-col-header resolved">Resolved</div>
-            {resolvedErrors.map(e => (
-              <div key={e.id} className="kanban-card resolved">
-                <div className="kanban-card-title">{e.title}</div>
-                <div className="kanban-card-meta">
-                  <span className="kanban-step">Step {e.step} · {e.stepLabel}</span>
+            {resolvedIssues.map(issue => {
+              const meta     = nodeStepMap[issue.nodeId]
+              const isActive = activeIssueId === issue.id
+              return (
+                <div
+                  key={issue.id}
+                  className={['kanban-card resolved', isActive ? 'kanban-card--active' : ''].filter(Boolean).join(' ')}
+                  role="button"
+                  tabIndex={0}
+                  onClick={() => selectIssue(issue.id)}
+                  onKeyDown={e => e.key === 'Enter' && selectIssue(issue.id)}
+                >
+                  <div className="kanban-card-title">{issue.title}</div>
+                  <div className="kanban-card-meta">
+                    <span className="kanban-step">Step {meta.step} · {meta.label}</span>
+                  </div>
                 </div>
-              </div>
-            ))}
+              )
+            })}
           </div>
         </div>
 
         <div className="sidebar-spacer" />
 
-        {/* Agent pill */}
         <div className="agent-pill">
           <span className="agent-dot" />
           Agent running
@@ -227,7 +258,6 @@ export default function App() {
 
       </aside>
 
-      {/* Canvas */}
       <div className="canvas-wrapper">
         <ReactFlow
           nodes={nodes}
@@ -241,19 +271,20 @@ export default function App() {
           maxZoom={2}
           proOptions={{ hideAttribution: true }}
         >
-          <Background
-            variant={BackgroundVariant.Dots}
-            color="#1B3A6B"
-            gap={28}
-            size={2.5}
-          />
-          <Controls
-            className="flow-controls"
-            showInteractive={false}
-          />
+          <Background variant={BackgroundVariant.Dots} color="#1B3A6B" gap={28} size={2.5} />
+          <Controls className="flow-controls" showInteractive={false} />
+          <FlowController nodes={nodes} />
         </ReactFlow>
       </div>
 
     </div>
+  )
+}
+
+export default function App() {
+  return (
+    <IssueProvider>
+      <Workspace />
+    </IssueProvider>
   )
 }

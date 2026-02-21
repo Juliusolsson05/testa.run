@@ -1,4 +1,7 @@
+import { useState, useEffect } from 'react'
 import { Handle, Position, type NodeProps } from '@xyflow/react'
+import { useIssueContext } from '../context/IssueContext'
+import { issues } from '../data/issues'
 
 export type ScreenshotNodeData = {
   label: string
@@ -13,23 +16,58 @@ export type ScreenshotNodeData = {
 }
 
 const statusConfig = {
-  passed: { color: '#22c55e', bg: 'rgba(34,197,94,0.12)', label: '✓ Passed' },
-  running: { color: '#f59e0b', bg: 'rgba(245,158,11,0.12)', label: '⟳ Running' },
-  pending: { color: '#6366f1', bg: 'rgba(99,102,241,0.12)', label: '◦ Pending' },
+  passed:  { color: '#22c55e', bg: 'rgba(34,197,94,0.12)',   label: '✓ Passed' },
+  running: { color: '#f59e0b', bg: 'rgba(245,158,11,0.12)',  label: '⟳ Running' },
+  pending: { color: '#6366f1', bg: 'rgba(99,102,241,0.12)',  label: '◦ Pending' },
 }
 
-export function ScreenshotNode({ data, selected }: NodeProps) {
+export function ScreenshotNode({ id, data, selected }: NodeProps) {
   const nodeData = data as ScreenshotNodeData
-  const status = statusConfig[nodeData.status]
+  const status   = statusConfig[nodeData.status]
+
+  const { activeIssueId, activeNodeId, selectIssue, clearSelection } = useIssueContext()
+
+  const nodeIssues = issues.filter(i => i.nodeId === id)
+  const openCount  = nodeIssues.filter(i => i.status === 'open').length
+
+  const isContextActive = activeNodeId === id
+  const [localOpen, setLocalOpen] = useState(false)
+  const panelOpen = localOpen || isContextActive
+
+  // Close this node's panel when another node is targeted
+  useEffect(() => {
+    if (activeNodeId !== null && activeNodeId !== id) setLocalOpen(false)
+  }, [activeNodeId, id])
+
+  function handleToggle(e: React.MouseEvent) {
+    e.stopPropagation()
+    if (isContextActive) {
+      clearSelection()
+      setLocalOpen(false)
+    } else {
+      setLocalOpen(v => !v)
+    }
+  }
+
+  function handleIssueClick(e: React.MouseEvent, issueId: string) {
+    e.stopPropagation()
+    selectIssue(issueId)
+  }
 
   return (
     <div
-      className={`screenshot-node ${selected ? 'selected' : ''} status-${nodeData.status} ${nodeData.isMain ? 'main-node' : ''} ${nodeData.isLarge ? 'large-node' : ''}`}
+      className={[
+        'screenshot-node',
+        selected          ? 'selected'    : '',
+        `status-${nodeData.status}`,
+        nodeData.isMain   ? 'main-node'   : '',
+        nodeData.isLarge  ? 'large-node'  : '',
+        isContextActive   ? 'node-active' : '',
+      ].filter(Boolean).join(' ')}
     >
-      {/* Target handle — always vertically centered on the left */}
       <Handle type="target" position={Position.Left} className="flow-handle" />
 
-      {/* Browser chrome bar */}
+      {/* Browser chrome */}
       <div className="browser-chrome">
         <div className="browser-url">{nodeData.url.replace(/^https?:\/\/[^/]+/, '') || '/'}</div>
         <div className="browser-step">
@@ -37,7 +75,7 @@ export function ScreenshotNode({ data, selected }: NodeProps) {
         </div>
       </div>
 
-      {/* Screenshot area */}
+      {/* Screenshot */}
       <div className="screenshot-area">
         {nodeData.imageSrc ? (
           <img src={nodeData.imageSrc} alt={nodeData.label} className="screenshot-img" />
@@ -61,15 +99,57 @@ export function ScreenshotNode({ data, selected }: NodeProps) {
         </div>
       </div>
 
-      {/* Source handle — positioned over the action element in the screenshot */}
+      {/* Issues toggle bar */}
+      {nodeIssues.length > 0 && (
+        <button
+          className={`issues-toggle-bar ${panelOpen ? 'open' : ''} ${openCount > 0 ? 'has-open' : ''}`}
+          onClick={handleToggle}
+        >
+          <span className="issues-toggle-label">
+            {openCount > 0 ? `${openCount} issue${openCount > 1 ? 's' : ''}` : 'Issues'}
+          </span>
+          <span className={`issues-toggle-badge ${openCount > 0 ? 'error' : 'resolved'}`}>
+            {openCount > 0 ? openCount : '✓'}
+          </span>
+          <span className="issues-toggle-chevron">{panelOpen ? '▲' : '▼'}</span>
+        </button>
+      )}
+
+      {/* Issues dropdown */}
+      {panelOpen && (
+        <div className="issues-dropdown">
+          {nodeIssues.map(issue => (
+            <button
+              key={issue.id}
+              className={[
+                'issue-row',
+                `issue-row--${issue.severity}`,
+                `issue-row--${issue.status}`,
+                activeIssueId === issue.id ? 'issue-row--active' : '',
+              ].filter(Boolean).join(' ')}
+              onClick={e => handleIssueClick(e, issue.id)}
+            >
+              <span className={`issue-severity-dot sev-${issue.severity}`} />
+              <div className="issue-row-body">
+                <div className="issue-row-title">{issue.title}</div>
+                <div className="issue-row-element">{issue.element}</div>
+              </div>
+              <span className={`issue-status-pill ${issue.status}`}>
+                {issue.status === 'open' ? 'Open' : '✓'}
+              </span>
+            </button>
+          ))}
+        </div>
+      )}
+
       <Handle
         type="source"
         position={Position.Right}
         className="flow-handle"
         style={nodeData.sourceHandleOffset ? {
-          top: nodeData.sourceHandleOffset.top,
-          left: nodeData.sourceHandleOffset.left,
-          right: 'auto',
+          top:       nodeData.sourceHandleOffset.top,
+          left:      nodeData.sourceHandleOffset.left,
+          right:     'auto',
           transform: 'translate(-50%, -50%)',
         } : undefined}
       />
