@@ -65,30 +65,52 @@ export function SpringEdge({
   labelBgStyle,
   labelBgPadding,
 }: EdgeProps) {
-  const { activeNodeId } = useIssueContext()
+  const { activeNodeId, selectNode } = useIssueContext()
 
-  const { x: vpX, zoom: vpZoom } = useViewport()
-  const containerWidth = useStore((s) => s.width)
+  // Reactive viewport: x/y = canvas pan offset in px, zoom = scale
+  const { x: vpX, y: vpY, zoom: vpZoom } = useViewport()
+  // Dimensions of the ReactFlow container element in px
+  const containerWidth  = useStore((s) => s.width)
+  const containerHeight = useStore((s) => s.height)
 
   const isOutgoing = activeNodeId === source
   const isIncoming = activeNodeId === target
   const isFocused = isOutgoing || isIncoming
 
+  // Recompute t whenever the viewport pans/zooms so the badge stays visually centred
   const t = useMemo(() => {
     if (!isFocused || containerWidth === 0) return 0.5
+
+    // Convert flow-space handle positions to screen pixels
+    const srcScreenX = sourceX * vpZoom + vpX
+    const srcScreenY = sourceY * vpZoom + vpY
+    const tgtScreenX = targetX * vpZoom + vpX
+    const tgtScreenY = targetY * vpZoom + vpY
+
+    const onScreen = (sx: number, sy: number) =>
+      sx >= 0 && sx <= containerWidth && sy >= 0 && sy <= containerHeight
+
+    // Both handles visible → simply centre on the bezier midpoint
+    if (onScreen(srcScreenX, srcScreenY) && onScreen(tgtScreenX, tgtScreenY)) return 0.5
+
     if (isOutgoing) {
+      // Right edge of canvas in flow coordinates
       const rightFlowX = (containerWidth - vpX) / vpZoom
       const midFlowX = (sourceX + rightFlowX) / 2
       return findTForFlowX(sourceX, sourceY, targetX, targetY, midFlowX)
     } else {
+      // Left edge of canvas in flow coordinates
       const leftFlowX = -vpX / vpZoom
       const midFlowX = (leftFlowX + targetX) / 2
       return findTForFlowX(sourceX, sourceY, targetX, targetY, midFlowX)
     }
-  }, [isFocused, isOutgoing, sourceX, sourceY, targetX, targetY, vpX, vpZoom, containerWidth])
+  }, [isFocused, isOutgoing, sourceX, sourceY, targetX, targetY, vpX, vpY, vpZoom, containerWidth, containerHeight])
 
   const [badgeX, badgeY] = bezierPoint(sourceX, sourceY, targetX, targetY, t)
-  const badgeAngle = bezierAngle(sourceX, sourceY, targetX, targetY, t)
+  // Incoming edges point back (←), so flip 180°
+  const badgeAngle = bezierAngle(sourceX, sourceY, targetX, targetY, t) + (isIncoming ? 180 : 0)
+  // Clicking navigates to the other end of the edge
+  const navigateTo = isOutgoing ? target : source
 
   const spring = useSpring({
     sx: sourceX,
@@ -100,21 +122,13 @@ export function SpringEdge({
 
   const animatedD = to(
     [spring.sx, spring.sy, spring.tx, spring.ty],
-    (sx, sy, tx, ty) =>
+    (sx: number, sy: number, tx: number, ty: number) =>
       getBezierPath({ sourceX: sx, sourceY: sy, targetX: tx, targetY: ty, sourcePosition, targetPosition })[0]
   )
 
-  const labelTransform = to(
-    [spring.sx, spring.sy, spring.tx, spring.ty],
-    (sx, sy, tx, ty) =>
-      `translate(-50%, -50%) translate(${(sx + tx) / 2}px, ${(sy + ty) / 2}px)`
-  )
-
-  const [bgPadX, bgPadY] = Array.isArray(labelBgPadding)
-    ? labelBgPadding
-    : labelBgPadding !== undefined
-      ? [labelBgPadding, labelBgPadding]
-      : [6, 8]
+  const labelX = (sourceX + targetX) / 2
+  const labelY = (sourceY + targetY) / 2
+  const [bgPadX, bgPadY] = (labelBgPadding as [number, number]) ?? [6, 8]
 
   return (
     <>
@@ -128,15 +142,27 @@ export function SpringEdge({
 
       {isFocused && (
         <EdgeLabelRenderer>
-          <div
+          {/*
+            Outer div: exactly 28×28 (the circle size).
+            translate(-50%,-50%) centers it pixel-perfectly on the bezier point.
+            Nothing inside affects this centering — label is absolutely positioned.
+          */}
+          <button
+            onClick={(e) => { e.stopPropagation(); selectNode(navigateTo) }}
+            className="nodrag nopan"
             style={{
               position: "absolute",
               width: 28,
               height: 28,
               transform: `translate(-50%, -50%) translate(${badgeX}px, ${badgeY}px)`,
-              pointerEvents: "none",
+              pointerEvents: "all",
+              cursor: "pointer",
+              background: "none",
+              border: "none",
+              padding: 0,
             }}
           >
+            {/* Circle rotated to match the edge tangent (180° flip for back-step) */}
             <div
               style={{
                 transform: `rotate(${badgeAngle}deg)`,
@@ -148,11 +174,13 @@ export function SpringEdge({
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
+                transition: "transform 0.15s, box-shadow 0.15s",
               }}
             >
               <ArrowIcon />
             </div>
 
+            {/* Label floats below the circle; absolutely positioned so it can't shift the circle */}
             {label && (
               <div
                 style={{
@@ -169,29 +197,31 @@ export function SpringEdge({
                   fontSize: 11,
                   fontFamily: "var(--font-geist-mono), ui-monospace, SFMono-Regular, monospace",
                   boxShadow: "0 1px 4px rgba(29,110,245,0.1)",
+                  pointerEvents: "none",
                 }}
               >
                 {String(label)}
               </div>
             )}
-          </div>
+          </button>
         </EdgeLabelRenderer>
       )}
 
+      {/* Default midpoint label — only shown when not in focus mode */}
       {label && !isFocused && (
         <EdgeLabelRenderer>
-          <animated.div
+          <div
             style={{
               position: "absolute",
-              transform: labelTransform,
+              transform: `translate(-50%, -50%) translate(${labelX}px, ${labelY}px)`,
               pointerEvents: "none",
-              ...(labelBgStyle ?? {}),
+              ...(labelBgStyle as React.CSSProperties),
               padding: `${bgPadY}px ${bgPadX}px`,
               borderRadius: 6,
             }}
           >
-            <span style={labelStyle}>{label}</span>
-          </animated.div>
+            <span style={labelStyle as React.CSSProperties}>{label as string}</span>
+          </div>
         </EdgeLabelRenderer>
       )}
     </>

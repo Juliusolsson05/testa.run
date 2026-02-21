@@ -26,15 +26,21 @@ import { SpringEdge } from "@/components/workspace/edges/SpringEdge"
 const nodeTypes = { screenshot: ScreenshotNode }
 const edgeTypes = { spring: SpringEdge }
 
-const MAX_ZOOM = 4
+const MAX_ZOOM       = 4
+const PINCH_SPEED    = 0.05  // zoom factor per deltaY unit during pinch (ctrlKey)
+const PAN_SPEED      = 1.0   // scroll-to-pan multiplier
 
+// Reads live measured node dimensions from React Flow and re-zooms
+// whenever the active node's height changes (e.g. dropdown opens/closes).
+// Debounced so we wait for the node to fully expand before animating.
 function FlowController() {
   const { activeNodeId, clearSelection } = useIssueContext()
   const { setCenter } = useReactFlow()
-  const nodes = useNodes<ScreenshotNodeData>()
-  const lastRef = useRef<{ nodeId: string; height: number } | null>(null)
+  const nodes = useNodes<Node<ScreenshotNodeData>>()
+  const lastRef      = useRef<{ nodeId: string; height: number } | null>(null)
+  const animatingRef = useRef(false)   // true while a zoom animation is in flight
 
-  // ── Auto-zoom on focus, debounced to wait for measured height ─────────────
+  // ── Auto-zoom when focused node changes or its height shifts ────────────
   useEffect(() => {
     if (!activeNodeId) {
       lastRef.current = null
@@ -42,10 +48,11 @@ function FlowController() {
     }
 
     const node = nodes.find((n) => n.id === activeNodeId)
-    if (!node?.measured?.height) return
+    if (!node?.measured?.height || !node.measured.width) return
 
     const nodeHeight = node.measured.height
     const prev = lastRef.current
+
     if (prev?.nodeId === activeNodeId && Math.abs(prev.height - nodeHeight) < 2) return
 
     const timer = setTimeout(() => {
@@ -56,19 +63,24 @@ function FlowController() {
       const centerX = node.position.x + nodeWidth / 2 + 200 / targetZoom
       const centerY = node.position.y + nodeHeight / 2
 
+      // Block pan-exit detection for the duration of the animation + a small buffer
+      animatingRef.current = true
       setCenter(centerX, centerY, { zoom: targetZoom, duration: 600 })
+      const cooldown = setTimeout(() => { animatingRef.current = false }, 700)
+      return () => clearTimeout(cooldown)
     }, 40)
 
     return () => clearTimeout(timer)
   }, [activeNodeId, nodes, setCenter])
 
-  // ── Exit focus when the node is panned mostly off-screen ──────────────────
+  // ── Exit focus when user pans the node mostly off-screen ─────────────────
   const { x: vpX, y: vpY, zoom: vpZoom } = useViewport()
   const containerWidth = useStore((s) => s.width)
   const containerHeight = useStore((s) => s.height)
 
   useEffect(() => {
-    if (!activeNodeId || !lastRef.current) return
+    // Only fire after the zoom has settled for THIS node, and not during an animation
+    if (!activeNodeId || lastRef.current?.nodeId !== activeNodeId || animatingRef.current) return
 
     const node = nodes.find((n) => n.id === activeNodeId)
     if (!node?.measured?.height) return
@@ -76,34 +88,76 @@ function FlowController() {
     const nodeWidth = node.data.isMain || node.data.isLarge ? NODE_WIDE : NODE_WIDTH
     const nodeHeight = node.measured.height
 
+    // Node bounding box in screen (canvas-relative) pixels
     const screenLeft   = node.position.x * vpZoom + vpX
     const screenTop    = node.position.y * vpZoom + vpY
     const screenRight  = screenLeft + nodeWidth  * vpZoom
     const screenBottom = screenTop  + nodeHeight * vpZoom
 
+    // Overlap with the canvas rect
     const overlapX = Math.max(0, Math.min(screenRight, containerWidth)  - Math.max(screenLeft, 0))
     const overlapY = Math.max(0, Math.min(screenBottom, containerHeight) - Math.max(screenTop,  0))
     const visibleFraction = (overlapX * overlapY) / (nodeWidth * vpZoom * nodeHeight * vpZoom)
 
+    // Exit focus when less than 30 % of the node is still visible
     if (visibleFraction < 0.3) clearSelection()
   }, [activeNodeId, nodes, vpX, vpY, vpZoom, containerWidth, containerHeight, clearSelection])
+
+  // ── Custom wheel: pinch = zoom (fast), scroll = pan (all directions) ───────
+  const rf = useReactFlow()
+  useEffect(() => {
+    const el = document.querySelector(".react-flow") as HTMLElement | null
+    if (!el) return
+
+    const onWheel = (e: WheelEvent) => {
+      e.preventDefault()
+      const vp = rf.getViewport()
+
+      if (e.ctrlKey) {
+        // Trackpad pinch gesture → zoom toward cursor
+        const rect   = el.getBoundingClientRect()
+        const mouseX = e.clientX - rect.left
+        const mouseY = e.clientY - rect.top
+
+        const factor  = Math.exp(-e.deltaY * PINCH_SPEED)
+        const newZoom = Math.max(0.2, Math.min(MAX_ZOOM, vp.zoom * factor))
+        const newX    = mouseX - (mouseX - vp.x) * (newZoom / vp.zoom)
+        const newY    = mouseY - (mouseY - vp.y) * (newZoom / vp.zoom)
+
+        rf.setViewport({ x: newX, y: newY, zoom: newZoom }, { duration: 0 })
+      } else {
+        // Two-finger scroll or mouse wheel → pan in scroll direction
+        rf.setViewport(
+          { ...vp, x: vp.x - e.deltaX * PAN_SPEED, y: vp.y - e.deltaY * PAN_SPEED },
+          { duration: 0 }
+        )
+      }
+    }
+
+    el.addEventListener("wheel", onWheel, { passive: false })
+    return () => el.removeEventListener("wheel", onWheel)
+  }, [rf])
 
   return null
 }
 
 export function FlowCanvas() {
-  const [nodes, setNodes] = useState<Node<ScreenshotNodeData>[]>(initialNodes)
+  const [nodes, setNodes] = useState(initialNodes)
   const { selectNode, clearSelection } = useIssueContext()
 
   const onNodesChange = useCallback(
     (changes: NodeChange<Node<ScreenshotNodeData>>[]) => {
-      setNodes((current) => applyNodeChanges(changes, current))
+      setNodes((current) =>
+        applyNodeChanges(changes, current) as Node<ScreenshotNodeData>[]
+      )
     },
     []
   )
 
   const onNodeClick: NodeMouseHandler = useCallback(
-    (_event, node) => selectNode(node.id),
+    (_event, node) => {
+      selectNode(node.id)
+    },
     [selectNode]
   )
 
@@ -124,6 +178,8 @@ export function FlowCanvas() {
         fitViewOptions={{ padding: 0.22 }}
         minZoom={0.2}
         maxZoom={MAX_ZOOM}
+        zoomOnScroll={false}
+        panOnScroll={false}
         proOptions={{ hideAttribution: true }}
       >
         <Background
@@ -132,26 +188,7 @@ export function FlowCanvas() {
           gap={28}
           size={2.5}
         />
-        <Controls
-          showInteractive={false}
-          style={{
-            background: "#ffffff",
-            border: "1px solid #c0d4ec",
-            borderRadius: 0,
-            overflow: "hidden",
-            boxShadow: "0 2px 12px rgba(37, 99, 235, 0.1)",
-          }}
-          className={`
-            [&_.react-flow__controls-button]:border-0
-            [&_.react-flow__controls-button]:border-b
-            [&_.react-flow__controls-button]:border-b-[#c0d4ec]
-            [&_.react-flow__controls-button]:bg-transparent
-            [&_.react-flow__controls-button]:text-[#4a7ab5]
-            [&_.react-flow__controls-button:hover]:bg-[#eff6ff]
-            [&_.react-flow__controls-button:hover]:text-[#1d4ed8]
-            [&_.react-flow__controls-button:last-child]:border-b-0
-          `}
-        />
+        <Controls className="flow-controls" showInteractive={false} />
         <FlowController />
       </ReactFlow>
     </div>

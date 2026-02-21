@@ -13,16 +13,20 @@ import { cn } from "@/lib/utils"
 export function Sidebar() {
   const { selectIssue, activeIssueId, activeNodeId, clearSelection, issues } = useIssueContext()
 
+  // ── Global stats (always computed) ──────────────────────────────────────
   const openIssues = issues.filter((issue) => issue.status === "open")
   const resolvedIssues = issues.filter((issue) => issue.status === "resolved")
   const errorCount = openIssues.filter((issue) => issue.severity === "error").length
   const warningCount = openIssues.filter((issue) => issue.severity === "warning").length
   const sitesChecked = new Set(issues.map((issue) => issue.nodeId)).size
 
+  // ── Focused node ─────────────────────────────────────────────────────────
   const focusedNode = activeNodeId
     ? initialNodes.find((n) => n.id === activeNodeId) ?? null
     : null
-  const nodeIssues = activeNodeId ? issues.filter((i) => i.nodeId === activeNodeId) : []
+  const nodeIssues = activeNodeId
+    ? issues.filter((issue) => issue.nodeId === activeNodeId)
+    : []
   const nodeOpenIssues = nodeIssues.filter((i) => i.status === "open")
   const nodeResolvedIssues = nodeIssues.filter((i) => i.status === "resolved")
 
@@ -32,18 +36,19 @@ export function Sidebar() {
       style={{ width: focusedNode ? 420 : 320 }}
     >
       <div className="flex items-center gap-2 text-[17px] font-bold tracking-tight">
-        <Sparkles className="h-5 w-5 text-[#2563eb]" />
+        <Sparkles className="h-5 w-5 text-[#1d6ef5]" />
         <span className="text-[#e8edf5]">
-          testa<span className="text-[#2563eb]">.run</span>
+          testa<span className="text-[#1d6ef5]">.run</span>
         </span>
       </div>
 
       {focusedNode ? (
-        // ── FOCUSED NODE VIEW ──────────────────────────────────────────────
+        // ── FOCUSED NODE VIEW ───────────────────────────────────────────────
         <div key={activeNodeId} className="node-focus-in flex flex-col gap-4">
+          {/* Back button + node header */}
           <button
             onClick={clearSelection}
-            className="flex items-center gap-1.5 text-[11px] text-white/50 transition-colors hover:text-white/80 w-fit"
+            className="flex items-center gap-1.5 text-[11px] text-white/50 hover:text-white/80 transition-colors w-fit"
           >
             ← All issues
           </button>
@@ -54,7 +59,7 @@ export function Sidebar() {
                 <span
                   className={cn(
                     "h-2 w-2 shrink-0 rounded-full",
-                    focusedNode.data.status === "passed"  && "bg-emerald-500",
+                    focusedNode.data.status === "passed" && "bg-emerald-500",
                     focusedNode.data.status === "running" && "bg-amber-400",
                     focusedNode.data.status === "pending" && "bg-indigo-400"
                   )}
@@ -62,7 +67,7 @@ export function Sidebar() {
                 <span className="text-[13px] font-semibold text-[#e8edf5]">
                   {focusedNode.data.label}
                 </span>
-                <span className="ml-auto font-mono text-[10px] text-white/40">
+                <span className="ml-auto text-[10px] font-mono text-white/40">
                   Step {focusedNode.data.step}
                 </span>
               </div>
@@ -72,6 +77,7 @@ export function Sidebar() {
             </CardContent>
           </Card>
 
+          {/* Node issue stats */}
           <div className="grid grid-cols-3 gap-2">
             <Card className="rounded-none border-white/10 bg-white/5 text-white">
               <CardContent className="flex flex-col gap-1 p-3">
@@ -101,9 +107,10 @@ export function Sidebar() {
 
           <Separator className="bg-white/10" />
 
+          {/* Node issues list */}
           <div className="flex items-center justify-between text-[10px] font-bold uppercase tracking-[0.6px] text-white/50">
             <span>Issues on this page</span>
-            <Badge className="rounded-none bg-[#2563eb] text-[10px] font-bold">
+            <Badge className="rounded-none bg-[#1d6ef5] text-[10px] font-bold">
               {nodeOpenIssues.length}
             </Badge>
           </div>
@@ -123,13 +130,15 @@ export function Sidebar() {
                       "w-full rounded-none border border-white/10 bg-white/5 px-2 py-2 text-left text-[11px] text-white/80",
                       "transition hover:-translate-y-0.5 hover:bg-white/10",
                       issue.status === "resolved" && "opacity-60",
-                      issue.severity === "error"   && issue.status === "open" && "border-l-4 border-l-red-500",
+                      issue.severity === "error" && issue.status === "open" && "border-l-4 border-l-red-500",
                       issue.severity === "warning" && issue.status === "open" && "border-l-4 border-l-amber-400",
-                      isActive && "border-l-4 border-l-[#2563eb] bg-[#2563eb]/15 shadow-[0_0_0_1px_rgba(37,99,235,0.3)]"
+                      isActive && "border-l-4 border-l-[#1d6ef5] bg-[#1d6ef5]/15 shadow-[0_0_0_1px_rgba(29,110,245,0.3)]"
                     )}
                     onClick={() => selectIssue(issue.id)}
                   >
-                    <div className="mb-1 font-medium text-white">{issue.title}</div>
+                    <div className="mb-1 font-medium text-white">
+                      {issue.title}
+                    </div>
                     <p className="mb-2 line-clamp-2 text-[11px] leading-relaxed text-white/40">
                       {issue.reasoning}
                     </p>
@@ -144,11 +153,9 @@ export function Sidebar() {
                           issue.status === "resolved" && "bg-emerald-500/20 text-emerald-200"
                         )}
                       >
-                        <span className="inline-flex items-center gap-1">
-                          {issue.status === "resolved" ? "✓ resolved" : issue.severity === "error"
-                            ? <><XCircle className="h-3 w-3" /> error</>
-                            : <><AlertTriangle className="h-3 w-3" /> warning</>}
-                        </span>
+                        {issue.status === "resolved" ? "✓ resolved" : issue.severity === "error"
+                          ? <span className="inline-flex items-center gap-1"><XCircle className="h-3 w-3" /> error</span>
+                          : <span className="inline-flex items-center gap-1"><AlertTriangle className="h-3 w-3" /> warning</span>}
                       </Badge>
                       <span className="truncate font-mono">{issue.element}</span>
                     </div>
@@ -159,7 +166,7 @@ export function Sidebar() {
           )}
         </div>
       ) : (
-        // ── GLOBAL VIEW ───────────────────────────────────────────────────
+        // ── GLOBAL VIEW ─────────────────────────────────────────────────────
         <>
           <Card className="rounded-none border-white/10 bg-white/5 text-white">
             <CardContent className="flex items-center gap-3 p-3">
@@ -168,7 +175,9 @@ export function Sidebar() {
               </div>
               <div className="min-w-0 flex-1">
                 <div className="text-[13px] font-semibold">TimeEdit</div>
-                <div className="truncate font-mono text-[11px] text-white/50">timeedit.com</div>
+                <div className="truncate font-mono text-[11px] text-white/50">
+                  timeedit.com
+                </div>
               </div>
               <span className="h-2 w-2 rounded-full bg-emerald-500 shadow-[0_0_6px_rgba(34,197,94,0.5)]" />
             </CardContent>
@@ -178,7 +187,9 @@ export function Sidebar() {
             <CardContent className="flex flex-col gap-1.5 p-3 text-[12px]">
               <div className="flex items-center justify-between">
                 <span className="text-[11px] text-white/50">Run</span>
-                <span className="font-mono text-[12px] font-semibold text-[#7eb3f5]">#a3f7c1</span>
+                <span className="font-mono text-[12px] font-semibold text-[#7eb3f5]">
+                  #a3f7c1
+                </span>
               </div>
               <div className="flex items-center justify-between">
                 <span className="text-[11px] text-white/50">Started</span>
@@ -197,31 +208,49 @@ export function Sidebar() {
 
           <Separator className="bg-white/10" />
 
-          <div className="text-[10px] font-bold uppercase tracking-[0.6px] text-white/50">Stats</div>
+          <div className="text-[10px] font-bold uppercase tracking-[0.6px] text-white/50">
+            Stats
+          </div>
 
           <div className="grid grid-cols-2 gap-2">
             <Card className="rounded-none border-white/10 bg-white/5 text-white">
               <CardContent className="flex flex-col gap-1 p-3">
-                <div className="text-[22px] font-semibold leading-none">{sitesChecked}</div>
-                <div className="text-[10px] uppercase tracking-wide text-white/50">Sites checked</div>
+                <div className="text-[22px] font-semibold leading-none">
+                  {sitesChecked}
+                </div>
+                <div className="text-[10px] uppercase tracking-wide text-white/50">
+                  Sites checked
+                </div>
               </CardContent>
             </Card>
             <Card className="rounded-none border-white/10 bg-white/5 text-white">
               <CardContent className="flex flex-col gap-1 p-3">
-                <div className="text-[22px] font-semibold leading-none text-red-400">{errorCount}</div>
-                <div className="text-[10px] uppercase tracking-wide text-white/50">Errors</div>
+                <div className="text-[22px] font-semibold leading-none text-red-400">
+                  {errorCount}
+                </div>
+                <div className="text-[10px] uppercase tracking-wide text-white/50">
+                  Errors
+                </div>
               </CardContent>
             </Card>
             <Card className="rounded-none border-white/10 bg-white/5 text-white">
               <CardContent className="flex flex-col gap-1 p-3">
-                <div className="text-[22px] font-semibold leading-none text-amber-300">{warningCount}</div>
-                <div className="text-[10px] uppercase tracking-wide text-white/50">Warnings</div>
+                <div className="text-[22px] font-semibold leading-none text-amber-300">
+                  {warningCount}
+                </div>
+                <div className="text-[10px] uppercase tracking-wide text-white/50">
+                  Warnings
+                </div>
               </CardContent>
             </Card>
             <Card className="rounded-none border-white/10 bg-white/5 text-white">
               <CardContent className="flex flex-col gap-1 p-3">
-                <div className="text-[22px] font-semibold leading-none text-emerald-400">{resolvedIssues.length}</div>
-                <div className="text-[10px] uppercase tracking-wide text-white/50">Resolved</div>
+                <div className="text-[22px] font-semibold leading-none text-emerald-400">
+                  {resolvedIssues.length}
+                </div>
+                <div className="text-[10px] uppercase tracking-wide text-white/50">
+                  Resolved
+                </div>
               </CardContent>
             </Card>
           </div>
@@ -230,12 +259,16 @@ export function Sidebar() {
 
           <div className="flex items-center justify-between text-[10px] font-bold uppercase tracking-[0.6px] text-white/50">
             <span>Issues</span>
-            <Badge className="rounded-none bg-[#2563eb] text-[10px] font-bold">{openIssues.length}</Badge>
+            <Badge className="rounded-none bg-[#1d6ef5] text-[10px] font-bold">
+              {openIssues.length}
+            </Badge>
           </div>
 
           <div className="grid grid-cols-2 gap-2">
             <div>
-              <div className="mb-2 rounded-none bg-[#2563eb]/20 px-2 py-1 text-center text-[10px] font-bold uppercase text-[#7eb3f5]">Open</div>
+              <div className="mb-2 rounded-none bg-[#1d6ef5]/20 px-2 py-1 text-center text-[10px] font-bold uppercase text-[#7eb3f5]">
+                Open
+              </div>
               {openIssues.map((issue) => {
                 const meta = nodeStepMap[issue.nodeId] ?? { step: 0, label: "Unknown" }
                 const isActive = activeIssueId === issue.id
@@ -245,20 +278,27 @@ export function Sidebar() {
                     className={cn(
                       "mb-2 w-full rounded-none border border-white/10 bg-white/5 px-2 py-2 text-left text-[11px] text-white/80",
                       "transition hover:-translate-y-0.5 hover:bg-white/10",
-                      issue.severity === "error"   && "border-l-4 border-l-red-500",
+                      issue.severity === "error" && "border-l-4 border-l-red-500",
                       issue.severity === "warning" && "border-l-4 border-l-amber-400",
-                      isActive && "border-l-4 border-l-[#2563eb] bg-[#2563eb]/15 shadow-[0_0_0_1px_rgba(37,99,235,0.3)]"
+                      isActive &&
+                        "border-l-4 border-l-[#1d6ef5] bg-[#1d6ef5]/15 shadow-[0_0_0_1px_rgba(29,110,245,0.3)]"
                     )}
                     onClick={() => selectIssue(issue.id)}
                   >
-                    <div className="mb-1 font-medium text-white">{issue.title}</div>
+                    <div className="mb-1 font-medium text-white">
+                      {issue.title}
+                    </div>
                     <div className="flex flex-col gap-1 text-[10px] text-white/50">
-                      <span className="font-mono">Step {meta.step} · {meta.label}</span>
+                      <span className="font-mono">
+                        Step {meta.step} · {meta.label}
+                      </span>
                       <Badge
                         variant="outline"
                         className={cn(
                           "rounded-none border-transparent px-1.5 py-0.5 text-[9px] uppercase",
-                          issue.severity === "error" ? "bg-red-500/20 text-red-200" : "bg-amber-400/20 text-amber-200"
+                          issue.severity === "error"
+                            ? "bg-red-500/20 text-red-200"
+                            : "bg-amber-400/20 text-amber-200"
                         )}
                       >
                         <span className="inline-flex items-center gap-1">
@@ -274,7 +314,9 @@ export function Sidebar() {
             </div>
 
             <div>
-              <div className="mb-2 rounded-none bg-emerald-500/20 px-2 py-1 text-center text-[10px] font-bold uppercase text-emerald-300">Resolved</div>
+              <div className="mb-2 rounded-none bg-emerald-500/20 px-2 py-1 text-center text-[10px] font-bold uppercase text-emerald-300">
+                Resolved
+              </div>
               {resolvedIssues.map((issue) => {
                 const meta = nodeStepMap[issue.nodeId] ?? { step: 0, label: "Unknown" }
                 const isActive = activeIssueId === issue.id
@@ -288,8 +330,12 @@ export function Sidebar() {
                     )}
                     onClick={() => selectIssue(issue.id)}
                   >
-                    <div className="mb-1 font-medium text-white/70">{issue.title}</div>
-                    <div className="text-[10px] text-white/40">Step {meta.step} · {meta.label}</div>
+                    <div className="mb-1 font-medium text-white/70">
+                      {issue.title}
+                    </div>
+                    <div className="text-[10px] text-white/40">
+                      Step {meta.step} · {meta.label}
+                    </div>
                   </button>
                 )
               })}
@@ -298,8 +344,9 @@ export function Sidebar() {
         </>
       )}
 
+      {/* Footer — always visible */}
       <div className="mt-auto flex items-center gap-2 rounded-none border border-white/10 bg-white/5 px-3 py-2 text-[12px] text-white/60">
-        <span className="h-2 w-2 rounded-full bg-[#2563eb] shadow-[0_0_6px_#2563eb]" />
+        <span className="h-2 w-2 rounded-full bg-[#1d6ef5] shadow-[0_0_6px_#1d6ef5]" />
         Agent running
       </div>
     </aside>

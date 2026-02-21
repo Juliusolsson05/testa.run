@@ -1,9 +1,26 @@
-import { WorkspaceClient } from "@/components/workspace/WorkspaceClient"
+"use client"
 
-export function WorkspacePage() {
+import { IssueProvider } from "@/context/issue-context"
+import { FlowCanvas } from "@/components/workspace/FlowCanvas"
+import { FloatingNav } from "@/components/workspace/FloatingNav"
+import { Sidebar } from "@/components/workspace/Sidebar"
+
+export function WorkspacePage({
+  initialIssueId,
+  initialNodeId,
+}: {
+  initialIssueId?: string
+  initialNodeId?: string
+}) {
   return (
-    <main className="flex h-dvh w-full overflow-hidden bg-[#eff6ff]">
-      <WorkspaceClient />
-    </main>
+    <IssueProvider initialIssueId={initialIssueId} initialNodeId={initialNodeId}>
+      <main className="flex h-dvh w-full overflow-hidden bg-[#eff6ff]">
+        <Sidebar />
+        <div className="relative flex flex-1 overflow-hidden">
+          <FloatingNav />
+          <FlowCanvas />
+        </div>
+      </main>
+    </IssueProvider>
   )
 }

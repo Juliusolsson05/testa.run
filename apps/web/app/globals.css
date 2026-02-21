@@ -7,9 +7,9 @@
 @theme {
   --font-sans: var(--font-geist-sans), system-ui, sans-serif;
   --font-mono: var(--font-geist-mono), ui-monospace, SFMono-Regular, monospace;
-  --color-brand: #2563eb;
+  --color-brand: #1d6ef5;
   --color-brand-soft: #dbeafe;
-  --color-brand-dark: #1d4ed8;
+  --color-brand-dark: #1559d4;
 }
 
 @theme inline {
@@ -116,4 +116,72 @@
   body {
     @apply bg-[#eff6ff] text-foreground font-sans antialiased;
   }
+}
+
+@layer utilities {
+  .flow-handle {
+    width: 12px !important;
+    height: 12px !important;
+    background: #1d6ef5 !important;
+    border: 2px solid #ffffff !important;
+    box-shadow: 0 0 6px rgba(37, 99, 235, 0.5) !important;
+  }
+
+  .react-flow__controls {
+    background: #ffffff !important;
+    border: 1px solid #c0d4ec !important;
+    border-radius: 0 !important;
+    overflow: hidden;
+    box-shadow: 0 2px 12px rgba(37, 99, 235, 0.1) !important;
+  }
+
+  .react-flow__controls-button {
+    background: transparent !important;
+    border: none !important;
+    color: #4a7ab5 !important;
+    border-bottom: 1px solid #c0d4ec !important;
+  }
+
+  .react-flow__controls-button:last-child {
+    border-bottom: none !important;
+  }
+
+  .react-flow__controls-button:hover {
+    background: #eff6ff !important;
+    color: #1559d4 !important;
+  }
+}
+
+@keyframes nodeFocusIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+    filter: blur(2px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+    filter: blur(0);
+  }
+}
+
+.node-focus-in {
+  animation: nodeFocusIn 0.35s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+@keyframes issueDropdownOpen {
+  from {
+    opacity: 0;
+    max-height: 0;
+    transform: translateY(-6px);
+  }
+  to {
+    opacity: 1;
+    max-height: 240px;
+    transform: translateY(0);
+  }
+}
+
+.issue-dropdown {
+  animation: issueDropdownOpen 0.28s cubic-bezier(0.16, 1, 0.3, 1) both;
 }

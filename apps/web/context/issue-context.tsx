@@ -22,9 +22,22 @@ type IssueContextValue = {
 
 const IssueContext = createContext<IssueContextValue | null>(null)
 
-export function IssueProvider({ children }: { children: ReactNode }) {
-  const [activeIssueId, setActiveIssueId] = useState<string | null>(null)
-  const [activeNodeId, setActiveNodeId] = useState<string | null>(null)
+export function IssueProvider({
+  children,
+  initialIssueId,
+  initialNodeId,
+}: {
+  children: ReactNode
+  initialIssueId?: string
+  initialNodeId?: string
+}) {
+  const seedIssue = initialIssueId ?? null
+  const seedNode  = initialIssueId
+    ? (issues.find((i) => i.id === initialIssueId)?.nodeId ?? null)
+    : (initialNodeId ?? null)
+
+  const [activeIssueId, setActiveIssueId] = useState<string | null>(seedIssue)
+  const [activeNodeId,  setActiveNodeId]  = useState<string | null>(seedNode)
 
   const selectIssue = useCallback((issueId: string) => {
     const issue = issues.find((item) => item.id === issueId)
@@ -45,7 +58,7 @@ export function IssueProvider({ children }: { children: ReactNode }) {
 
   const value = useMemo(
     () => ({ issues, activeIssueId, activeNodeId, selectIssue, selectNode, clearSelection }),
-    [activeIssueId, activeNodeId, selectIssue, selectNode, clearSelection, issues]
+    [activeIssueId, activeNodeId, selectIssue, selectNode, clearSelection]
   )
 
   return <IssueContext.Provider value={value}>{children}</IssueContext.Provider>
