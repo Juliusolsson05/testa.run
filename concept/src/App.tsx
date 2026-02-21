@@ -31,7 +31,7 @@ const initialNodes: Node<ScreenshotNodeData>[] = [
   {
     id: '2',
     type: 'screenshot',
-    position: { x: 660, y: 20 },
+    position: { x: 860, y: 20 },
     data: {
       label: 'Login Flow',
       url: 'https://testa.run/login',
@@ -45,7 +45,7 @@ const initialNodes: Node<ScreenshotNodeData>[] = [
   {
     id: '3',
     type: 'screenshot',
-    position: { x: 1110, y: 120 },
+    position: { x: 1480, y: 120 },
     data: {
       label: 'User Dashboard',
       url: 'https://testa.run/dashboard',
