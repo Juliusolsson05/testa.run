@@ -124,17 +124,19 @@ export default function Home() {
           </p>
 
           {/* URL input CTA */}
-          <div className="max-w-lg mx-auto flex items-center gap-2">
-            <input
-              type="url"
-              placeholder="https://your-app.com"
-              className="flex-1 h-12 px-4 rounded-lg border border-gray-200 bg-white text-[14px] text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-brand/30 focus:border-brand"
-            />
-            <Button size="lg" className="h-12 px-6 shrink-0">
-              Test my site <ArrowRight className="w-4 h-4 ml-1.5" />
-            </Button>
+          <div className="max-w-xl mx-auto rounded-2xl bg-[#f5f3ee] shadow-lg shadow-black/5 p-4">
+            <div className="flex items-end gap-3">
+              <input
+                type="url"
+                placeholder="https://your-app.com"
+                className="flex-1 bg-transparent text-[15px] text-gray-900 placeholder:text-gray-500 focus:outline-none py-2 px-1"
+              />
+              <Button size="lg" className="h-10 px-5 rounded-full shrink-0">
+                <ArrowRight className="w-4 h-4" />
+              </Button>
+            </div>
           </div>
-          <p className="text-[12px] text-gray-400 mt-3">Free to start. No credit card required.</p>
+          <p className="text-[12px] text-gray-400 mt-4">Free to start. No credit card required.</p>
         </div>
       </section>
 
@@ -289,15 +291,17 @@ export default function Home() {
           <p className="text-[15px] text-gray-500 max-w-md mx-auto mb-8 leading-relaxed">
             Paste a URL and find out in minutes. No setup, no scripts, no waiting.
           </p>
-          <div className="max-w-lg mx-auto flex items-center gap-2">
-            <input
-              type="url"
-              placeholder="https://your-app.com"
-              className="flex-1 h-12 px-4 rounded-lg border border-gray-200 bg-white text-[14px] text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-brand/30 focus:border-brand"
-            />
-            <Button size="lg" className="h-12 px-6 shrink-0">
-              Test my site <ArrowRight className="w-4 h-4 ml-1.5" />
-            </Button>
+          <div className="max-w-xl mx-auto rounded-2xl bg-[#f5f3ee] shadow-lg shadow-black/5 p-4">
+            <div className="flex items-end gap-3">
+              <input
+                type="url"
+                placeholder="https://your-app.com"
+                className="flex-1 bg-transparent text-[15px] text-gray-900 placeholder:text-gray-500 focus:outline-none py-2 px-1"
+              />
+              <Button size="lg" className="h-10 px-5 rounded-full shrink-0">
+                <ArrowRight className="w-4 h-4" />
+              </Button>
+            </div>
           </div>
         </div>
       </section>
