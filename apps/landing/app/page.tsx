@@ -3,6 +3,7 @@ import { Badge } from '@/components/ui/badge'
 import { Separator } from '@/components/ui/separator'
 import { Card, CardContent } from '@/components/ui/card'
 import Image from 'next/image'
+import Link from 'next/link'
 import {
   ArrowRight,
   Check,
@@ -94,9 +95,9 @@ export default function Home() {
 
       {/* ── Nav ── */}
       <nav className="fixed top-0 inset-x-0 z-50 h-14 flex items-center justify-between px-8 bg-white/80 backdrop-blur-md border-b border-gray-100">
-        <a href="/" className="text-sm tracking-tight text-gray-900">
+        <Link href="/" className="text-sm tracking-tight text-gray-900">
           testa<span className="text-brand">.run</span>
-        </a>
+        </Link>
         <ul className="hidden md:flex items-center gap-8 list-none">
           <li><a href="#how-it-works" className="text-[13px] text-gray-500 hover:text-gray-900 transition-colors">How it works</a></li>
           <li><a href="#pricing" className="text-[13px] text-gray-500 hover:text-gray-900 transition-colors">Pricing</a></li>
@@ -120,16 +121,16 @@ export default function Home() {
           </h1>
           <p className="text-[16px] text-gray-500 leading-relaxed max-w-md mx-auto mb-8">
             Paste your URL. An agent clicks through your app like a real user,
-            finds what's broken, and flags security holes. You get the report.
+            finds what’s broken, and flags security holes. You get the report.
           </p>
 
           {/* URL input CTA */}
-          <div className="max-w-xl mx-auto flex items-center gap-2 rounded-xl border border-gray-300/90 bg-white/95 p-2 shadow-[0_10px_30px_rgba(15,23,42,0.12)] backdrop-blur">
+          <div className="max-w-xl mx-auto flex items-center gap-2 rounded-xl bg-gray-100 p-2.5 shadow-lg shadow-gray-200/50">
             <input
               type="url"
               aria-label="Website URL"
               placeholder="https://your-app.com"
-              className="flex-1 h-12 px-4 rounded-lg border border-gray-300 bg-white text-[14px] text-gray-950 placeholder:text-gray-600 focus:outline-none focus:ring-2 focus:ring-brand/40 focus:border-brand"
+              className="flex-1 h-12 px-4 rounded-lg border-0 bg-transparent text-[14px] text-gray-900 placeholder:text-gray-400 focus:outline-none"
             />
             <Button size="lg" className="h-12 px-6 shrink-0">
               Test my site <ArrowRight className="w-4 h-4 ml-1.5" />
@@ -159,7 +160,7 @@ export default function Home() {
                 { name: 'Supabase', logo: '/logos/supabase.svg' },
               ].map((company, i) => (
                 <div key={`${setIdx}-${i}`} className="flex items-center gap-2.5 shrink-0 opacity-70 mx-7">
-                  <img src={company.logo} alt={company.name} className="w-6 h-6 object-contain" />
+                  <Image src={company.logo} alt={company.name} width={24} height={24} className="w-6 h-6 object-contain" />
                   <span className="text-[15px] text-gray-800 tracking-tight">{company.name}</span>
                 </div>
               ))
@@ -176,9 +177,9 @@ export default function Home() {
               You describe the journey.<br />The agent does everything else.
             </h2>
             <p className="text-[15px] text-gray-500 leading-relaxed mb-6">
-              Tell it "sign up, add an item to cart, and check out" — it opens a browser, runs every step,
+              Tell it “sign up, add an item to cart, and check out” — it opens a browser, runs every step,
               and probes for auth bypass, missing rate limits, and exposed data along the way.
-              When it's done, you get a ranked list of everything that's wrong.
+              When it’s done, you get a ranked list of everything that’s wrong.
             </p>
             <ul className="space-y-3">
               {['No scripts to write or maintain', 'QA and security in one pass', 'Screenshots and traces on every finding'].map(item => (
@@ -212,7 +213,7 @@ export default function Home() {
         <div className="max-w-5xl mx-auto px-8">
           <div className="text-center mb-14">
             <h2 className="text-3xl tracking-tight">
-              Three steps. That's it.
+              Three steps. That’s it.
             </h2>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
@@ -285,22 +286,21 @@ export default function Home() {
         <CloudBackground position="bottom" />
         <div className="max-w-2xl mx-auto px-6">
           <h2 className="text-4xl md:text-5xl tracking-tight leading-tight mb-4">
-            Your app has bugs you<br />don't know about yet
+            Your app has bugs you<br />don’t know about yet
           </h2>
           <p className="text-[15px] text-gray-500 max-w-md mx-auto mb-8 leading-relaxed">
             Paste a URL and find out in minutes. No setup, no scripts, no waiting.
           </p>
-          <div className="max-w-xl mx-auto rounded-2xl bg-gray-950 shadow-xl shadow-gray-900/20 p-4">
-            <div className="flex items-end gap-3">
-              <input
-                type="url"
-                placeholder="https://your-app.com"
-                className="flex-1 bg-transparent text-[15px] text-white placeholder:text-gray-500 focus:outline-none py-2 px-1"
-              />
-              <Button size="lg" className="h-10 px-5 rounded-full shrink-0 bg-brand hover:bg-brand/90 text-white">
-                <ArrowRight className="w-4 h-4" />
-              </Button>
-            </div>
+          <div className="max-w-xl mx-auto flex items-center gap-2 rounded-xl bg-gray-100 p-2.5 shadow-lg shadow-gray-200/50">
+            <input
+              type="url"
+              aria-label="Website URL"
+              placeholder="https://your-app.com"
+              className="flex-1 h-12 px-4 rounded-lg border-0 bg-transparent text-[14px] text-gray-900 placeholder:text-gray-400 focus:outline-none"
+            />
+            <Button size="lg" className="h-12 px-6 shrink-0">
+              Test my site <ArrowRight className="w-4 h-4 ml-1.5" />
+            </Button>
           </div>
         </div>
       </section>
@@ -309,9 +309,9 @@ export default function Home() {
       <footer className="border-t border-gray-100">
         <div className="max-w-5xl mx-auto px-8 py-10 flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
           <div>
-            <a href="/" className="text-sm tracking-tight text-gray-900">
+            <Link href="/" className="text-sm tracking-tight text-gray-900">
               testa<span className="text-brand">.run</span>
-            </a>
+            </Link>
             <p className="text-[13px] text-gray-400 mt-1">QA and security testing that runs itself.</p>
           </div>
           <div className="flex gap-8 text-[13px] text-gray-500">
