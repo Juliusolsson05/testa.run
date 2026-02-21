@@ -21,13 +21,17 @@ export function BlueCursor() {
     let targetX = currentX
     let targetY = currentY
     let raf: number
+    const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
 
     const clamp = (n: number, min: number, max: number) => Math.max(min, Math.min(max, n))
 
     const updateTarget = () => {
       const centerY = window.innerHeight * 0.48
 
-      let best: { idx: number; rect: DOMRect; distance: number } | null = null
+      let bestIdx = -1
+      let bestDistance = Number.POSITIVE_INFINITY
+      let bestX = targetX
+      let bestY = targetY
 
       targets.forEach((t, idx) => {
         const el = document.querySelector(t.selector)
@@ -40,33 +44,41 @@ export function BlueCursor() {
         const rectCenter = rect.top + rect.height / 2
         const distance = Math.abs(rectCenter - centerY)
 
-        if (!best || distance < best.distance) best = { idx, rect, distance }
+        if (distance < bestDistance) {
+          bestDistance = distance
+          bestIdx = idx
+          bestX = clamp(rect.right + 14, 14, window.innerWidth - 44)
+          bestY = clamp(rect.top + rect.height / 2, 20, window.innerHeight - 20)
+        }
       })
 
-      if (!best) {
+      if (bestIdx < 0) {
         setVisible(false)
         return
       }
 
-      const { idx, rect } = best
-
       // Position near right edge of active section, clamped to viewport so it never disappears.
-      const x = clamp(rect.right + 14, 14, window.innerWidth - 44)
-      const y = clamp(rect.top + rect.height / 2, 20, window.innerHeight - 20)
+      const x = bestX
+      const y = bestY
 
       targetX = x
       targetY = y
-      setLabel(targets[idx].label)
+      setLabel(targets[bestIdx].label)
       setVisible(true)
     }
 
     const animate = () => {
-      // Snappy movement
-      currentX += (targetX - currentX) * 0.2
-      currentY += (targetY - currentY) * 0.2
+      if (prefersReducedMotion) {
+        currentX = targetX
+        currentY = targetY
+      } else {
+        // Snappy movement
+        currentX += (targetX - currentX) * 0.2
+        currentY += (targetY - currentY) * 0.2
+      }
 
       if (dotRef.current) {
-        dotRef.current.style.transform = `translate(${currentX}px, ${currentY}px)`
+        dotRef.current.style.transform = `translate3d(${currentX}px, ${currentY}px, 0)`
       }
 
       raf = requestAnimationFrame(animate)
@@ -76,6 +88,7 @@ export function BlueCursor() {
     const onResize = () => updateTarget()
 
     updateTarget()
+    requestAnimationFrame(updateTarget)
     window.addEventListener('scroll', onScroll, { passive: true })
     window.addEventListener('resize', onResize)
     raf = requestAnimationFrame(animate)
@@ -90,6 +103,7 @@ export function BlueCursor() {
   return (
     <div
       ref={dotRef}
+      aria-hidden="true"
       className={`pointer-events-none fixed top-0 left-0 z-[60] transition-opacity duration-300 ${visible ? 'opacity-100' : 'opacity-0'}`}
       style={{ willChange: 'transform' }}
     >

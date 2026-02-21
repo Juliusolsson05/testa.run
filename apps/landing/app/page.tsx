@@ -4,6 +4,7 @@ import { Separator } from '@/components/ui/separator'
 import { Card, CardContent } from '@/components/ui/card'
 import Image from 'next/image'
 import Link from 'next/link'
+import type { CSSProperties } from 'react'
 import {
   ArrowRight,
   Check,
@@ -51,6 +52,10 @@ function CloudShape({ className, id }: { className?: string; id: string }) {
 
 function CloudBackground({ position }: { position: 'top' | 'bottom' }) {
   const isTop = position === 'top'
+  const fadeStyle: CSSProperties = isTop
+    ? { bottom: 0, background: 'linear-gradient(to bottom, transparent, white 82%)' }
+    : { top: 0, background: 'linear-gradient(to top, transparent, white 82%)' }
+
   return (
     <div className="absolute inset-0 -z-10 overflow-hidden pointer-events-none">
       <div className="absolute inset-0 bg-[radial-gradient(1200px_380px_at_50%_0%,rgba(191,219,254,0.45),transparent_72%)]" />
@@ -75,15 +80,7 @@ function CloudBackground({ position }: { position: 'top' | 'bottom' }) {
           <CloudShape id="c7-bot" className="absolute w-[170px] right-[24%] bottom-[32px] opacity-16 blur-[3.5px]" />
         </>
       )}
-      <div
-        className="absolute left-0 right-0 h-44"
-        style={{
-          [isTop ? 'bottom' : 'top']: 0,
-          background: isTop
-            ? 'linear-gradient(to bottom, transparent, white 82%)'
-            : 'linear-gradient(to top, transparent, white 82%)',
-        }}
-      />
+      <div className="absolute left-0 right-0 h-44" style={fadeStyle} />
     </div>
   )
 }
@@ -127,19 +124,22 @@ export default function Home() {
           </p>
 
           {/* URL input CTA */}
-          <div className="max-w-2xl mx-auto rounded-2xl bg-gray-900 px-6 py-5 flex items-center gap-3" data-spot="cta-input">
+          <form className="max-w-2xl mx-auto rounded-2xl bg-gray-900 px-6 py-5 flex items-center gap-3" data-spot="cta-input">
+            <label className="sr-only" htmlFor="hero-url">Website URL</label>
             <input
+              id="hero-url"
+              name="url"
               type="url"
-              aria-label="Website URL"
+              autoComplete="url"
+              inputMode="url"
               placeholder="https://your-app.com"
               className="flex-1 bg-transparent text-[15px] text-white placeholder:text-white/50 focus:outline-none"
+              required
             />
-            <div className="flex items-center">
-              <Button size="icon" className="h-9 w-9 rounded-full bg-brand hover:bg-brand/90 text-white">
-                <ArrowRight className="w-4 h-4" />
-              </Button>
-            </div>
-          </div>
+            <Button type="submit" size="icon" aria-label="Start a test run" className="h-9 w-9 rounded-full bg-brand hover:bg-brand/90 text-white">
+              <ArrowRight className="w-4 h-4" />
+            </Button>
+          </form>
           <p className="text-[12px] text-gray-400 mt-4">Free to start. No credit card required.</p>
         </div>
       </section>
@@ -353,19 +353,22 @@ export default function Home() {
           <p className="text-[15px] text-gray-500 max-w-md mx-auto mb-8 leading-relaxed">
             Paste a URL and find out in minutes. No setup, no scripts, no waiting.
           </p>
-          <div className="max-w-2xl mx-auto rounded-2xl bg-gray-900 px-6 py-5 flex items-center gap-3" data-spot="bottom-cta">
+          <form className="max-w-2xl mx-auto rounded-2xl bg-gray-900 px-6 py-5 flex items-center gap-3" data-spot="bottom-cta">
+            <label className="sr-only" htmlFor="footer-url">Website URL</label>
             <input
+              id="footer-url"
+              name="url"
               type="url"
-              aria-label="Website URL"
+              autoComplete="url"
+              inputMode="url"
               placeholder="https://your-app.com"
               className="flex-1 bg-transparent text-[15px] text-white placeholder:text-white/50 focus:outline-none"
+              required
             />
-            <div className="flex items-center">
-              <Button size="icon" className="h-9 w-9 rounded-full bg-brand hover:bg-brand/90 text-white">
-                <ArrowRight className="w-4 h-4" />
-              </Button>
-            </div>
-          </div>
+            <Button type="submit" size="icon" aria-label="Start a test run" className="h-9 w-9 rounded-full bg-brand hover:bg-brand/90 text-white">
+              <ArrowRight className="w-4 h-4" />
+            </Button>
+          </form>
         </div>
       </section>
 
@@ -379,11 +382,11 @@ export default function Home() {
             <p className="text-[13px] text-gray-400 mt-1">QA and security testing that runs itself.</p>
           </div>
           <div className="flex gap-8 text-[13px] text-gray-500">
-            <a href="#pricing" className="hover:text-gray-900 transition-colors">Pricing</a>
-            <a href="#" className="hover:text-gray-900 transition-colors">Docs</a>
-            <a href="#" className="hover:text-gray-900 transition-colors">GitHub</a>
-            <a href="#" className="hover:text-gray-900 transition-colors">Twitter</a>
-            <a href="mailto:hello@testa.run" className="hover:text-gray-900 transition-colors">Contact</a>
+            <Link href="/pricing" className="hover:text-gray-900 transition-colors">Pricing</Link>
+            <Link href="/help" className="hover:text-gray-900 transition-colors">Help</Link>
+            <Link href="/privacy" className="hover:text-gray-900 transition-colors">Privacy</Link>
+            <Link href="/terms" className="hover:text-gray-900 transition-colors">Terms</Link>
+            <Link href="/contact" className="hover:text-gray-900 transition-colors">Contact</Link>
           </div>
         </div>
         <div className="max-w-5xl mx-auto px-8 py-4 border-t border-gray-100">
