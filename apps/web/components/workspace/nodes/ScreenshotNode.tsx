@@ -141,12 +141,12 @@ export function ScreenshotNode({
           {displayUrl}
         </div>
         <span className="rounded-none border border-[#7aaad4] bg-[#dbeafe] px-2 py-0.5 text-[10px] font-semibold text-[#1d4ed8]">
-          Step {nodeData.step}
+          Step {data.step}
         </span>
       </div>
 
       <div className="relative aspect-[16/10] w-full overflow-hidden bg-[#dbeafe]">
-        {nodeData.imageSrc ? (
+        {data.imageSrc ? (
           <Image
             src={data.imageSrc}
             alt={data.label}
