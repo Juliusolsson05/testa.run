@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
+  <text
+    x="16"
+    y="24"
+    text-anchor="middle"
+    font-family="'Public Sans', ui-sans-serif, system-ui, sans-serif"
+    font-size="22"
+    font-weight="400"
+    letter-spacing="-0.3"
+  >
+    <tspan fill="#111827">t</tspan>
+    <tspan fill="#1d6ef5">r</tspan>
+  </text>
+</svg>

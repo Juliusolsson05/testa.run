@@ -148,7 +148,7 @@ export function FlowCanvas() {
   const { selectNode, clearSelection } = useIssueContext()
 
   const onNodesChange = useCallback(
-    (changes: NodeChange[]) => {
+    (changes: NodeChange<Node<ScreenshotNodeData>>[]) => {
       setNodes((current) =>
         applyNodeChanges(changes, current) as Node<ScreenshotNodeData>[]
       )

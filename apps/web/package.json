@@ -13,6 +13,7 @@
   },
   "dependencies": {
     "@react-spring/web": "^10.0.3",
+    "@repo/testing": "workspace:*",
     "@tailwindcss/postcss": "^4.2.0",
     "@xyflow/react": "^12.8.5",
     "class-variance-authority": "^0.7.1",

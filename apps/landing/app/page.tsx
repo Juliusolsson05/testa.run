@@ -3,12 +3,13 @@ import { Badge } from '@/components/ui/badge'
 import { Separator } from '@/components/ui/separator'
 import { Card, CardContent } from '@/components/ui/card'
 import Image from 'next/image'
+import Link from 'next/link'
+import type { CSSProperties } from 'react'
 import {
   ArrowRight,
   Check,
 } from 'lucide-react'
-import PitchDeck from '@/components/pitch-deck'
-import { SiteNav, SiteFooter } from '@/app/components/SiteNav'
+import { BlueCursor } from './components/BlueCursor'
 
 const steps = [
   { num: '01', title: 'Enter your URL', desc: 'Paste any web app URL and describe what a user would do — sign up, buy something, reset a password.' },
@@ -51,6 +52,10 @@ function CloudShape({ className, id }: { className?: string; id: string }) {
 
 function CloudBackground({ position }: { position: 'top' | 'bottom' }) {
   const isTop = position === 'top'
+  const fadeStyle: CSSProperties = isTop
+    ? { bottom: 0, background: 'linear-gradient(to bottom, transparent, white 82%)' }
+    : { top: 0, background: 'linear-gradient(to top, transparent, white 82%)' }
+
   return (
     <div className="absolute inset-0 -z-10 overflow-hidden pointer-events-none">
       <div className="absolute inset-0 bg-[radial-gradient(1200px_380px_at_50%_0%,rgba(191,219,254,0.45),transparent_72%)]" />
@@ -75,15 +80,7 @@ function CloudBackground({ position }: { position: 'top' | 'bottom' }) {
           <CloudShape id="c7-bot" className="absolute w-[170px] right-[24%] bottom-[32px] opacity-16 blur-[3.5px]" />
         </>
       )}
-      <div
-        className="absolute left-0 right-0 h-44"
-        style={{
-          [isTop ? 'bottom' : 'top']: 0,
-          background: isTop
-            ? 'linear-gradient(to bottom, transparent, white 82%)'
-            : 'linear-gradient(to top, transparent, white 82%)',
-        }}
-      />
+      <div className="absolute left-0 right-0 h-44" style={fadeStyle} />
     </div>
   )
 }
@@ -91,10 +88,30 @@ function CloudBackground({ position }: { position: 'top' | 'bottom' }) {
 export default function Home() {
   return (
     <div className="relative text-gray-900 font-sans antialiased overflow-x-hidden [&_*]:font-normal">
+      <BlueCursor />
       <div className="pointer-events-none fixed inset-0 z-[1] opacity-[0.14]" style={{ backgroundImage: 'radial-gradient(circle, #64748b 0.9px, transparent 0.9px)', backgroundSize: '20px 20px' }} />
       <div className="relative z-[2]">
 
-      <SiteNav />
+      {/* ── Nav ── */}
+      <nav className="fixed top-0 inset-x-0 z-50 h-14 flex items-center justify-between px-8 bg-white/80 backdrop-blur-md border-b border-gray-100">
+        <Link href="/">
+          <svg width="88" height="18" viewBox="0 0 88 18" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <text y="14" fontFamily="var(--font-public-sans), 'Public Sans', ui-sans-serif, system-ui, sans-serif" fontSize="14" fontWeight="400" letterSpacing="-0.3">
+              <tspan fill="#111827">t</tspan><tspan fill="#1d6ef5">r</tspan>
+            </text>
+            <text x="22" y="14" fontFamily="var(--font-public-sans), 'Public Sans', ui-sans-serif, system-ui, sans-serif" fontSize="14" fontWeight="400" letterSpacing="-0.3">
+              <tspan fill="#111827">testa</tspan><tspan fill="#1d6ef5">.run</tspan>
+            </text>
+          </svg>
+        </Link>
+        <ul className="hidden md:flex items-center gap-8 list-none">
+          <li><a href="#how-it-works" className="text-[13px] text-gray-500 hover:text-gray-900 transition-colors">How it works</a></li>
+          <li><a href="#pricing" className="text-[13px] text-gray-500 hover:text-gray-900 transition-colors">Pricing</a></li>
+        </ul>
+        <Button size="sm" asChild>
+          <a href="#pricing">Get started</a>
+        </Button>
+      </nav>
 
       {/* ── Hero ── */}
       <section className="relative pt-44 pb-28 text-center">
@@ -110,21 +127,26 @@ export default function Home() {
           </h1>
           <p className="text-[16px] text-gray-500 leading-relaxed max-w-md mx-auto mb-8">
             Paste your URL. An agent clicks through your app like a real user,
-            finds what's broken, and flags security holes. You get the report.
+            finds what’s broken, and flags security holes. You get the report.
           </p>
 
           {/* URL input CTA */}
-          <div className="max-w-2xl mx-auto rounded-2xl bg-gray-900 px-6 py-5 flex items-center gap-3">
+          <form className="max-w-2xl mx-auto rounded-2xl bg-gray-900 px-6 py-5 flex items-center gap-3" data-spot="cta-input">
+            <label className="sr-only" htmlFor="hero-url">Website URL</label>
             <input
+              id="hero-url"
+              name="url"
               type="url"
-              aria-label="Website URL"
+              autoComplete="url"
+              inputMode="url"
               placeholder="https://your-app.com"
               className="flex-1 bg-transparent text-[15px] text-white placeholder:text-white/50 focus:outline-none"
+              required
             />
-            <Button size="icon" className="h-9 w-9 rounded-full bg-brand hover:bg-brand/90 text-white shrink-0">
+            <Button type="submit" size="icon" aria-label="Start a test run" className="h-9 w-9 rounded-full bg-brand hover:bg-brand/90 text-white">
               <ArrowRight className="w-4 h-4" />
             </Button>
-          </div>
+          </form>
           <p className="text-[12px] text-gray-400 mt-4">Free to start. No credit card required.</p>
         </div>
       </section>
@@ -149,7 +171,7 @@ export default function Home() {
                 { name: 'Supabase', logo: '/logos/supabase.svg' },
               ].map((company, i) => (
                 <div key={`${setIdx}-${i}`} className="flex items-center gap-2.5 shrink-0 opacity-70 mx-7">
-                  <img src={company.logo} alt={company.name} className="w-6 h-6 object-contain" />
+                  <Image src={company.logo} alt={company.name} width={24} height={24} className="w-6 h-6 object-contain" />
                   <span className="text-[15px] text-gray-800 tracking-tight">{company.name}</span>
                 </div>
               ))
@@ -158,20 +180,75 @@ export default function Home() {
         </div>
       </section>
 
-      {/* ── Pitch Deck ── */}
-      <PitchDeck />
+      {/* ── Anonymous security case ── */}
+      <section className="py-20 bg-white border-b border-gray-100">
+        <div className="max-w-5xl mx-auto px-8">
+          <div className="max-w-3xl mx-auto text-center mb-10">
+            <h2 className="text-3xl tracking-tight mb-4">Most websites are leaking security</h2>
+            <p className="text-[15px] text-gray-500 leading-relaxed">
+              Most devs think their website is fully secure. Most websites are not.
+              This anonymous case was built by a senior developer, and critical issues still slipped through.
+              Do not take the risk — let us run the same assessment on your app.
+            </p>
+          </div>
+
+          <div className="rounded-2xl border border-gray-200 bg-white overflow-hidden shadow-sm">
+            <div className="grid md:grid-cols-[1.2fr_0.8fr] border-b border-gray-100">
+              <div className="px-6 py-4 border-r border-gray-100">
+                <p className="text-[12px] text-gray-400 uppercase tracking-[0.12em]">Anonymous report</p>
+                <p className="text-[15px] text-gray-800 mt-1">What we caught in one production deployment</p>
+              </div>
+              <div className="px-6 py-4">
+                <p className="text-[12px] text-gray-400 uppercase tracking-[0.12em]">Severity summary</p>
+                <div className="mt-2 flex items-center gap-2 text-[13px]">
+                  <span className="px-2 py-0.5 rounded bg-red-50 text-red-700 border border-red-200">3 Critical</span>
+                  <span className="px-2 py-0.5 rounded bg-amber-50 text-amber-700 border border-amber-200">4 High</span>
+                  <span className="px-2 py-0.5 rounded bg-blue-50 text-blue-700 border border-blue-200">2 Medium</span>
+                </div>
+              </div>
+            </div>
+
+            <div className="grid md:grid-cols-[1.2fr_0.8fr]">
+              <div className="px-6 py-5 border-r border-gray-100">
+                <ul className="space-y-3 text-[14px] text-gray-700 leading-relaxed">
+                  <li><span className="text-gray-900">Cloud/WAF bypass:</span> backend endpoint directly reachable outside the intended protection path.</li>
+                  <li><span className="text-gray-900">Account enumeration:</span> different auth error responses revealed whether an email exists.</li>
+                  <li><span className="text-gray-900">No registration throttling:</span> account creation could be automated at high speed.</li>
+                  <li><span className="text-gray-900">Internal config exposure:</span> integration metadata returned without authentication.</li>
+                  <li><span className="text-gray-900">Access control gap:</span> premium-gated listing data retrievable without a valid session.</li>
+                  <li><span className="text-gray-900">Open automation webhook:</span> chatbot endpoint accepted unauthenticated external requests.</li>
+                </ul>
+              </div>
+
+              <div className="px-6 py-5">
+                <p className="text-[12px] text-gray-400 uppercase tracking-[0.12em] mb-3">Assessment coverage</p>
+                <ul className="space-y-2 text-[13px] text-gray-600">
+                  <li>• Infrastructure exposure validation</li>
+                  <li>• Authentication flow abuse tests</li>
+                  <li>• Rate limit & automation checks</li>
+                  <li>• Access control verification</li>
+                  <li>• Public endpoint discovery</li>
+                </ul>
+                <p className="text-[13px] text-gray-500 mt-5 leading-relaxed">
+                  This is exactly the same workflow we run for every new customer assessment.
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
 
       {/* ── What it does ── */}
-      <section className="py-20 bg-white">
+      <section className="py-20 bg-white" data-spot="platform">
         <div className="max-w-5xl mx-auto px-8 grid grid-cols-1 md:grid-cols-2 gap-16 items-center">
           <div>
             <h2 className="text-3xl tracking-tight leading-tight mb-4">
               You describe the journey.<br />The agent does everything else.
             </h2>
             <p className="text-[15px] text-gray-500 leading-relaxed mb-6">
-              Tell it "sign up, add an item to cart, and check out" — it opens a browser, runs every step,
+              Tell it “sign up, add an item to cart, and check out” — it opens a browser, runs every step,
               and probes for auth bypass, missing rate limits, and exposed data along the way.
-              When it's done, you get a ranked list of everything that's wrong.
+              When it’s done, you get a ranked list of everything that’s wrong.
             </p>
             <ul className="space-y-3">
               {['No scripts to write or maintain', 'QA and security in one pass', 'Screenshots and traces on every finding'].map(item => (
@@ -201,11 +278,11 @@ export default function Home() {
       <Separator className="max-w-5xl mx-auto" />
 
       {/* ── How it works ── */}
-      <section id="how-it-works" className="py-20 bg-white">
+      <section id="how-it-works" className="py-20 bg-white" data-spot="steps">
         <div className="max-w-5xl mx-auto px-8">
           <div className="text-center mb-14">
             <h2 className="text-3xl tracking-tight">
-              Three steps. That's it.
+              Three steps. That’s it.
             </h2>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
@@ -223,7 +300,7 @@ export default function Home() {
       <Separator className="max-w-5xl mx-auto" />
 
       {/* ── Pricing ── */}
-      <section id="pricing" className="py-20 bg-white">
+      <section id="pricing" className="py-20 bg-white" data-spot="pricing">
         <div className="max-w-5xl mx-auto px-8">
           <div className="text-center mb-14">
             <h2 className="text-3xl tracking-tight">
@@ -278,26 +355,58 @@ export default function Home() {
         <CloudBackground position="bottom" />
         <div className="max-w-2xl mx-auto px-6">
           <h2 className="text-4xl md:text-5xl tracking-tight leading-tight mb-4">
-            Your app has bugs you<br />don't know about yet
+            Your app has bugs you<br />don’t know about yet
           </h2>
           <p className="text-[15px] text-gray-500 max-w-md mx-auto mb-8 leading-relaxed">
             Paste a URL and find out in minutes. No setup, no scripts, no waiting.
           </p>
-          <div className="max-w-2xl mx-auto rounded-2xl bg-gray-900 px-6 py-5 flex items-center gap-3">
+          <form className="max-w-2xl mx-auto rounded-2xl bg-gray-900 px-6 py-5 flex items-center gap-3" data-spot="bottom-cta">
+            <label className="sr-only" htmlFor="footer-url">Website URL</label>
             <input
+              id="footer-url"
+              name="url"
               type="url"
-              aria-label="Website URL"
+              autoComplete="url"
+              inputMode="url"
               placeholder="https://your-app.com"
               className="flex-1 bg-transparent text-[15px] text-white placeholder:text-white/50 focus:outline-none"
+              required
             />
-            <Button size="icon" className="h-9 w-9 rounded-full bg-brand hover:bg-brand/90 text-white shrink-0">
+            <Button type="submit" size="icon" aria-label="Start a test run" className="h-9 w-9 rounded-full bg-brand hover:bg-brand/90 text-white">
               <ArrowRight className="w-4 h-4" />
             </Button>
-          </div>
+          </form>
         </div>
       </section>
 
-      <SiteFooter />
+      {/* ── Footer ── */}
+      <footer className="border-t border-gray-100">
+        <div className="max-w-5xl mx-auto px-8 py-10 flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
+          <div>
+            <Link href="/">
+              <svg width="88" height="18" viewBox="0 0 88 18" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <text y="14" fontFamily="var(--font-public-sans), 'Public Sans', ui-sans-serif, system-ui, sans-serif" fontSize="14" fontWeight="400" letterSpacing="-0.3">
+                  <tspan fill="#111827">t</tspan><tspan fill="#1d6ef5">r</tspan>
+                </text>
+                <text x="22" y="14" fontFamily="var(--font-public-sans), 'Public Sans', ui-sans-serif, system-ui, sans-serif" fontSize="14" fontWeight="400" letterSpacing="-0.3">
+                  <tspan fill="#111827">testa</tspan><tspan fill="#1d6ef5">.run</tspan>
+                </text>
+              </svg>
+            </Link>
+            <p className="text-[13px] text-gray-400 mt-1">QA and security testing that runs itself.</p>
+          </div>
+          <div className="flex gap-8 text-[13px] text-gray-500">
+            <Link href="/pricing" className="hover:text-gray-900 transition-colors">Pricing</Link>
+            <Link href="/help" className="hover:text-gray-900 transition-colors">Help</Link>
+            <Link href="/privacy" className="hover:text-gray-900 transition-colors">Privacy</Link>
+            <Link href="/terms" className="hover:text-gray-900 transition-colors">Terms</Link>
+            <Link href="/contact" className="hover:text-gray-900 transition-colors">Contact</Link>
+          </div>
+        </div>
+        <div className="max-w-5xl mx-auto px-8 py-4 border-t border-gray-100">
+          <span className="text-[12px] text-gray-400">&copy; 2026 testa.run</span>
+        </div>
+      </footer>
 
       </div>
     </div>

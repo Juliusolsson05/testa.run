@@ -61,8 +61,6 @@
   --card-foreground: oklch(0.145 0 0);
   --popover: oklch(1 0 0);
   --popover-foreground: oklch(0.145 0 0);
-  --primary: oklch(0.205 0 0);
-  --primary-foreground: oklch(0.985 0 0);
   --secondary: oklch(0.97 0 0);
   --secondary-foreground: oklch(0.205 0 0);
   --muted: oklch(0.97 0 0);
@@ -127,7 +125,7 @@
     @apply border-border outline-ring/50;
   }
   body {
-    @apply bg-white text-foreground;
+    @apply bg-background text-foreground;
     background-image: radial-gradient(circle, rgba(15, 23, 42, 0.08) 0.8px, transparent 0.8px);
     background-size: 22px 22px;
   }
@@ -175,3 +173,14 @@
 .cloud-3 { animation: cloud-drift-3 30s ease-in-out infinite; }
 .cloud-4 { animation: cloud-drift-4 24s ease-in-out infinite; }
 .cloud-5 { animation: cloud-drift-5 28s ease-in-out infinite; }
+
+@media (prefers-reduced-motion: reduce) {
+  .logo-marquee-track,
+  .cloud-1,
+  .cloud-2,
+  .cloud-3,
+  .cloud-4,
+  .cloud-5 {
+    animation: none !important;
+  }
+}

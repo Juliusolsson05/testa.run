@@ -1,20 +1,20 @@
 'use client'
 
 import { useState } from 'react'
-import { PageShell } from '@/app/components/SiteNav'
+import { SiteShell, PageHero, ContentCard } from '@/app/components/SiteShell'
 import { Button } from '@/components/ui/button'
 
 export default function ContactPage() {
   const [loading, setLoading] = useState(false)
-  const [result, setResult] = useState<{ ok?: boolean; error?: string } | null>(null)
+  const [done, setDone] = useState<string | null>(null)
+  const [error, setError] = useState<string | null>(null)
 
-  async function onSubmit(e: React.FormEvent<HTMLFormElement>) {
-    e.preventDefault()
+  async function onSubmit(formData: FormData) {
     setLoading(true)
-    setResult(null)
-    const fd = new FormData(e.currentTarget)
-    const payload = Object.fromEntries(fd.entries())
+    setDone(null)
+    setError(null)
     try {
+      const payload = Object.fromEntries(formData.entries())
       const res = await fetch('/api/contact', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -22,43 +22,55 @@ export default function ContactPage() {
       })
       const data = await res.json()
       if (!res.ok) throw new Error(data?.error || 'Something went wrong.')
-      setResult({ ok: true })
-    } catch (err: any) {
-      setResult({ error: err?.message || 'Failed to send.' })
+      setDone('Thanks — we received your message and will reply shortly.')
+    } catch (e: unknown) {
+      const message = e instanceof Error ? e.message : 'Failed to send message.'
+      setError(message)
     } finally {
       setLoading(false)
     }
   }
 
   return (
-    <PageShell>
-      <section className="pt-24 pb-8 text-center bg-white">
-        <div className="max-w-3xl mx-auto px-6">
-          <h1 className="text-4xl md:text-5xl tracking-tight leading-[1.1] mb-3">Get in touch</h1>
-          <p className="text-[15px] text-gray-500">We usually reply within one business day.</p>
-        </div>
-      </section>
+    <SiteShell>
+      <PageHero
+        title="Contact testa.run"
+        subtitle="Talk to sales, support, or security. We usually reply within one business day."
+      />
+      <ContentCard>
+        <div className="grid md:grid-cols-2 gap-8">
+          <form
+            className="space-y-4"
+            action={onSubmit}
+          >
+            <input name="name" required className="w-full rounded-xl border border-gray-200 px-4 py-3 text-sm" placeholder="Your name" />
+            <input name="email" type="email" required className="w-full rounded-xl border border-gray-200 px-4 py-3 text-sm" placeholder="you@company.com" />
+            <input name="company" className="w-full rounded-xl border border-gray-200 px-4 py-3 text-sm" placeholder="Company (optional)" />
+            <select name="topic" className="w-full rounded-xl border border-gray-200 px-4 py-3 text-sm bg-white">
+              <option value="sales">Sales</option>
+              <option value="support">Support</option>
+              <option value="security">Security report</option>
+              <option value="partnership">Partnership</option>
+            </select>
+            <textarea name="message" required rows={6} className="w-full rounded-xl border border-gray-200 px-4 py-3 text-sm" placeholder="How can we help?" />
+            <Button disabled={loading} className="w-full">{loading ? 'Sending…' : 'Send message'}</Button>
+            {done ? <p className="text-sm text-green-700">{done}</p> : null}
+            {error ? <p className="text-sm text-red-600">{error}</p> : null}
+          </form>
 
-      <div className="max-w-2xl mx-auto px-6 pb-20">
-        <div className="rounded-2xl border border-gray-200 bg-white p-6 md:p-8 shadow-sm">
-          {result?.ok ? (
-            <div className="text-center py-8">
-              <p className="text-lg text-gray-900">Thanks for reaching out.</p>
-              <p className="text-sm text-gray-500 mt-2">We'll get back to you shortly at the email you provided.</p>
-            </div>
-          ) : (
-            <form onSubmit={onSubmit} className="space-y-4">
-              <input name="name" required placeholder="Your name" className="w-full rounded-xl border border-gray-200 px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-brand/30 focus:border-brand" />
-              <input name="email" type="email" required placeholder="you@company.com" className="w-full rounded-xl border border-gray-200 px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-brand/30 focus:border-brand" />
-              {/* Honeypot */}
-              <input name="website" tabIndex={-1} autoComplete="off" className="absolute opacity-0 h-0 w-0" />
-              <textarea name="message" required rows={5} placeholder="How can we help?" className="w-full rounded-xl border border-gray-200 px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-brand/30 focus:border-brand" />
-              <Button disabled={loading} className="w-full">{loading ? 'Sending…' : 'Send message'}</Button>
-              {result?.error ? <p className="text-sm text-red-600 text-center">{result.error}</p> : null}
-            </form>
-          )}
+          <div className="rounded-2xl border border-gray-100 bg-gray-50/60 p-6">
+            <h3 className="text-lg tracking-tight mb-3">Other ways to reach us</h3>
+            <ul className="space-y-3 text-[14px] text-gray-600">
+              <li><span className="text-gray-900">General:</span> hello@testa.run</li>
+              <li><span className="text-gray-900">Security:</span> security@testa.run</li>
+              <li><span className="text-gray-900">Support:</span> support@testa.run</li>
+            </ul>
+            <p className="text-[13px] text-gray-500 mt-5">
+              For responsible vulnerability disclosure, include clear reproduction steps, impact, and screenshots/logs if possible.
+            </p>
+          </div>
         </div>
-      </div>
-    </PageShell>
+      </ContentCard>
+    </SiteShell>
   )
 }
