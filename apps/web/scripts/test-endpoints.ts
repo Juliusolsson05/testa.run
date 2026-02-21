@@ -197,34 +197,14 @@ async function main() {
   // ── 6. Agent ingest (API key auth) ────────────────────────────────────────
   section('6. Agent ingest — create API key first')
 
-  // We don't have a UI endpoint for creating API keys yet, so create one directly via Prisma
-  // For now, let's test with a direct DB insert via a temporary endpoint approach
-  // Actually, let's just create a helper script inline
-
-  // Create API key directly for testing
-  const crypto = await import('crypto')
-  const rawKey = `tsk_${crypto.randomUUID().replace(/-/g, '')}`
-  const keyHash = crypto.createHash('sha256').update(rawKey).digest('hex')
-
-  // Use the service role to insert directly
-  const { createClient } = await import('@supabase/supabase-js')
-  const adminSupabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY)
-
-  // Insert API key via raw SQL through Prisma
-  const { PrismaClient } = await import('@prisma/client')
-  const prisma = new PrismaClient()
-  const apiKeyRow = await prisma.apiKey.create({
-    data: {
-      projectId,
-      name: 'Test Agent Key',
-      keyHash,
-      prefix: rawKey.slice(0, 8),
-      last4: rawKey.slice(-4),
-    },
+  const createKey = await api('POST', `/api/projects/${projectId}/keys`, {
+    name: 'Test Agent Key',
   })
-  assert(!!apiKeyRow.id, `Created API key: ${apiKeyRow.id}`)
-  apiKeyRaw = rawKey
-  console.log(`  🔑 Raw key (for agent): ${rawKey.slice(0, 12)}...`)
+  assert(createKey.status === 201, `POST /api/projects/${projectId}/keys → ${createKey.status}`)
+  assert(!!(createKey.json as any).key?.id, `Created API key: ${(createKey.json as any).key.id}`)
+  apiKeyRaw = (createKey.json as any).key.raw
+  assert(!!apiKeyRaw, 'Received raw API key (one-time)')
+  console.log(`  🔑 Raw key (for agent): ${apiKeyRaw.slice(0, 12)}...`)
 
   // ── 7. Agent: create run ──────────────────────────────────────────────────
   section('7. Agent: create run')
@@ -432,6 +412,8 @@ async function main() {
   })
 
   // Cascade deletes should clean up org → projects → runs etc.
+  const { PrismaClient } = await import('@prisma/client')
+  const prisma = new PrismaClient()
   await prisma.organization.delete({ where: { id: orgId } }).catch(() => {})
   await prisma.user.delete({ where: { id: userId } }).catch(() => {})
   await prisma.$disconnect()

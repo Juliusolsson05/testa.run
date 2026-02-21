@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server'
 import { getStripe } from '@/lib/stripe'
 import { requireAppUser } from '@/lib/auth'
 import { db } from '@/lib/db'
+import { requireEnv } from '@/lib/env'
 
 export async function POST(req: Request) {
   const user = await requireAppUser()
@@ -24,7 +25,7 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: 'No billing account found.' }, { status: 404 })
   }
 
-  const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3001'
+  const appUrl = requireEnv('NEXT_PUBLIC_APP_URL')
 
   const session = await getStripe().billingPortal.sessions.create({
     customer: billing.stripeCustomerId,
