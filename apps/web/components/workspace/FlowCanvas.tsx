@@ -101,8 +101,8 @@ function FlowController() {
     const overlapY = Math.max(0, Math.min(screenBottom, containerHeight) - Math.max(screenTop,  0))
     const visibleFraction = (overlapX * overlapY) / (nodeWidth * vpZoom * nodeHeight * vpZoom)
 
-    // Exit focus when less than 60 % of the node is still visible
-    if (visibleFraction < 0.6) clearSelection()
+    // Exit focus when less than 5 % of the node is still visible
+    if (visibleFraction < 0.05) clearSelection()
   }, [activeNodeId, nodes, vpX, vpY, vpZoom, containerWidth, containerHeight, clearSelection])
 
   // ── Custom wheel: pinch = zoom (fast), scroll = pan (all directions) ───────
