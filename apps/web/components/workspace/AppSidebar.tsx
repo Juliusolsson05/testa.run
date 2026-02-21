@@ -7,7 +7,6 @@ import {
   ChevronDown,
   CirclePlay,
   Clock,
-  Home,
   LogOut,
   Settings,
   ShieldAlert,
@@ -19,11 +18,10 @@ import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
 
 const NAV = [
-  { label: "Home",     href: "/",                    icon: Home          },
-  { label: "Issues",   href: "/workspace/issues",    icon: AlertTriangle },
-  { label: "Runs",     href: "/workspace/runs",      icon: CirclePlay    },
-  { label: "Security", href: "/workspace/security",  icon: ShieldAlert   },
-  { label: "Settings", href: "/settings",            icon: Settings      },
+  { label: "Runs",     href: "/",                   icon: CirclePlay   },
+  { label: "Issues",   href: "/workspace/issues",   icon: AlertTriangle },
+  { label: "Security", href: "/workspace/security", icon: ShieldAlert  },
+  { label: "Settings", href: "/settings",           icon: Settings     },
 ]
 
 const RECENT_RUNS = [
