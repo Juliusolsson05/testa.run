@@ -107,8 +107,11 @@ export default function SecurityPage() {
                       key={issue.id}
                       href={`/workspace?issueId=${issue.id}`}
                       className={cn(
-                        "group flex flex-col gap-2.5 px-5 py-4 transition-colors hover:bg-[#eff6ff] cursor-pointer",
-                        idx !== 0 && "border-t border-[#eff6ff]"
+                        "group flex flex-col gap-2.5 border-l-4 px-5 py-4 transition-colors cursor-pointer",
+                        idx !== 0 && "border-t border-[#eff6ff]",
+                        isError    && "border-l-red-500 bg-red-500/[0.03] hover:bg-red-500/[0.06]",
+                        isWarning  && "border-l-amber-400 bg-amber-400/[0.03] hover:bg-amber-400/[0.06]",
+                        isResolved && "border-l-emerald-400 bg-emerald-500/[0.02] hover:bg-emerald-500/[0.04]"
                       )}
                     >
                       {/* Top row: badge + title + element + step + arrow */}
