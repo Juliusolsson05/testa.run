@@ -1,52 +1,163 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useMemo, useState } from "react"
 import Link from "next/link"
 import { AppSidebar } from "@/components/workspace/AppSidebar"
 import { Badge } from "@/components/ui/badge"
-import { runs } from "@/data/runs"
-import { issues } from "@/data/issues"
+import { runs as demoRuns } from "@/data/runs"
+import { issues as demoIssues } from "@/data/issues"
 import type { Run, RunStatus } from "@/types/domain"
 import { cn } from "@/lib/utils"
 
-// ── Status config ────────────────────────────────────────────────────────────
-
 const statusConfig = {
   running: { label: "Running", dot: "bg-amber-400 shadow-[0_0_6px_#f59e0b]", badge: "bg-amber-400/10 text-amber-600" },
-  passed:  { label: "Passed",  dot: "bg-emerald-500 shadow-[0_0_6px_#22c55e]", badge: "bg-emerald-500/10 text-emerald-600" },
+  passed: { label: "Passed", dot: "bg-emerald-500 shadow-[0_0_6px_#22c55e]", badge: "bg-emerald-500/10 text-emerald-600" },
   warning: { label: "Warning", dot: "bg-amber-400 shadow-[0_0_6px_#f59e0b]", badge: "bg-amber-400/10 text-amber-600" },
-  failed:  { label: "Failed",  dot: "bg-red-500 shadow-[0_0_6px_#ef4444]",    badge: "bg-red-500/10 text-red-600" },
+  failed: { label: "Failed", dot: "bg-red-500 shadow-[0_0_6px_#ef4444]", badge: "bg-red-500/10 text-red-600" },
 } satisfies Record<RunStatus, { label: string; dot: string; badge: string }>
 
 type FilterType = "all" | "running" | "passed" | "warning" | "failed"
 
-function issueCountsForRun(run: Run) {
-  const runIssues = issues.filter((i) => i.runId === run.id && i.status === "open")
+type ApiRun = {
+  id: string
+  label: string | null
+  name: string
+  url: string
+  startedAt: string
+  durationMs: number | null
+  status: RunStatus
+  openIssues: { errors: number; warnings: number }
+  stepsCount: number
+}
+
+type ApiMeResponse = {
+  orgs: Array<{ projects: Array<{ id: string }> }>
+}
+
+type ApiRunsResponse = {
+  runs: ApiRun[]
+}
+
+function formatDuration(durationMs: number | null) {
+  if (!durationMs || durationMs <= 0) return "—"
+  const sec = Math.floor(durationMs / 1000)
+  const m = Math.floor(sec / 60)
+  const s = sec % 60
+  return `${m}m ${s}s`
+}
+
+function formatDate(iso: string) {
+  const date = new Date(iso)
+  return date.toLocaleString("sv-SE", {
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+  })
+}
+
+function mapApiRunToUi(run: ApiRun): Run {
   return {
-    errors: runIssues.filter((i) => i.severity === "error").length,
-    warnings: runIssues.filter((i) => i.severity === "warning").length,
+    id: run.id,
+    label: run.label ?? "#—",
+    name: run.name,
+    category: "ux",
+    url: run.url,
+    date: formatDate(run.startedAt),
+    ago: "",
+    duration: formatDuration(run.durationMs),
+    status: run.status,
+    steps: Array.from({ length: run.stepsCount }, (_, i) => ({
+      id: `${run.id}-step-${i + 1}`,
+      index: i + 1,
+      action: "audit",
+      target: "",
+      description: "",
+      reasoning: "",
+      duration: "",
+      status: "passed",
+      nodeId: "",
+    })),
   }
 }
 
-// ── Component ─────────────────────────────────────────────────────────────────
-
 export default function HomePage() {
   const [filter, setFilter] = useState<FilterType>("all")
+  const [runs, setRuns] = useState<Run[]>(demoRuns)
+  const [issueCounts, setIssueCounts] = useState<Record<string, { errors: number; warnings: number }>>(
+    Object.fromEntries(
+      demoRuns.map((run) => {
+        const runIssues = demoIssues.filter((i) => i.runId === run.id && i.status === "open")
+        return [
+          run.id,
+          {
+            errors: runIssues.filter((i) => i.severity === "error").length,
+            warnings: runIssues.filter((i) => i.severity === "warning").length,
+          },
+        ]
+      })
+    )
+  )
 
-  const totalRunning  = runs.filter((r) => r.status === "running").length
-  const totalPassed   = runs.filter((r) => r.status === "passed").length
-  const totalFailed   = runs.filter((r) => r.status === "failed").length
-  const totalWarning  = runs.filter((r) => r.status === "warning").length
-  const openIssues    = issues.filter((i) => i.status === "open").length
+  useEffect(() => {
+    let isMounted = true
+
+    async function loadRealRuns() {
+      try {
+        const meRes = await fetch("/api/auth/me", { cache: "no-store" })
+        if (!meRes.ok) return
+
+        const me: ApiMeResponse = await meRes.json()
+        const projectId = me.orgs?.[0]?.projects?.[0]?.id
+        if (!projectId) return
+
+        const runsRes = await fetch(`/api/projects/${projectId}/runs`, { cache: "no-store" })
+        if (!runsRes.ok) return
+
+        const payload: ApiRunsResponse = await runsRes.json()
+        if (!isMounted) return
+
+        const mappedRuns = payload.runs.map(mapApiRunToUi)
+        setRuns(mappedRuns)
+
+        setIssueCounts(
+          Object.fromEntries(
+            payload.runs.map((run) => [
+              run.id,
+              { errors: run.openIssues.errors ?? 0, warnings: run.openIssues.warnings ?? 0 },
+            ])
+          )
+        )
+      } catch {
+        // Keep demo data fallback for now until auth flow is wired in UI.
+      }
+    }
+
+    void loadRealRuns()
+
+    return () => {
+      isMounted = false
+    }
+  }, [])
+
+  const totalRunning = runs.filter((r) => r.status === "running").length
+  const totalPassed = runs.filter((r) => r.status === "passed").length
+  const totalFailed = runs.filter((r) => r.status === "failed").length
+  const totalWarning = runs.filter((r) => r.status === "warning").length
+  const openIssues = useMemo(
+    () => Object.values(issueCounts).reduce((sum, count) => sum + count.errors + count.warnings, 0),
+    [issueCounts]
+  )
 
   const filtered = filter === "all" ? runs : runs.filter((r) => r.status === filter)
 
   const filters: { id: FilterType; label: string; count: number }[] = [
-    { id: "all",     label: "All runs",  count: runs.length },
-    { id: "running", label: "Running",   count: totalRunning },
-    { id: "passed",  label: "Passed",    count: totalPassed },
-    { id: "warning", label: "Warnings",  count: totalWarning },
-    { id: "failed",  label: "Failed",    count: totalFailed },
+    { id: "all", label: "All runs", count: runs.length },
+    { id: "running", label: "Running", count: totalRunning },
+    { id: "passed", label: "Passed", count: totalPassed },
+    { id: "warning", label: "Warnings", count: totalWarning },
+    { id: "failed", label: "Failed", count: totalFailed },
   ]
 
   return (
@@ -54,29 +165,22 @@ export default function HomePage() {
       <AppSidebar />
 
       <div className="flex min-w-0 flex-1 flex-col overflow-y-auto">
-
-        {/* Stats bar */}
         <div className="border-b border-ui-border bg-white">
           <div className="flex items-stretch divide-x divide-ui-border">
             {([
-              { label: "TOTAL RUNS",  value: runs.length, color: "text-[#1a2a33]" },
-              { label: "RUNNING",     value: totalRunning, color: "text-amber-500" },
-              { label: "FAILED",      value: totalFailed,  color: "text-red-500" },
-              { label: "OPEN ISSUES", value: openIssues,   color: "text-red-500" },
+              { label: "TOTAL RUNS", value: runs.length, color: "text-[#1a2a33]" },
+              { label: "RUNNING", value: totalRunning, color: "text-amber-500" },
+              { label: "FAILED", value: totalFailed, color: "text-red-500" },
+              { label: "OPEN ISSUES", value: openIssues, color: "text-red-500" },
             ] as const).map((stat) => (
               <div key={stat.label} className="px-10 py-5 first:pl-8">
-                <div className="text-[10px] font-bold uppercase tracking-[0.8px] text-ui-muted">
-                  {stat.label}
-                </div>
-                <div className={cn("mt-0.5 text-[30px] font-bold leading-none tabular-nums", stat.color)}>
-                  {stat.value}
-                </div>
+                <div className="text-[10px] font-bold uppercase tracking-[0.8px] text-ui-muted">{stat.label}</div>
+                <div className={cn("mt-0.5 text-[30px] font-bold leading-none tabular-nums", stat.color)}>{stat.value}</div>
               </div>
             ))}
           </div>
         </div>
 
-        {/* Filter bar */}
         <div className="flex items-center gap-3 border-b border-ui-border bg-white px-8 py-3">
           <span className="text-[12px] text-ui-muted">Filter:</span>
           <div className="flex items-center gap-1">
@@ -86,9 +190,7 @@ export default function HomePage() {
                 onClick={() => setFilter(f.id)}
                 className={cn(
                   "rounded px-3 py-1 text-[12px] font-semibold transition-colors",
-                  filter === f.id
-                    ? "bg-[#1d6ef5] text-white"
-                    : "text-ui-muted hover:bg-app-bg hover:text-[#1d6ef5]"
+                  filter === f.id ? "bg-[#1d6ef5] text-white" : "text-ui-muted hover:bg-app-bg hover:text-[#1d6ef5]"
                 )}
               >
                 {f.label} ({f.count})
@@ -97,7 +199,6 @@ export default function HomePage() {
           </div>
         </div>
 
-        {/* Runs list */}
         <div className="flex-1 px-8 py-6">
           <div className="mb-4 flex items-baseline justify-between">
             <h1 className="text-[22px] font-bold tracking-tight text-[#1a2a33]">Test runs</h1>
@@ -109,22 +210,18 @@ export default function HomePage() {
           <div className="flex flex-col gap-3">
             {filtered.map((run) => {
               const s = statusConfig[run.status]
-              const { errors, warnings } = issueCountsForRun(run)
+              const { errors, warnings } = issueCounts[run.id] ?? { errors: 0, warnings: 0 }
               return (
                 <Link
                   key={run.id}
                   href="/workspace"
                   className="group flex items-center gap-5 border border-ui-border bg-white px-5 py-4 transition-shadow hover:shadow-[0_4px_16px_rgba(29,110,245,0.12)]"
                 >
-                  {/* Status dot */}
                   <span className={cn("h-2.5 w-2.5 shrink-0 rounded-full", s.dot)} />
 
-                  {/* Name + meta */}
                   <div className="min-w-0 flex-1">
                     <div className="flex items-baseline gap-2">
-                      <span className="text-[14px] font-semibold text-[#1a2a33] transition-colors group-hover:text-[#1d6ef5]">
-                        {run.name}
-                      </span>
+                      <span className="text-[14px] font-semibold text-[#1a2a33] transition-colors group-hover:text-[#1d6ef5]">{run.name}</span>
                       <span className="font-mono text-[11px] text-ui-muted">{run.label}</span>
                     </div>
                     <div className="mt-0.5 flex items-center gap-3 font-mono text-[11px] text-ui-muted">
@@ -138,7 +235,6 @@ export default function HomePage() {
                     </div>
                   </div>
 
-                  {/* Issue counts */}
                   <div className="flex shrink-0 items-center gap-2 text-[11px] font-medium">
                     {errors > 0 && (
                       <Badge className="rounded bg-red-500/10 px-2 py-0.5 text-red-600 hover:bg-red-500/10">
@@ -151,16 +247,11 @@ export default function HomePage() {
                       </Badge>
                     )}
                     {errors === 0 && warnings === 0 && (
-                      <Badge className="rounded bg-emerald-500/10 px-2 py-0.5 text-emerald-600 hover:bg-emerald-500/10">
-                        Clean
-                      </Badge>
+                      <Badge className="rounded bg-emerald-500/10 px-2 py-0.5 text-emerald-600 hover:bg-emerald-500/10">Clean</Badge>
                     )}
                   </div>
 
-                  {/* Status badge */}
-                  <span className={cn("shrink-0 rounded px-2.5 py-1 text-[11px] font-semibold", s.badge)}>
-                    {s.label}
-                  </span>
+                  <span className={cn("shrink-0 rounded px-2.5 py-1 text-[11px] font-semibold", s.badge)}>{s.label}</span>
 
                   <span className="text-ui-muted opacity-0 transition-opacity group-hover:opacity-100">→</span>
                 </Link>
@@ -168,7 +259,6 @@ export default function HomePage() {
             })}
           </div>
         </div>
-
       </div>
     </div>
   )
