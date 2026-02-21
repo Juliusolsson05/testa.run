@@ -125,7 +125,7 @@ export default function Home() {
           </p>
 
           {/* URL input CTA */}
-          <div className="max-w-2xl mx-auto rounded-2xl bg-gray-100 p-5 shadow-lg shadow-gray-200/50">
+          <div className="max-w-2xl mx-auto rounded-2xl bg-gray-200 p-5">
             <input
               type="url"
               aria-label="Website URL"
@@ -293,7 +293,7 @@ export default function Home() {
           <p className="text-[15px] text-gray-500 max-w-md mx-auto mb-8 leading-relaxed">
             Paste a URL and find out in minutes. No setup, no scripts, no waiting.
           </p>
-          <div className="max-w-2xl mx-auto rounded-2xl bg-gray-100 p-5 shadow-lg shadow-gray-200/50">
+          <div className="max-w-2xl mx-auto rounded-2xl bg-gray-200 p-5">
             <input
               type="url"
               aria-label="Website URL"
