@@ -1,16 +1,17 @@
 "use client"
 
+import { AlertTriangle, Clock, Sparkles, XCircle } from "lucide-react"
+
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Separator } from "@/components/ui/separator"
 import { useIssueContext } from "@/context/issue-context"
-import { issues } from "@/data/issues"
 import { nodeStepMap } from "@/data/flow"
 import { cn } from "@/lib/utils"
 
 export function Sidebar() {
-  const { selectIssue, activeIssueId } = useIssueContext()
+  const { selectIssue, activeIssueId, issues } = useIssueContext()
 
   const openIssues = issues.filter((issue) => issue.status === "open")
   const resolvedIssues = issues.filter((issue) => issue.status === "resolved")
@@ -23,7 +24,7 @@ export function Sidebar() {
   return (
     <aside className="flex h-full w-[320px] shrink-0 flex-col gap-4 overflow-y-auto border-r border-white/10 bg-[#111318] px-5 py-5 text-white">
       <div className="flex items-center gap-2 text-[17px] font-bold tracking-tight">
-        <span className="text-xl text-[#2563eb]">◈</span>
+        <Sparkles className="h-5 w-5 text-[#2563eb]" />
         <span className="text-[#e8edf5]">
           testa<span className="text-[#2563eb]">.run</span>
         </span>
@@ -32,7 +33,7 @@ export function Sidebar() {
       <Card className="rounded-none border-white/10 bg-white/5 text-white">
         <CardContent className="flex items-center gap-3 p-3">
           <div className="flex h-6 w-6 items-center justify-center rounded-none bg-white/10 text-xs">
-            ⏱
+            <Clock className="h-3.5 w-3.5 text-white/70" />
           </div>
           <div className="min-w-0 flex-1">
             <div className="text-[13px] font-semibold">TimeEdit</div>
@@ -162,7 +163,14 @@ export function Sidebar() {
                         : "bg-amber-400/20 text-amber-200"
                     )}
                   >
-                    {issue.severity === "error" ? "✕" : "⚠"} {issue.severity}
+                    <span className="inline-flex items-center gap-1">
+                      {issue.severity === "error" ? (
+                        <XCircle className="h-3 w-3" />
+                      ) : (
+                        <AlertTriangle className="h-3 w-3" />
+                      )}
+                      {issue.severity}
+                    </span>
                   </Badge>
                 </div>
               </button>

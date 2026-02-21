@@ -27,20 +27,28 @@ export function SpringEdge({
 
   const animatedD = to(
     [spring.sx, spring.sy, spring.tx, spring.ty],
-    (sx: number, sy: number, tx: number, ty: number) =>
+    (sx, sy, tx, ty) =>
       getBezierPath({
-        sourceX: sx as number,
-        sourceY: sy as number,
-        targetX: tx as number,
-        targetY: ty as number,
+        sourceX: sx,
+        sourceY: sy,
+        targetX: tx,
+        targetY: ty,
         sourcePosition,
         targetPosition,
       })[0]
   )
 
-  const labelX = (sourceX + targetX) / 2
-  const labelY = (sourceY + targetY) / 2
-  const [bgPadX, bgPadY] = (labelBgPadding as [number, number]) ?? [6, 8]
+  const labelTransform = to(
+    [spring.sx, spring.sy, spring.tx, spring.ty],
+    (sx, sy, tx, ty) =>
+      `translate(-50%, -50%) translate(${(sx + tx) / 2}px, ${(sy + ty) / 2}px)`
+  )
+
+  const [bgPadX, bgPadY] = Array.isArray(labelBgPadding)
+    ? labelBgPadding
+    : labelBgPadding !== undefined
+      ? [labelBgPadding, labelBgPadding]
+      : [6, 8]
 
   return (
     <>
@@ -54,18 +62,18 @@ export function SpringEdge({
 
       {label && (
         <EdgeLabelRenderer>
-          <div
+          <animated.div
             style={{
               position: "absolute",
-              transform: `translate(-50%, -50%) translate(${labelX}px, ${labelY}px)`,
+              transform: labelTransform,
               pointerEvents: "none",
-              ...(labelBgStyle as React.CSSProperties),
+              ...(labelBgStyle ?? {}),
               padding: `${bgPadY}px ${bgPadX}px`,
               borderRadius: 6,
             }}
           >
-            <span style={labelStyle as React.CSSProperties}>{label as string}</span>
-          </div>
+            <span style={labelStyle}>{label as string}</span>
+          </animated.div>
         </EdgeLabelRenderer>
       )}
     </>

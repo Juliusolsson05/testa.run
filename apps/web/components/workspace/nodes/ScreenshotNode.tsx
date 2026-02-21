@@ -6,13 +6,19 @@ import {
   Handle,
   Position,
   useUpdateNodeInternals,
+  type Node,
   type NodeProps,
 } from "@xyflow/react"
 
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
+import {
+  CHROME_HEIGHT,
+  NODE_WIDTH,
+  NODE_WIDE,
+  SCREENSHOT_RATIO,
+} from "@/constants/flow"
 import { useIssueContext } from "@/context/issue-context"
-import { issues } from "@/data/issues"
 import { cn } from "@/lib/utils"
 import type { ScreenshotNodeData } from "@/types/flow"
 
@@ -34,17 +40,15 @@ const statusConfig = {
   },
 }
 
-const CHROME_HEIGHT = 36
-const NODE_WIDTH = 280
-const NODE_WIDE = 480
-const SCREENSHOT_RATIO = 10 / 16
-
-export function ScreenshotNode({ id, data, selected }: NodeProps) {
-  const nodeData = data as ScreenshotNodeData
-  const status = statusConfig[nodeData.status]
+export function ScreenshotNode({
+  id,
+  data,
+  selected,
+}: NodeProps<Node<ScreenshotNodeData>>) {
+  const status = statusConfig[data.status]
   const updateNodeInternals = useUpdateNodeInternals()
 
-  const { activeIssueId, activeNodeId, selectIssue, clearSelection } =
+  const { activeIssueId, activeNodeId, selectIssue, clearSelection, issues } =
     useIssueContext()
 
   const nodeIssues = useMemo(
@@ -83,23 +87,31 @@ export function ScreenshotNode({ id, data, selected }: NodeProps) {
     selectIssue(issueId)
   }
 
-  const nodeWidth = nodeData.isMain || nodeData.isLarge ? NODE_WIDE : NODE_WIDTH
+  const nodeWidth = data.isMain || data.isLarge ? NODE_WIDE : NODE_WIDTH
   const screenshotHeight = nodeWidth * SCREENSHOT_RATIO
   const targetHandleTop = CHROME_HEIGHT + screenshotHeight / 2
 
-  const sourceHandleStyle = nodeData.sourceHandleOffset
+  const sourceHandleStyle = data.sourceHandleOffset
     ? {
-        top: nodeData.sourceHandleOffset.top,
+        top: data.sourceHandleOffset.top,
         left:
-          nodeData.sourceHandleOffset.left !== undefined
-            ? `${nodeData.sourceHandleOffset.left}%`
+          data.sourceHandleOffset.left !== undefined
+            ? `${data.sourceHandleOffset.left}%`
             : undefined,
         right: "auto",
         transform: "translate(-50%, -50%)",
       }
     : { top: targetHandleTop }
 
-  const displayUrl = nodeData.url.replace(/^https?:\/\/[^/]+/, "") || "/"
+  const displayUrl = data.url.replace(/^https?:\/\/[^/]+/, "") || "/"
+
+  const handleBaseStyle = {
+    width: 12,
+    height: 12,
+    background: "#2563eb",
+    border: "2px solid #ffffff",
+    boxShadow: "0 0 6px rgba(37, 99, 235, 0.5)",
+  } as const
 
   return (
     <div
@@ -108,10 +120,10 @@ export function ScreenshotNode({ id, data, selected }: NodeProps) {
         "bg-white/70 backdrop-blur-sm shadow-[0_1px_3px_rgba(37,99,235,0.08),0_4px_20px_rgba(37,99,235,0.1)]",
         "transition-shadow transition-colors",
         selected && "border-[#2563eb]",
-        nodeData.isMain || nodeData.isLarge ? "w-[480px]" : "w-[280px]",
-        nodeData.isMain &&
+        data.isMain || data.isLarge ? "w-[480px]" : "w-[280px]",
+        data.isMain &&
           "border-[#2d5a9e] shadow-[0_2px_6px_rgba(37,99,235,0.1),0_8px_32px_rgba(37,99,235,0.16)]",
-        nodeData.status === "running" && "border-[#3a6fa0]",
+        data.status === "running" && "border-[#3a6fa0]",
         selected &&
           "shadow-[0_2px_6px_rgba(37,99,235,0.14),0_8px_32px_rgba(37,99,235,0.22)]",
         isContextActive &&
@@ -121,8 +133,7 @@ export function ScreenshotNode({ id, data, selected }: NodeProps) {
       <Handle
         type="target"
         position={Position.Left}
-        className="flow-handle"
-        style={{ top: targetHandleTop }}
+        style={{ ...handleBaseStyle, top: targetHandleTop }}
       />
 
       <div className="flex items-center gap-2 border-b-[1.5px] border-[#4a7ab5] bg-[#c7d9f0] px-3 py-2">
@@ -137,8 +148,8 @@ export function ScreenshotNode({ id, data, selected }: NodeProps) {
       <div className="relative aspect-[16/10] w-full overflow-hidden bg-[#dbeafe]">
         {nodeData.imageSrc ? (
           <Image
-            src={nodeData.imageSrc}
-            alt={nodeData.label}
+            src={data.imageSrc}
+            alt={data.label}
             fill
             sizes="(max-width: 768px) 90vw, 480px"
             className="object-cover"
@@ -153,7 +164,7 @@ export function ScreenshotNode({ id, data, selected }: NodeProps) {
 
       <div className="flex items-center justify-between border-t-[1.5px] border-[#4a7ab5] bg-[#c7d9f0] px-3 py-2">
         <div className="text-[13px] font-semibold tracking-[-0.2px] text-[#1a2a33]">
-          {nodeData.label}
+          {data.label}
         </div>
         <Badge
           variant="outline"
@@ -165,8 +176,8 @@ export function ScreenshotNode({ id, data, selected }: NodeProps) {
           }}
         >
           {status.label}
-          {nodeData.duration && (
-            <span className="text-[#1a2a33]/70"> · {nodeData.duration}</span>
+          {data.duration && (
+            <span className="text-[#1a2a33]/70"> · {data.duration}</span>
           )}
         </Badge>
       </div>
@@ -206,7 +217,7 @@ export function ScreenshotNode({ id, data, selected }: NodeProps) {
       )}
 
       {panelOpen && (
-        <div className="issue-dropdown flex max-h-60 flex-col overflow-y-auto border-t border-[#c0d4ec] bg-white">
+        <div className="flex max-h-60 flex-col overflow-y-auto border-t border-[#c0d4ec] bg-white animate-in fade-in slide-in-from-top-2">
           {nodeIssues.map((issue) => (
             <button
               key={issue.id}
@@ -251,8 +262,7 @@ export function ScreenshotNode({ id, data, selected }: NodeProps) {
       <Handle
         type="source"
         position={Position.Right}
-        className="flow-handle"
-        style={sourceHandleStyle}
+        style={{ ...handleBaseStyle, ...sourceHandleStyle }}
       />
     </div>
   )

@@ -13,7 +13,7 @@ const geistMono = localFont({
 
 export const metadata: Metadata = {
   title: "testa.run",
-  description: "testa.run",
+  description: "AI-powered QA and security testing workspace",
 };
 
 export default function RootLayout({
