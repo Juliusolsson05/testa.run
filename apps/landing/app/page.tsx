@@ -124,7 +124,9 @@ function CloudBackground({ position }: { position: 'top' | 'bottom' }) {
 
 export default function Home() {
   return (
-    <div className="text-gray-900 font-sans antialiased overflow-x-hidden [&_*]:font-normal">
+    <div className="relative text-gray-900 font-sans antialiased overflow-x-hidden [&_*]:font-normal">
+      <div className="pointer-events-none fixed inset-0 z-[1] opacity-[0.14]" style={{ backgroundImage: 'radial-gradient(circle, #64748b 0.9px, transparent 0.9px)', backgroundSize: '20px 20px' }} />
+      <div className="relative z-[2]">
 
       {/* ── Nav ──────────────────────────────────────────── */}
       <nav className="fixed top-0 inset-x-0 z-50 h-14 flex items-center justify-between px-8 bg-white/80 backdrop-blur-md border-b border-gray-100">
@@ -464,6 +466,7 @@ export default function Home() {
           </div>
         </div>
       </footer>
+      </div>
     </div>
   )
 }
