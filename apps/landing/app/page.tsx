@@ -8,23 +8,16 @@ import {
   Check,
 } from 'lucide-react'
 
-const stats = [
-  { value: '50k+', label: 'Test runs completed' },
-  { value: '12k+', label: 'Bugs detected' },
-  { value: '3.2k', label: 'Security issues found' },
-  { value: '89%', label: 'Faster than manual QA' },
-]
-
 const steps = [
-  { num: '01', title: 'Point at your app', desc: 'Give us a URL and describe the user journey you want tested — sign up, checkout, onboarding, anything.' },
-  { num: '02', title: 'Agent runs your journey', desc: 'Our AI agent navigates your app like a real user, executing every step while probing for security weaknesses.' },
-  { num: '03', title: 'Get structured findings', desc: 'Receive a severity-ranked report with screenshots, network traces, and reproduction steps for every issue found.' },
+  { num: '01', title: 'Enter your URL', desc: 'Paste any web app URL and describe what a user would do — sign up, buy something, reset a password.' },
+  { num: '02', title: 'The agent takes over', desc: 'It opens a real browser, clicks through your flow step by step, and probes for security gaps along the way.' },
+  { num: '03', title: 'You get the report', desc: 'Every broken flow and vulnerability, ranked by severity. Screenshots, network traces, reproduction steps included.' },
 ]
 
 const pricing = [
-  { name: 'Starter', price: '$0', period: '/mo', desc: 'For solo developers and side projects.', features: ['5 test runs / month', '1 user journey', 'Basic findings report', 'Community support'], cta: 'Start free', highlighted: false },
-  { name: 'Pro', price: '$49', period: '/mo', desc: 'For teams shipping fast and breaking nothing.', features: ['Unlimited test runs', '10 user journeys', 'Security scanning included', 'Screenshot evidence', 'API monitoring', 'Priority support'], cta: 'Start free trial', highlighted: true },
-  { name: 'Enterprise', price: 'Custom', period: '', desc: 'For organizations with compliance needs.', features: ['Everything in Pro', 'Unlimited journeys', 'SSO & audit logs', 'Custom integrations', 'Dedicated support', 'SLA guarantee'], cta: 'Contact us', highlighted: false },
+  { name: 'Starter', price: '$0', period: '/mo', desc: 'For side projects and personal apps.', features: ['5 test runs / month', '1 user journey', 'Basic findings report', 'Community support'], cta: 'Start free', highlighted: false },
+  { name: 'Pro', price: '$49', period: '/mo', desc: 'For teams that ship weekly.', features: ['Unlimited test runs', '10 user journeys', 'Security scanning', 'Screenshot evidence', 'API monitoring', 'Priority support'], cta: 'Start free trial', highlighted: true },
+  { name: 'Enterprise', price: 'Custom', period: '', desc: 'For regulated industries and large orgs.', features: ['Everything in Pro', 'Unlimited journeys', 'SSO & audit logs', 'Custom integrations', 'Dedicated support', 'SLA guarantee'], cta: 'Contact us', highlighted: false },
 ]
 
 function CloudShape({ className, id }: { className?: string; id: string }) {
@@ -40,16 +33,12 @@ function CloudShape({ className, id }: { className?: string; id: string }) {
           <feGaussianBlur stdDeviation="6" />
         </filter>
       </defs>
-
-      {/* soft glow layer for depth */}
       <path
         d="M58 162c-23 0-41-18-41-40s18-40 41-40c8 0 15 2 21 6 7-26 31-45 59-45 21 0 40 11 50 28 7-5 16-8 25-8 25 0 45 20 45 45v2h5c23 0 42 19 42 42s-19 42-42 42H96c-21 0-38-17-38-38 0-2 0-4 0-6z"
         fill="#93c5fd"
         fillOpacity="0.28"
         filter={`url(#${id}-soft)`}
       />
-
-      {/* main cloud */}
       <path
         d="M58 162c-23 0-41-18-41-40s18-40 41-40c8 0 15 2 21 6 7-26 31-45 59-45 21 0 40 11 50 28 7-5 16-8 25-8 25 0 45 20 45 45v2h5c23 0 42 19 42 42s-19 42-42 42H96c-21 0-38-17-38-38 0-2 0-4 0-6z"
         fill={`url(#${id}-fill)`}
@@ -62,9 +51,7 @@ function CloudBackground({ position }: { position: 'top' | 'bottom' }) {
   const isTop = position === 'top'
   return (
     <div className="absolute inset-0 -z-10 overflow-hidden pointer-events-none">
-      {/* subtle ambient wash behind shapes */}
       <div className="absolute inset-0 bg-[radial-gradient(1200px_380px_at_50%_0%,rgba(191,219,254,0.45),transparent_72%)]" />
-
       {isTop ? (
         <>
           <CloudShape id="c1-top" className="absolute w-[460px] left-[-110px] top-[-8px] opacity-34 blur-[2px] cloud-1" />
@@ -86,7 +73,6 @@ function CloudBackground({ position }: { position: 'top' | 'bottom' }) {
           <CloudShape id="c7-bot" className="absolute w-[170px] right-[24%] bottom-[32px] opacity-16 blur-[3.5px]" />
         </>
       )}
-
       <div
         className="absolute left-0 right-0 h-44"
         style={{
@@ -106,60 +92,53 @@ export default function Home() {
       <div className="pointer-events-none fixed inset-0 z-[1] opacity-[0.14]" style={{ backgroundImage: 'radial-gradient(circle, #64748b 0.9px, transparent 0.9px)', backgroundSize: '20px 20px' }} />
       <div className="relative z-[2]">
 
-      {/* ── Nav ──────────────────────────────────────────── */}
+      {/* ── Nav ── */}
       <nav className="fixed top-0 inset-x-0 z-50 h-14 flex items-center justify-between px-8 bg-white/80 backdrop-blur-md border-b border-gray-100">
-        <a href="/" className="text-sm font-medium tracking-tight text-gray-900">
+        <a href="/" className="text-sm tracking-tight text-gray-900">
           testa<span className="text-brand">.run</span>
         </a>
         <ul className="hidden md:flex items-center gap-8 list-none">
-                    <li><a href="#how-it-works" className="text-[13px] text-gray-500 hover:text-gray-900 transition-colors">How it works</a></li>
+          <li><a href="#how-it-works" className="text-[13px] text-gray-500 hover:text-gray-900 transition-colors">How it works</a></li>
           <li><a href="#pricing" className="text-[13px] text-gray-500 hover:text-gray-900 transition-colors">Pricing</a></li>
-                  </ul>
+        </ul>
         <Button size="sm" asChild>
           <a href="#pricing">Get started</a>
         </Button>
       </nav>
 
-      {/* ── Hero ─────────────────────────────────────────── */}
+      {/* ── Hero ── */}
       <section className="relative pt-44 pb-28 text-center">
         <CloudBackground position="top" />
         <div className="max-w-3xl mx-auto px-6">
           <Badge variant="outline" className="mb-5 text-brand border-brand/20 bg-brand/5">
             Now in early access
           </Badge>
-          <h1 className="text-5xl md:text-6xl font-medium tracking-tight leading-[1.1] mb-5">
-            Your ultimate solution for{' '}
+          <h1 className="text-5xl md:text-6xl tracking-tight leading-[1.1] mb-5">
+            AI based{' '}
             <span className="text-brand">QA & Security</span>{' '}
-            testing
+            testing that works
           </h1>
-          <p className="text-[16px] text-gray-500 leading-relaxed max-w-lg mx-auto mb-8">
-            An AI agent runs your user journeys on every deploy, detects broken flows,
-            and surfaces security vulnerabilities — with full evidence on every finding.
+          <p className="text-[16px] text-gray-500 leading-relaxed max-w-md mx-auto mb-8">
+            Paste your URL. An agent clicks through your app like a real user,
+            finds what's broken, and flags security holes. You get the report.
           </p>
-          <div className="flex items-center justify-center gap-3">
-            <Button size="lg" asChild>
-              <a href="#pricing">Get started free</a>
-            </Button>
-            <Button size="lg" variant="outline" asChild>
-              <a href="#how-it-works">See how it works</a>
+
+          {/* URL input CTA */}
+          <div className="max-w-lg mx-auto flex items-center gap-2">
+            <input
+              type="url"
+              placeholder="https://your-app.com"
+              className="flex-1 h-12 px-4 rounded-lg border border-gray-200 bg-white text-[14px] text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-brand/30 focus:border-brand"
+            />
+            <Button size="lg" className="h-12 px-6 shrink-0">
+              Test my site <ArrowRight className="w-4 h-4 ml-1.5" />
             </Button>
           </div>
+          <p className="text-[12px] text-gray-400 mt-3">Free to start. No credit card required.</p>
         </div>
-
-        {/* Stats bar */}
-        <div className="max-w-3xl mx-auto mt-16 grid grid-cols-4 gap-6 px-6">
-          {stats.map(s => (
-            <div key={s.label} className="text-center">
-              <div className="text-2xl font-medium text-gray-900">{s.value}</div>
-              <div className="text-[12px] text-gray-400 mt-1">{s.label}</div>
-            </div>
-          ))}
-        </div>
-
-
       </section>
 
-      {/* ── Future customer logo band ───────────────────── */}
+      {/* ── Logo band ── */}
       <section className="py-12 bg-white border-y border-gray-100">
         <div className="text-center mb-6 px-6">
           <p className="text-[20px] text-gray-700 tracking-tight">Will be used by:</p>
@@ -167,7 +146,6 @@ export default function Home() {
             Disclaimer: these companies are not using us at the moment, but our product is so good that they will soon be customers.
           </p>
         </div>
-
         <div className="logo-marquee w-full overflow-hidden [mask-image:linear-gradient(to_right,transparent,black_6%,black_94%,transparent)]">
           <div className="logo-marquee-track py-3">
             {Array.from({ length: 4 }).map((_, setIdx) =>
@@ -189,20 +167,20 @@ export default function Home() {
         </div>
       </section>
 
-      {/* ── Platform section ─────────────────────────────── */}
+      {/* ── What it does ── */}
       <section className="py-20 bg-white">
         <div className="max-w-5xl mx-auto px-8 grid grid-cols-1 md:grid-cols-2 gap-16 items-center">
           <div>
-            <p className="text-[12px] font-medium text-brand uppercase tracking-[0.15em] mb-3">The platform</p>
-            <h2 className="text-3xl font-medium tracking-tight leading-tight mb-4">
-              AI-powered testing<br />designed for modern teams
+            <h2 className="text-3xl tracking-tight leading-tight mb-4">
+              You describe the journey.<br />The agent does everything else.
             </h2>
             <p className="text-[15px] text-gray-500 leading-relaxed mb-6">
-              Stop writing flaky test scripts. Our agent understands your product, navigates it
-              like a real user, and catches both functional bugs and security holes — all in one run.
+              Tell it "sign up, add an item to cart, and check out" — it opens a browser, runs every step,
+              and probes for auth bypass, missing rate limits, and exposed data along the way.
+              When it's done, you get a ranked list of everything that's wrong.
             </p>
             <ul className="space-y-3">
-              {['No test scripts to write or maintain', 'Runs on every deploy automatically', 'Security + QA in a single pass'].map(item => (
+              {['No scripts to write or maintain', 'QA and security in one pass', 'Screenshots and traces on every finding'].map(item => (
                 <li key={item} className="flex items-center gap-3 text-[14px] text-gray-600">
                   <span className="w-5 h-5 rounded-full bg-brand/10 text-brand flex items-center justify-center">
                     <Check className="w-3 h-3" />
@@ -222,33 +200,25 @@ export default function Home() {
                 className="w-full h-auto"
               />
             </div>
-            <div className="absolute -bottom-5 -left-5 bg-white rounded-xl border border-gray-200 shadow-lg px-5 py-3">
-              <div className="text-[11px] text-gray-400 mb-1">Issues found this week</div>
-              <div className="text-2xl font-medium text-gray-900">142</div>
-              <div className="text-[11px] text-emerald-600 font-medium flex items-center gap-1">
-                <ArrowRight className="w-3 h-3 -rotate-45" /> 23% from last week
-              </div>
-            </div>
           </div>
         </div>
       </section>
 
       <Separator className="max-w-5xl mx-auto" />
 
-      {/* ── How it works ─────────────────────────────────── */}
+      {/* ── How it works ── */}
       <section id="how-it-works" className="py-20 bg-white">
         <div className="max-w-5xl mx-auto px-8">
           <div className="text-center mb-14">
-            <p className="text-[12px] font-medium text-brand uppercase tracking-[0.15em] mb-3">How it works</p>
-            <h2 className="text-3xl font-medium tracking-tight">
-              Test your app in 3 steps
+            <h2 className="text-3xl tracking-tight">
+              Three steps. That's it.
             </h2>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             {steps.map(step => (
               <div key={step.num} className="relative p-7 rounded-xl border border-gray-200 bg-gray-50/50">
-                <span className="text-[42px] font-medium text-gray-100 absolute top-4 right-5">{step.num}</span>
-                <h3 className="text-[15px] font-medium mb-2 relative z-10">{step.title}</h3>
+                <span className="text-[42px] text-gray-100 absolute top-4 right-5">{step.num}</span>
+                <h3 className="text-[15px] mb-2 relative z-10">{step.title}</h3>
                 <p className="text-[13px] text-gray-500 leading-relaxed relative z-10">{step.desc}</p>
               </div>
             ))}
@@ -258,13 +228,12 @@ export default function Home() {
 
       <Separator className="max-w-5xl mx-auto" />
 
-      {/* ── Pricing ──────────────────────────────────────── */}
+      {/* ── Pricing ── */}
       <section id="pricing" className="py-20 bg-white">
         <div className="max-w-5xl mx-auto px-8">
           <div className="text-center mb-14">
-            <p className="text-[12px] font-medium text-brand uppercase tracking-[0.15em] mb-3">Pricing</p>
-            <h2 className="text-3xl font-medium tracking-tight">
-              Flexible plans for every team
+            <h2 className="text-3xl tracking-tight">
+              Pick a plan
             </h2>
             <p className="text-[15px] text-gray-500 mt-3">
               Start free. Upgrade when you need more.
@@ -282,10 +251,10 @@ export default function Home() {
                   </div>
                 )}
                 <CardContent className="p-7">
-                  <h3 className="text-[15px] font-medium mb-1">{plan.name}</h3>
+                  <h3 className="text-[15px] mb-1">{plan.name}</h3>
                   <p className="text-[12px] text-gray-500 mb-4">{plan.desc}</p>
                   <div className="flex items-baseline gap-1 mb-5">
-                    <span className="text-4xl font-medium">{plan.price}</span>
+                    <span className="text-4xl">{plan.price}</span>
                     {plan.period && <span className="text-[13px] text-gray-400">{plan.period}</span>}
                   </div>
                   <Button
@@ -310,68 +279,51 @@ export default function Home() {
         </div>
       </section>
 
-      {/* ── Final CTA ────────────────────────────────────── */}
+      {/* ── Final CTA ── */}
       <section className="relative py-28 text-center">
         <CloudBackground position="bottom" />
         <div className="max-w-2xl mx-auto px-6">
-          <h2 className="text-4xl md:text-5xl font-medium tracking-tight leading-tight mb-4">
-            Ship with confidence —<br />try testa.run now
+          <h2 className="text-4xl md:text-5xl tracking-tight leading-tight mb-4">
+            Your app has bugs you<br />don't know about yet
           </h2>
           <p className="text-[15px] text-gray-500 max-w-md mx-auto mb-8 leading-relaxed">
-            Find bugs and security issues before your users do.
-            Start testing in minutes with zero configuration.
+            Paste a URL and find out in minutes. No setup, no scripts, no waiting.
           </p>
-          <Button size="lg" asChild>
-            <a href="#pricing">Get started free</a>
-          </Button>
+          <div className="max-w-lg mx-auto flex items-center gap-2">
+            <input
+              type="url"
+              placeholder="https://your-app.com"
+              className="flex-1 h-12 px-4 rounded-lg border border-gray-200 bg-white text-[14px] text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-brand/30 focus:border-brand"
+            />
+            <Button size="lg" className="h-12 px-6 shrink-0">
+              Test my site <ArrowRight className="w-4 h-4 ml-1.5" />
+            </Button>
+          </div>
         </div>
       </section>
 
-      {/* ── Footer ───────────────────────────────────────── */}
-      <footer className="bg-white border-t border-gray-100">
-        <div className="max-w-5xl mx-auto px-8 py-12 grid grid-cols-2 md:grid-cols-4 gap-8">
+      {/* ── Footer ── */}
+      <footer className="border-t border-gray-100">
+        <div className="max-w-5xl mx-auto px-8 py-10 flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
           <div>
-            <a href="/" className="text-sm font-medium tracking-tight text-gray-900">
+            <a href="/" className="text-sm tracking-tight text-gray-900">
               testa<span className="text-brand">.run</span>
             </a>
-            <p className="text-[12px] text-gray-400 mt-2 leading-relaxed">
-              Autonomous QA & security testing for modern teams.
-            </p>
+            <p className="text-[13px] text-gray-400 mt-1">QA and security testing that runs itself.</p>
           </div>
-          <div>
-            <h4 className="text-[12px] font-medium text-gray-900 uppercase tracking-[0.1em] mb-3">Product</h4>
-            <ul className="space-y-2">
-              {['Features', 'Pricing', 'Changelog', 'Docs'].map(item => (
-                <li key={item}><a href="#" className="text-[13px] text-gray-500 hover:text-gray-900 transition-colors">{item}</a></li>
-              ))}
-            </ul>
-          </div>
-          <div>
-            <h4 className="text-[12px] font-medium text-gray-900 uppercase tracking-[0.1em] mb-3">Company</h4>
-            <ul className="space-y-2">
-              {['About', 'Blog', 'Careers', 'Contact'].map(item => (
-                <li key={item}><a href="#" className="text-[13px] text-gray-500 hover:text-gray-900 transition-colors">{item}</a></li>
-              ))}
-            </ul>
-          </div>
-          <div>
-            <h4 className="text-[12px] font-medium text-gray-900 uppercase tracking-[0.1em] mb-3">Legal</h4>
-            <ul className="space-y-2">
-              {['Privacy', 'Terms', 'Security'].map(item => (
-                <li key={item}><a href="#" className="text-[13px] text-gray-500 hover:text-gray-900 transition-colors">{item}</a></li>
-              ))}
-            </ul>
+          <div className="flex gap-8 text-[13px] text-gray-500">
+            <a href="#pricing" className="hover:text-gray-900 transition-colors">Pricing</a>
+            <a href="#" className="hover:text-gray-900 transition-colors">Docs</a>
+            <a href="#" className="hover:text-gray-900 transition-colors">GitHub</a>
+            <a href="#" className="hover:text-gray-900 transition-colors">Twitter</a>
+            <a href="mailto:hello@testa.run" className="hover:text-gray-900 transition-colors">Contact</a>
           </div>
         </div>
-        <div className="max-w-5xl mx-auto px-8 py-5 border-t border-gray-100 flex items-center justify-between">
-          <span className="text-[12px] text-gray-400">&copy; 2026 testa.run. All rights reserved.</span>
-          <div className="flex gap-4">
-            {['Twitter', 'GitHub', 'Discord'].map(s => (
-              <a key={s} href="#" className="text-[12px] text-gray-400 hover:text-gray-900 transition-colors">{s}</a>
-            ))}
-          </div>
+        <div className="max-w-5xl mx-auto px-8 py-4 border-t border-gray-100">
+          <span className="text-[12px] text-gray-400">&copy; 2026 testa.run</span>
         </div>
       </footer>
+
       </div>
     </div>
   )
