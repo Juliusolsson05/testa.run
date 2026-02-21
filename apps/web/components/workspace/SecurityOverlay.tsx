@@ -28,52 +28,31 @@ export function SecurityOverlay() {
   return (
     <Link
       href="/workspace/security"
-      className={cn(
-        "pointer-events-auto absolute right-4 top-16 z-40 flex w-[200px] flex-col gap-2 rounded border bg-white/90 px-3.5 py-3 shadow-sm backdrop-blur-sm transition-opacity hover:opacity-90",
-        riskStyle.border
-      )}
+      className="pointer-events-auto absolute right-4 top-4 z-40 flex h-[38px] w-[340px] items-center gap-3 border border-red-300 bg-red-50/90 px-4 backdrop-blur-md transition-opacity hover:opacity-90"
     >
-      {/* Header */}
-      <div className="flex items-center gap-2">
-        {riskLevel === "None"
-          ? <ShieldCheck className="h-3.5 w-3.5 text-emerald-500" />
-          : <ShieldAlert className={cn("h-3.5 w-3.5", riskStyle.text)} />
-        }
-        <span className="text-[10px] font-bold uppercase tracking-[0.7px] text-[#4a7ab5]">
-          Security
-        </span>
-        <span className={cn(
-          "ml-auto flex items-center gap-1 rounded px-1.5 py-0.5 text-[10px] font-semibold",
-          riskStyle.text, riskStyle.bg
-        )}>
-          <span className={cn("h-1 w-1 rounded-full", riskStyle.dot)} />
-          {riskStyle.label}
-        </span>
+      {riskLevel === "None"
+        ? <ShieldCheck className="h-3.5 w-3.5 shrink-0 text-emerald-500" />
+        : <ShieldAlert className="h-3.5 w-3.5 shrink-0 text-red-500" />
+      }
+
+      <span className="text-[11px] font-bold uppercase tracking-[0.7px] text-red-700">
+        Security
+      </span>
+
+      <span className="flex items-center gap-1 rounded bg-red-500/15 px-2 py-0.5 text-[10px] font-semibold text-red-600">
+        <span className="h-1 w-1 rounded-full bg-red-500" />
+        {riskStyle.label}
+      </span>
+
+      <div className="mx-1 h-3.5 w-px bg-red-200" />
+
+      <div className="flex items-center gap-3 text-[11px] tabular-nums text-red-700">
+        <span><span className="font-bold">{openSec.length}</span> open</span>
+        <span><span className="font-bold text-red-500">{criticalCount}</span> critical</span>
+        <span><span className="font-bold text-red-400">{securityIssues.filter((i) => i.status === "resolved").length}</span> resolved</span>
       </div>
 
-      {/* Stats row */}
-      <div className="flex gap-3 border-t border-[#eff6ff] pt-2">
-        <div className="flex flex-col">
-          <span className="text-[18px] font-bold leading-none tabular-nums text-[#1a2a33]">
-            {openSec.length}
-          </span>
-          <span className="mt-0.5 text-[9px] uppercase tracking-[0.5px] text-[#4a7ab5]">open</span>
-        </div>
-        <div className="flex flex-col">
-          <span className={cn("text-[18px] font-bold leading-none tabular-nums", criticalCount > 0 ? "text-red-500" : "text-[#1a2a33]")}>
-            {criticalCount}
-          </span>
-          <span className="mt-0.5 text-[9px] uppercase tracking-[0.5px] text-[#4a7ab5]">critical</span>
-        </div>
-        <div className="flex flex-col">
-          <span className="text-[18px] font-bold leading-none tabular-nums text-emerald-500">
-            {securityIssues.filter((i) => i.status === "resolved").length}
-          </span>
-          <span className="mt-0.5 text-[9px] uppercase tracking-[0.5px] text-[#4a7ab5]">resolved</span>
-        </div>
-      </div>
-
-      <div className="text-[10px] text-[#4a7ab5]">View full report →</div>
+      <span className="ml-auto text-[11px] text-red-400">→</span>
     </Link>
   )
 }
