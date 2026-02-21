@@ -16,9 +16,6 @@ import {
   type NodeMouseHandler,
 } from "@xyflow/react"
 
-const ZOOM_SPEED   = 0.25  // fractional zoom change per scroll tick
-const PAN_SPEED    = 1.0   // horizontal pan multiplier
-
 import { initialEdges, initialNodes } from "@/data/flow"
 import { useIssueContext } from "@/context/issue-context"
 import { NODE_WIDTH, NODE_WIDE } from "@/constants/flow"
@@ -29,7 +26,9 @@ import { SpringEdge } from "@/components/workspace/edges/SpringEdge"
 const nodeTypes = { screenshot: ScreenshotNode }
 const edgeTypes = { spring: SpringEdge }
 
-const MAX_ZOOM = 4
+const MAX_ZOOM       = 4
+const PINCH_SPEED    = 0.02  // zoom factor per deltaY unit during pinch (ctrlKey)
+const PAN_SPEED      = 1.0   // scroll-to-pan multiplier
 
 // Reads live measured node dimensions from React Flow and re-zooms
 // whenever the active node's height changes (e.g. dropdown opens/closes).
@@ -104,7 +103,7 @@ function FlowController() {
     if (visibleFraction < 0.3) clearSelection()
   }, [activeNodeId, nodes, vpX, vpY, vpZoom, containerWidth, containerHeight, clearSelection])
 
-  // ── Custom wheel: vertical = zoom (fast), horizontal = pan ───────────────
+  // ── Custom wheel: pinch = zoom (fast), scroll = pan (all directions) ───────
   const rf = useReactFlow()
   useEffect(() => {
     const el = document.querySelector(".react-flow") as HTMLElement | null
@@ -112,25 +111,26 @@ function FlowController() {
 
     const onWheel = (e: WheelEvent) => {
       e.preventDefault()
-
       const vp = rf.getViewport()
 
-      if (Math.abs(e.deltaX) > Math.abs(e.deltaY)) {
-        // Horizontal scroll → pan left/right
-        rf.setViewport({ ...vp, x: vp.x - e.deltaX * PAN_SPEED }, { duration: 0 })
-      } else {
-        // Vertical scroll → zoom toward cursor
-        const rect = el.getBoundingClientRect()
+      if (e.ctrlKey) {
+        // Trackpad pinch gesture → zoom toward cursor
+        const rect   = el.getBoundingClientRect()
         const mouseX = e.clientX - rect.left
         const mouseY = e.clientY - rect.top
 
-        const direction  = e.deltaY > 0 ? -1 : 1
-        const scale      = 1 + direction * ZOOM_SPEED
-        const newZoom    = Math.max(0.2, Math.min(MAX_ZOOM, vp.zoom * scale))
-        const newX       = mouseX - (mouseX - vp.x) * (newZoom / vp.zoom)
-        const newY       = mouseY - (mouseY - vp.y) * (newZoom / vp.zoom)
+        const factor  = Math.exp(-e.deltaY * PINCH_SPEED)
+        const newZoom = Math.max(0.2, Math.min(MAX_ZOOM, vp.zoom * factor))
+        const newX    = mouseX - (mouseX - vp.x) * (newZoom / vp.zoom)
+        const newY    = mouseY - (mouseY - vp.y) * (newZoom / vp.zoom)
 
         rf.setViewport({ x: newX, y: newY, zoom: newZoom }, { duration: 0 })
+      } else {
+        // Two-finger scroll or mouse wheel → pan in scroll direction
+        rf.setViewport(
+          { ...vp, x: vp.x - e.deltaX * PAN_SPEED, y: vp.y - e.deltaY * PAN_SPEED },
+          { duration: 0 }
+        )
       }
     }
 
