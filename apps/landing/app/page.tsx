@@ -191,26 +191,22 @@ export default function Home() {
         </div>
 
         <div className="logo-marquee w-full overflow-hidden [mask-image:linear-gradient(to_right,transparent,black_6%,black_94%,transparent)]">
-          <div className="logo-marquee-track gap-14 py-3">
-            {[
-              { name: 'Lovable', logo: '/logos/lovable.svg' },
-              { name: 'Vercel', logo: '/logos/vercel.svg' },
-              { name: 'Stripe', logo: '/logos/stripe.svg' },
-              { name: 'Notion', logo: '/logos/notion.svg' },
-              { name: 'Linear', logo: '/logos/linear.svg' },
-              { name: 'Supabase', logo: '/logos/supabase.svg' },
-              { name: 'Lovable', logo: '/logos/lovable.svg' },
-              { name: 'Vercel', logo: '/logos/vercel.svg' },
-              { name: 'Stripe', logo: '/logos/stripe.svg' },
-              { name: 'Notion', logo: '/logos/notion.svg' },
-              { name: 'Linear', logo: '/logos/linear.svg' },
-              { name: 'Supabase', logo: '/logos/supabase.svg' },
-            ].map((company, i) => (
-              <div key={`${company.name}-${i}`} className="flex items-center gap-2.5 shrink-0 opacity-50 grayscale">
-                <img src={company.logo} alt={company.name} className="w-6 h-6 object-contain" />
-                <span className="text-[15px] text-gray-800 tracking-tight">{company.name}</span>
-              </div>
-            ))}
+          <div className="logo-marquee-track py-3">
+            {Array.from({ length: 4 }).map((_, setIdx) =>
+              [
+                { name: 'Lovable', logo: '/logos/lovable.svg' },
+                { name: 'Vercel', logo: '/logos/vercel.svg' },
+                { name: 'Stripe', logo: '/logos/stripe.svg' },
+                { name: 'Notion', logo: '/logos/notion.svg' },
+                { name: 'Linear', logo: '/logos/linear.svg' },
+                { name: 'Supabase', logo: '/logos/supabase.svg' },
+              ].map((company, i) => (
+                <div key={`${setIdx}-${i}`} className="flex items-center gap-2.5 shrink-0 opacity-50 grayscale mx-7">
+                  <img src={company.logo} alt={company.name} className="w-6 h-6 object-contain" />
+                  <span className="text-[15px] text-gray-800 tracking-tight">{company.name}</span>
+                </div>
+              ))
+            )}
           </div>
         </div>
       </section>

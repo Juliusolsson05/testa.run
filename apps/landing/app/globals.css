@@ -132,18 +132,15 @@
 }
 
 @keyframes logo-marquee {
-  0% {
-    transform: translateX(0);
-  }
-  100% {
-    transform: translateX(-50%);
-  }
+  from { transform: translateX(0); }
+  to   { transform: translateX(-50%); }
 }
 
 .logo-marquee-track {
   display: flex;
   width: max-content;
-  animation: logo-marquee 26s linear infinite;
+  will-change: transform;
+  animation: logo-marquee 30s linear infinite;
 }
 
 .logo-marquee:hover .logo-marquee-track {
