@@ -8,6 +8,7 @@ export type ScreenshotNodeData = {
   imageSrc?: string
   duration?: string
   isMain?: boolean
+  isLarge?: boolean
   sourceHandleOffset?: { top: string; left: string }
 }
 
@@ -23,7 +24,7 @@ export function ScreenshotNode({ data, selected }: NodeProps) {
 
   return (
     <div
-      className={`screenshot-node ${selected ? 'selected' : ''} status-${nodeData.status} ${nodeData.isMain ? 'main-node' : ''}`}
+      className={`screenshot-node ${selected ? 'selected' : ''} status-${nodeData.status} ${nodeData.isMain ? 'main-node' : ''} ${nodeData.isLarge ? 'large-node' : ''}`}
     >
       {/* Target handle — always vertically centered on the left */}
       <Handle type="target" position={Position.Left} className="flow-handle" />

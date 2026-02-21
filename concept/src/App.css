@@ -213,7 +213,7 @@ body {
 
 /* ─── Screenshot Node ──────────────────────────────────────── */
 .screenshot-node {
-  width: 340px;
+  width: 260px;
   border-radius: 14px;
   background: rgba(255,255,255,0.72);
   border: 1px solid var(--blue-light);
@@ -226,8 +226,12 @@ body {
   backdrop-filter: blur(6px);
 }
 
-.screenshot-node.main-node {
+.screenshot-node.main-node,
+.screenshot-node.large-node {
   width: 460px;
+}
+
+.screenshot-node.main-node {
   border-color: var(--blue-mid);
   box-shadow:
     0 2px 6px rgba(37,99,235,0.08),

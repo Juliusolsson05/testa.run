@@ -73,6 +73,7 @@ const initialNodes: Node<ScreenshotNodeData>[] = [
       url: 'https://testa.run/dashboard',
       status: 'running',
       step: 3,
+      isLarge: true,
       imageSrc: '/screenshots/dashboard.png',
     },
   },
