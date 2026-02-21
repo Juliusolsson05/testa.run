@@ -12,7 +12,3 @@ export type ScreenshotNodeData = {
   sourceHandle?: { side: "left" | "right"; imageY: number }
 }
 
-export type NodeStepMeta = {
-  step: number
-  label: string
-}

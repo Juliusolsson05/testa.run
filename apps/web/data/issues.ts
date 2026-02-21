@@ -20,7 +20,7 @@ export const issues: Issue[] = [
   {
     id: "iss-1",
     runId: "run-ux-1",
-    nodeId: "1",
+    nodeId: "landing",
     title: "Low contrast on CTA",
     description: "Primary CTA button fails WCAG AA contrast ratio (3.2:1 vs required 4.5:1).",
     reasoning:
@@ -32,7 +32,7 @@ export const issues: Issue[] = [
   {
     id: "iss-2",
     runId: "run-ux-1",
-    nodeId: "1",
+    nodeId: "landing",
     title: "Missing alt text on hero",
     description: "Hero image has no alt attribute, causing screen reader failures.",
     reasoning:
@@ -44,7 +44,7 @@ export const issues: Issue[] = [
   {
     id: "iss-3",
     runId: "run-ux-1",
-    nodeId: "2",
+    nodeId: "login",
     title: "Login timeout > 3s",
     description: "Authentication POST request exceeds 3s SLA (measured 4.1s at P95).",
     reasoning:
@@ -56,7 +56,7 @@ export const issues: Issue[] = [
   {
     id: "iss-4",
     runId: "run-ux-1",
-    nodeId: "2",
+    nodeId: "login",
     title: "Form label not bound",
     description: "Search input is missing a bound <label> element; for/id pairing absent.",
     reasoning:
@@ -68,7 +68,7 @@ export const issues: Issue[] = [
   {
     id: "iss-5",
     runId: "run-ux-1",
-    nodeId: "3",
+    nodeId: "dashboard",
     title: "Dashboard render lag",
     description: "Initial dashboard paint takes 6.8s on throttled 4G (budget: 4s).",
     reasoning:
@@ -80,7 +80,7 @@ export const issues: Issue[] = [
   {
     id: "iss-6",
     runId: "run-ux-1",
-    nodeId: "3",
+    nodeId: "dashboard",
     title: "Widget overflow at 1280px",
     description: "Analytics widget clips outside its container at exactly 1280px viewport width.",
     reasoning:
@@ -95,7 +95,7 @@ export const issues: Issue[] = [
   {
     id: "iss-7",
     runId: "run-sec-1",
-    nodeId: "1",
+    nodeId: "landing",
     title: "Missing Content-Security-Policy",
     description: "No CSP header is sent with the landing page response, leaving the site open to XSS.",
     reasoning:
@@ -107,7 +107,7 @@ export const issues: Issue[] = [
   {
     id: "iss-8",
     runId: "run-sec-1",
-    nodeId: "1",
+    nodeId: "landing",
     title: "HSTS max-age too short",
     description: "Strict-Transport-Security max-age is 300s (5 min) — recommended minimum is 1 year.",
     reasoning:
@@ -119,7 +119,7 @@ export const issues: Issue[] = [
   {
     id: "iss-9",
     runId: "run-sec-1",
-    nodeId: "2",
+    nodeId: "login",
     title: "CSRF token absent on login form",
     description: "Login form submits without a CSRF token; cross-site request forgery is possible.",
     reasoning:
@@ -131,7 +131,7 @@ export const issues: Issue[] = [
   {
     id: "iss-10",
     runId: "run-sec-1",
-    nodeId: "2",
+    nodeId: "login",
     title: "Session cookie missing Secure flag",
     description: "The session cookie is transmitted over HTTP due to missing Secure flag.",
     reasoning:
@@ -143,7 +143,7 @@ export const issues: Issue[] = [
   {
     id: "iss-11",
     runId: "run-sec-1",
-    nodeId: "3",
+    nodeId: "dashboard",
     title: "JWT stored in localStorage",
     description: "Auth token persisted in localStorage is accessible to any JavaScript on the page.",
     reasoning:
@@ -158,7 +158,7 @@ export const issues: Issue[] = [
   {
     id: "iss-12",
     runId: "run-btn-1",
-    nodeId: "1",
+    nodeId: "landing",
     title: "CTA missing role description",
     description: "Primary CTA has no aria-label or description clarifying it starts a free trial.",
     reasoning:
@@ -170,7 +170,7 @@ export const issues: Issue[] = [
   {
     id: "iss-13",
     runId: "run-btn-1",
-    nodeId: "2",
+    nodeId: "login",
     title: "Form submit triggers full page reload on error",
     description: "Invalid login clears the form and reloads the page with no error message.",
     reasoning:
@@ -182,7 +182,7 @@ export const issues: Issue[] = [
   {
     id: "iss-14",
     runId: "run-btn-1",
-    nodeId: "3",
+    nodeId: "dashboard",
     title: "Logout button unreachable via keyboard",
     description: "Logout is inside a display:none dropdown with no keyboard trigger to open it.",
     reasoning:
@@ -194,7 +194,7 @@ export const issues: Issue[] = [
   {
     id: "iss-15",
     runId: "run-btn-1",
-    nodeId: "3",
+    nodeId: "dashboard",
     title: "Export button gives no disabled feedback",
     description: "Export button accepts clicks with no rows selected but performs no action or feedback.",
     reasoning:

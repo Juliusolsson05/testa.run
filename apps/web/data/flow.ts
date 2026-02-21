@@ -1,16 +1,10 @@
 import type { Edge, Node } from "@xyflow/react"
 
-import type { ScreenshotNodeData, NodeStepMeta } from "@/types/flow"
-
-export const nodeStepMap: Record<string, NodeStepMeta> = {
-  "1": { step: 1, label: "Landing" },
-  "2": { step: 2, label: "Login" },
-  "3": { step: 3, label: "Dashboard" },
-}
+import type { ScreenshotNodeData } from "@/types/flow"
 
 export const initialNodes: Node<ScreenshotNodeData>[] = [
   {
-    id: "1",
+    id: "landing",
     type: "screenshot",
     position: { x: 100, y: 200 },
     data: {
@@ -25,7 +19,7 @@ export const initialNodes: Node<ScreenshotNodeData>[] = [
     },
   },
   {
-    id: "2",
+    id: "login",
     type: "screenshot",
     position: { x: 760, y: 60 },
     data: {
@@ -39,7 +33,7 @@ export const initialNodes: Node<ScreenshotNodeData>[] = [
     },
   },
   {
-    id: "3",
+    id: "dashboard",
     type: "screenshot",
     position: { x: 1460, y: 220 },
     data: {
@@ -53,11 +47,21 @@ export const initialNodes: Node<ScreenshotNodeData>[] = [
   },
 ]
 
+/** Derived lookup: node data by id */
+export const nodesById = Object.fromEntries(
+  initialNodes.map((n) => [n.id, n])
+) as Record<string, (typeof initialNodes)[number]>
+
+/** Derived lookup: image + label by node id (for thumbnails in lists) */
+export const nodeMediaById = Object.fromEntries(
+  initialNodes.map((n) => [n.id, { imageSrc: n.data.imageSrc, label: n.data.label }])
+) as Record<string, { imageSrc?: string; label: string }>
+
 export const initialEdges: Edge[] = [
   {
-    id: "e1-2",
-    source: "1",
-    target: "2",
+    id: "e-landing-login",
+    source: "landing",
+    target: "login",
     type: "spring",
     zIndex: 10,
     style: { stroke: "rgba(29,110,245,0.45)", strokeWidth: 2 },
@@ -71,9 +75,9 @@ export const initialEdges: Edge[] = [
     labelBgPadding: [6, 8],
   },
   {
-    id: "e2-3",
-    source: "2",
-    target: "3",
+    id: "e-login-dashboard",
+    source: "login",
+    target: "dashboard",
     type: "spring",
     zIndex: 10,
     style: { stroke: "rgba(29,110,245,0.45)", strokeWidth: 2 },

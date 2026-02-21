@@ -7,15 +7,16 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Separator } from "@/components/ui/separator"
 import { useIssueContext } from "@/context/issue-context"
-import { initialNodes, nodeStepMap } from "@/data/flow"
+import { initialNodes, nodesById } from "@/data/flow"
 import { cn } from "@/lib/utils"
 
 export function Sidebar() {
-  const { selectIssue, activeIssueId, activeNodeId, clearSelection, issues } = useIssueContext()
+  const {
+    selectIssue, activeIssueId, activeNodeId, clearSelection,
+    issues, issuesByNodeId, openIssues, resolvedIssues,
+  } = useIssueContext()
 
-  // ── Global stats (always computed) ──────────────────────────────────────
-  const openIssues = issues.filter((issue) => issue.status === "open")
-  const resolvedIssues = issues.filter((issue) => issue.status === "resolved")
+  // ── Global stats ────────────────────────────────────────────────────────
   const errorCount = openIssues.filter((issue) => issue.severity === "error").length
   const warningCount = openIssues.filter((issue) => issue.severity === "warning").length
   const sitesChecked = new Set(issues.map((issue) => issue.nodeId)).size
@@ -24,9 +25,7 @@ export function Sidebar() {
   const focusedNode = activeNodeId
     ? initialNodes.find((n) => n.id === activeNodeId) ?? null
     : null
-  const nodeIssues = activeNodeId
-    ? issues.filter((issue) => issue.nodeId === activeNodeId)
-    : []
+  const nodeIssues = activeNodeId ? (issuesByNodeId[activeNodeId] ?? []) : []
   const nodeOpenIssues = nodeIssues.filter((i) => i.status === "open")
   const nodeResolvedIssues = nodeIssues.filter((i) => i.status === "resolved")
 
@@ -270,7 +269,7 @@ export function Sidebar() {
                 Open
               </div>
               {openIssues.map((issue) => {
-                const meta = nodeStepMap[issue.nodeId] ?? { step: 0, label: "Unknown" }
+                const nd = nodesById[issue.nodeId]; const meta = { step: nd?.data.step ?? 0, label: nd?.data.label ?? "Unknown" }
                 const isActive = activeIssueId === issue.id
                 return (
                   <button
@@ -318,7 +317,7 @@ export function Sidebar() {
                 Resolved
               </div>
               {resolvedIssues.map((issue) => {
-                const meta = nodeStepMap[issue.nodeId] ?? { step: 0, label: "Unknown" }
+                const nd = nodesById[issue.nodeId]; const meta = { step: nd?.data.step ?? 0, label: nd?.data.label ?? "Unknown" }
                 const isActive = activeIssueId === issue.id
                 return (
                   <button

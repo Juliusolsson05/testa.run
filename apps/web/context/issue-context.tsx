@@ -13,6 +13,9 @@ import { issues, type Issue } from "@/data/issues"
 
 type IssueContextValue = {
   issues: Issue[]
+  issuesByNodeId: Record<string, Issue[]>
+  openIssues: Issue[]
+  resolvedIssues: Issue[]
   activeIssueId: string | null
   activeNodeId: string | null
   selectIssue: (issueId: string) => void
@@ -39,6 +42,15 @@ export function IssueProvider({
   const [activeIssueId, setActiveIssueId] = useState<string | null>(seedIssue)
   const [activeNodeId,  setActiveNodeId]  = useState<string | null>(seedNode)
 
+  const issuesByNodeId = useMemo(() => {
+    const map: Record<string, Issue[]> = {}
+    for (const issue of issues) (map[issue.nodeId] ||= []).push(issue)
+    return map
+  }, [])
+
+  const openIssues = useMemo(() => issues.filter((i) => i.status === "open"), [])
+  const resolvedIssues = useMemo(() => issues.filter((i) => i.status === "resolved"), [])
+
   const selectIssue = useCallback((issueId: string) => {
     const issue = issues.find((item) => item.id === issueId)
     if (!issue) return
@@ -57,8 +69,18 @@ export function IssueProvider({
   }, [])
 
   const value = useMemo(
-    () => ({ issues, activeIssueId, activeNodeId, selectIssue, selectNode, clearSelection }),
-    [activeIssueId, activeNodeId, selectIssue, selectNode, clearSelection]
+    () => ({
+      issues,
+      issuesByNodeId,
+      openIssues,
+      resolvedIssues,
+      activeIssueId,
+      activeNodeId,
+      selectIssue,
+      selectNode,
+      clearSelection,
+    }),
+    [issuesByNodeId, openIssues, resolvedIssues, activeIssueId, activeNodeId, selectIssue, selectNode, clearSelection]
   )
 
   return <IssueContext.Provider value={value}>{children}</IssueContext.Provider>

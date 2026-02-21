@@ -1,7 +1,6 @@
 "use client"
 
 import Image from "next/image"
-import { useMemo } from "react"
 import {
   Handle,
   Position,
@@ -11,22 +10,18 @@ import {
 
 import { Badge } from "@/components/ui/badge"
 import { CHROME_HEIGHT, NODE_WIDTH, NODE_WIDE, SCREENSHOT_RATIO } from "@/constants/flow"
+import { nodeStatusConfig } from "@/constants/status"
 import { useIssueContext } from "@/context/issue-context"
 import { cn } from "@/lib/utils"
 import type { ScreenshotNodeData } from "@/types/flow"
 
-const statusConfig = {
-  passed: { color: "#22c55e", bg: "rgba(34,197,94,0.12)", label: "✓ Passed" },
-  running: { color: "#f59e0b", bg: "rgba(245,158,11,0.12)", label: "⟳ Running" },
-  pending: { color: "#6366f1", bg: "rgba(99,102,241,0.12)", label: "◦ Pending" },
-}
-
-export function ScreenshotNode({ id, data, selected }: NodeProps<Node<ScreenshotNodeData>>) {
-  const { issues } = useIssueContext()
+export function ScreenshotNode({ id, data }: NodeProps<Node<ScreenshotNodeData>>) {
+  const { issuesByNodeId, activeNodeId } = useIssueContext()
+  const isActive = activeNodeId === id
   const nodeData = data
-  const status = statusConfig[nodeData.status]
+  const status = nodeStatusConfig[nodeData.status]
 
-  const nodeIssues = useMemo(() => issues.filter((i) => i.nodeId === id), [id])
+  const nodeIssues = issuesByNodeId[id] ?? []
   const errorCount = nodeIssues.filter((i) => i.severity === "error" && i.status === "open").length
   const warningCount = nodeIssues.filter((i) => i.severity === "warning" && i.status === "open").length
 
@@ -50,7 +45,7 @@ export function ScreenshotNode({ id, data, selected }: NodeProps<Node<Screenshot
         nodeData.isMain || nodeData.isLarge ? "w-[480px]" : "w-[280px]",
         nodeData.isMain && "border-[#2d5a9e] shadow-[0_2px_6px_rgba(29,110,245,0.1),0_8px_32px_rgba(29,110,245,0.16)]",
         nodeData.status === "running" && "border-[#3a6fa0]",
-        selected && "border-[#1d6ef5] shadow-[0_2px_6px_rgba(29,110,245,0.14),0_8px_32px_rgba(29,110,245,0.22)]",
+        isActive && "border-[#1d6ef5] shadow-[0_2px_6px_rgba(29,110,245,0.14),0_8px_32px_rgba(29,110,245,0.22)]",
       )}
     >
       <Handle type="target" position={Position.Left} className="flow-handle" style={{ top: targetHandleTop }} />
