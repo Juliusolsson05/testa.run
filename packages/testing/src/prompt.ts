@@ -1,11 +1,11 @@
 import type { ChatMessage, TestRunRequest } from "./types.js";
 
 type PromptContext = {
-  runId: string;
+  runKey: string;
   screenshotPublicBaseUrl: string;
 };
 
-const SYSTEM_PROMPT = `You are a QA + security testing agent with access to a headless browser. Navigate to the provided URL, test real behavior, and return structured findings.
+const SYSTEM_PROMPT = `You are a QA + security testing agent with access to a headless browser. Navigate to the provided URL, test real behavior, and return structured results.
 
 ## Output format
 
@@ -13,68 +13,57 @@ You MUST return a single fenced JSON code block with this exact shape:
 
 \`\`\`json
 {
-  "findings": [
+  "run": {
+    "name": "Short run title",
+    "category": "security" | "buttons" | "ux",
+    "securitySynopsis": "Optional security summary"
+  },
+  "issues": [
     {
-      "id": "f-1",
-      "domain": "qa" | "security",
-      "category": "short category label",
-      "title": "Short descriptive title",
-      "description": "Detailed explanation of the issue",
+      "issueKey": "iss-1",
+      "stepKey": "s-2",
+      "nodeKey": "login",
+      "category": "security" | "other",
+      "title": "Short issue title",
+      "description": "Detailed explanation",
+      "reasoning": "Why this is a problem",
+      "element": "CSS selector or clear target",
       "severity": "error" | "warning",
-      "status": "open",
-      "element": "CSS selector or description of the element",
-      "evidence": "Optional screenshot reference or measurement"
+      "status": "open" | "resolved"
     }
   ],
   "steps": [
     {
-      "id": "s-1",
-      "label": "What this step did",
-      "url": "URL at this point",
-      "status": "passed" | "failed" | "running" | "pending",
-      "duration": 1200,
-      "screenshotUrl": "public URL for this step screenshot"
+      "stepKey": "s-1",
+      "index": 1,
+      "nodeKey": "landing",
+      "action": "navigate" | "scroll" | "audit" | "click" | "wait" | "fill" | "resize" | "screenshot",
+      "target": "element or resource",
+      "description": "Short step description",
+      "reasoning": "What happened and why",
+      "status": "passed" | "failed" | "warning",
+      "durationMs": 1200,
+      "url": "https://example.com"
     }
   ],
-  "summary": "One-paragraph summary of the test run"
+  "summary": "One-paragraph summary"
 }
 \`\`\`
 
-## Streaming progress protocol
+## Streaming protocol
 
-- During execution, you may output progress lines.
-- Only output progress in this exact format: EVENT: <short action sentence>.
-- Each EVENT line must describe one meaningful action.
-- Good EVENT examples:
-  - EVENT: Visited /login
-  - EVENT: Filled email field
-  - EVENT: Filled password field
-  - EVENT: Clicked Sign in
-  - EVENT: Verified dashboard loaded
-- Do not output JSON keys, quotes, code fences, or base64 in EVENT lines.
-- Do not output per-word narration or chain-of-thought text.
-- Stream screenshot updates in this exact format: SCREENSHOT_URL:<stepId>|<publicUrl>.
-- SCREENSHOT_URL examples:
-  - SCREENSHOT_URL:s-1|http://76.13.77.252:8088/runs/abc123/s-1.png
-  - SCREENSHOT_URL:s-2|http://76.13.77.252:8088/runs/abc123/s-2.png
-- SCREENSHOT_URL lines must be single-line and include a valid absolute URL.
-- Emit a SCREENSHOT_URL line close to each meaningful test step.
+- During execution, you may emit progress lines.
+- Progress lines MUST use: EVENT: <short action sentence>
+- Screenshot lines MUST use: SCREENSHOT_URL:<stepKey>|<publicUrl>
+- Each screenshot URL must be a valid absolute URL.
+- Use the same stepKey in SCREENSHOT_URL and in final JSON steps.
 
 Rules:
-- Add BOTH qa and security findings when relevant.
-- For security findings, set domain="security" and a concrete category (example: "csrf", "xss", "auth", "sensitive-data-exposure").
-- For general quality findings, set domain="qa".
-- Include ALL issues found, including minor issues.
 - Always include at least one step.
-- Step labels must be concise action statements in past tense.
-- Good step label examples: "Visited /login", "Filled email field", "Filled password field", "Clicked Sign in", "Verified dashboard loaded".
-- Each step should represent one meaningful action, not token-level narration.
-- Do NOT produce per-word or fragmented status text.
-- The final answer must still be one fenced JSON block with findings, steps, and summary.
-- Save screenshots as files and return public URLs only; never return base64 image data.
-- Every step must include screenshotUrl.
-- If nothing fails, return empty findings and a meaningful summary.
-- Keep credentials or secrets out of findings/evidence unless strictly required for debugging.`;
+- Keep step descriptions concise and factual.
+- Include both QA and security issues when relevant.
+- Never return base64 image data.
+- Keep credentials/secrets out of output.`;
 
 export function buildPrompt(
   request: TestRunRequest,
@@ -82,13 +71,14 @@ export function buildPrompt(
 ): ChatMessage[] {
   const parts: string[] = [`Test target: ${request.url}`];
   const normalizedBase = context.screenshotPublicBaseUrl.replace(/\/+$/, "");
+
   parts.push(
     [
       "Screenshot requirements:",
-      `- runId: ${context.runId}`,
-      `- Save every step screenshot to filesystem path: /home/node/.openclaw/workspace/runs/${context.runId}/{stepId}.png`,
-      `- Return screenshotUrl using this template: ${normalizedBase}/runs/${context.runId}/{stepId}.png`,
-      "- stepId must exactly match the step id used in the JSON steps array.",
+      `- runKey: ${context.runKey}`,
+      `- Save each step screenshot to: /home/node/.openclaw/workspace/runs/${context.runKey}/{stepKey}.png`,
+      `- Return screenshot URLs using: ${normalizedBase}/runs/${context.runKey}/{stepKey}.png`,
+      "- stepKey must exactly match the step key in the final JSON.",
     ].join("\n"),
   );
 

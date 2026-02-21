@@ -3,35 +3,81 @@ export type TestRunRequest = {
   prompt?: string;
 };
 
-export type FindingDomain = "qa" | "security";
+export type RunCategory = "security" | "buttons" | "ux";
+export type RunStatus = "running" | "passed" | "warning" | "failed";
 
-export type FindingSeverity = "error" | "warning";
+export type RunStepStatus = "passed" | "failed" | "warning";
+export type RunStepAction =
+  | "navigate"
+  | "scroll"
+  | "audit"
+  | "click"
+  | "wait"
+  | "fill"
+  | "resize"
+  | "screenshot";
 
-export type FindingStatus = "open" | "resolved";
+export type NodeStatus = "passed" | "running" | "pending";
 
-export type StepStatus = "passed" | "failed" | "running" | "pending";
+export type IssueSeverity = "error" | "warning";
+export type IssueStatus = "open" | "resolved";
+export type IssueCategory = "security" | "other";
 
-export type RunStatus = "completed" | "failed" | "partial";
-
-export type Step = {
-  id: string;
-  label: string;
-  url: string;
-  status: StepStatus;
-  duration?: number;
-  screenshotUrl?: string;
+export type RunMeta = {
+  runKey: string;
+  name: string;
+  category: RunCategory;
+  status: RunStatus;
+  startedAt: string;
+  finishedAt?: string;
+  durationMs?: number;
+  summary?: string;
+  securitySynopsis?: string;
+  metadata?: Record<string, unknown>;
 };
 
-export type Finding = {
-  id: string;
-  domain: FindingDomain;
-  category: string;
+export type StepItem = {
+  stepKey: string;
+  index: number;
+  nodeKey: string;
+  action: RunStepAction;
+  target: string;
+  description: string;
+  reasoning: string;
+  status: RunStepStatus;
+  durationMs?: number;
+  url: string;
+};
+
+export type IssueItem = {
+  issueKey: string;
+  nodeKey: string;
+  stepKey?: string;
+  category: IssueCategory;
   title: string;
   description: string;
-  severity: FindingSeverity;
-  status: FindingStatus;
+  reasoning: string;
   element: string;
-  evidence?: string;
+  severity: IssueSeverity;
+  status: IssueStatus;
+  detectedAt?: string;
+};
+
+export type FlowNodeItem = {
+  nodeKey: string;
+  label: string;
+  url: string;
+  status: NodeStatus;
+  step: number;
+  durationMs?: number;
+  imageUrl?: string;
+};
+
+export type FlowEdgeItem = {
+  edgeKey: string;
+  sourceNodeKey: string;
+  targetNodeKey: string;
+  label?: string;
 };
 
 export type RunError = {
@@ -40,69 +86,87 @@ export type RunError = {
 };
 
 export type TestRunResult = {
-  findings: Finding[];
-  qaFindings: Finding[];
-  securityFindings: Finding[];
-  steps: Step[];
-  summary: string;
-  status: RunStatus;
-  error?: RunError;
+  run: RunMeta;
+  steps: StepItem[];
+  issues: IssueItem[];
+  nodes: FlowNodeItem[];
+  edges: FlowEdgeItem[];
 };
 
 export type TestRunEvent =
   | {
       type: "run.started";
-      runId: string;
+      runKey: string;
       at: string;
-      request: { url: string };
+      run: RunMeta;
     }
   | {
-      type: "step.started";
-      runId: string;
+      type: "run.updated";
+      runKey: string;
       at: string;
-      step: Step;
+      run: RunMeta;
+    }
+  | {
+      type: "step.upserted";
+      runKey: string;
+      at: string;
+      step: StepItem;
     }
   | {
       type: "step.progress";
-      runId: string;
+      runKey: string;
       at: string;
-      stepId: string;
+      stepKey: string;
       message: string;
     }
   | {
-      type: "step.screenshot";
-      runId: string;
+      type: "step.image";
+      runKey: string;
       at: string;
-      stepId: string;
+      stepKey: string;
       imageUrl: string;
+      nodeKey?: string;
     }
   | {
-      type: "finding.created";
-      runId: string;
+      type: "node.upserted";
+      runKey: string;
       at: string;
-      finding: Finding;
+      node: FlowNodeItem;
+    }
+  | {
+      type: "edge.upserted";
+      runKey: string;
+      at: string;
+      edge: FlowEdgeItem;
+    }
+  | {
+      type: "issue.created";
+      runKey: string;
+      at: string;
+      issue: IssueItem;
     }
   | {
       type: "run.warning";
-      runId: string;
+      runKey: string;
       at: string;
       message: string;
     }
   | {
       type: "run.failed";
-      runId: string;
+      runKey: string;
       at: string;
       error: RunError;
+      partialResult?: TestRunResult;
     }
   | {
       type: "run.completed";
-      runId: string;
+      runKey: string;
       at: string;
       result: TestRunResult;
     };
 
 export type TestRunHandle = {
-  runId: string;
+  runKey: string;
   events: AsyncIterable<TestRunEvent>;
   result: Promise<TestRunResult>;
   cancel: () => void;

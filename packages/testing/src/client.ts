@@ -1,5 +1,11 @@
 import type {
   EngineConfig,
+  FlowEdgeItem,
+  FlowNodeItem,
+  IssueItem,
+  RunMeta,
+  RunStatus,
+  StepItem,
   TestRunEvent,
   TestRunHandle,
   TestRunRequest,
@@ -7,7 +13,12 @@ import type {
 } from "./types.js";
 import { streamEngine } from "./engine.js";
 import { buildPrompt } from "./prompt.js";
-import { buildResult, parseEngineOutput } from "./parser.js";
+import {
+  backfillIssueNodeKeys,
+  buildFlowGraph,
+  inferStatusFromStepsAndIssues,
+  parseEngineOutput,
+} from "./parser.js";
 
 class AsyncEventQueue<T> implements AsyncIterable<T> {
   private items: T[] = [];
@@ -56,26 +67,24 @@ function nowIso(): string {
   return new Date().toISOString();
 }
 
-const DEBUG_ENABLED = /^(1|true|yes)$/i.test(
-  process.env["TESTING_DEBUG"] ?? "",
-);
+const DEBUG_ENABLED = /^(1|true|yes)$/i.test(process.env["TESTING_DEBUG"] ?? "");
 
-function debugLog(runId: string, message: string, details?: unknown): void {
+function debugLog(runKey: string, message: string, details?: unknown): void {
   if (!DEBUG_ENABLED) {
     return;
   }
 
-  const payload = {
-    type: "debug",
-    scope: "testing-client",
-    runId,
-    at: nowIso(),
-    message,
-    ...(details !== undefined ? { details } : {}),
-  };
-  // Use stderr so event stream on stdout remains unchanged.
   // eslint-disable-next-line no-console
-  console.error(JSON.stringify(payload));
+  console.error(
+    JSON.stringify({
+      type: "debug",
+      scope: "testing-client",
+      runKey,
+      at: nowIso(),
+      message,
+      ...(details !== undefined ? { details } : {}),
+    }),
+  );
 }
 
 function normalizeEventMessage(content: string): string | null {
@@ -84,9 +93,11 @@ function normalizeEventMessage(content: string): string | null {
     .replace(/\{[\s\S]*$/g, "")
     .replace(/\s+/g, " ")
     .trim();
+
   if (!message) {
     return null;
   }
+
   return message.slice(0, 140);
 }
 
@@ -95,46 +106,44 @@ function normalizeScreenshotUrl(raw: string): string | null {
   if (!stripped) {
     return null;
   }
-  if (!/^https?:\/\/\S+$/i.test(stripped)) {
-    return null;
-  }
-  return stripped;
+  return /^https?:\/\/\S+$/i.test(stripped) ? stripped : null;
 }
 
 type ExtractedEnvelope = {
   progressMessages: string[];
-  screenshots: Array<{ stepId: string; imageUrl: string }>;
+  screenshots: Array<{ stepKey: string; imageUrl: string }>;
 };
 
 class StreamEnvelopeExtractor {
   private buffer = "";
   private lastEvent = "";
-  private lastScreenshotFingerprint = "";
+  private screenshotFingerprints = new Set<string>();
 
-  push(content: string, runId: string): ExtractedEnvelope {
+  push(content: string, runKey: string): ExtractedEnvelope {
     this.buffer += content;
     if (this.buffer.length > 10000) {
       this.buffer = this.buffer.slice(-5000);
     }
 
     const envelope: ExtractedEnvelope = { progressMessages: [], screenshots: [] };
-    this.extractFromBuffer(runId, envelope, false);
+    this.extractFromBuffer(runKey, envelope, false);
     return envelope;
   }
 
-  flush(runId: string): ExtractedEnvelope {
+  flush(runKey: string): ExtractedEnvelope {
     const envelope: ExtractedEnvelope = { progressMessages: [], screenshots: [] };
-    this.extractFromBuffer(runId, envelope, true);
+    this.extractFromBuffer(runKey, envelope, true);
     this.buffer = "";
     return envelope;
   }
 
   private extractFromBuffer(
-    runId: string,
+    runKey: string,
     output: ExtractedEnvelope,
     flushAll: boolean,
   ): void {
     const markers = ["EVENT:", "SCREENSHOT_URL:"];
+
     while (true) {
       const positions = markers
         .map((marker) => ({ marker, index: this.buffer.indexOf(marker) }))
@@ -144,11 +153,6 @@ class StreamEnvelopeExtractor {
       const first = positions[0];
       const start = first?.index ?? -1;
       if (start === -1) {
-        if (flushAll && this.buffer.length > 0) {
-          debugLog(runId, "No stream marker found in remaining buffer", {
-            preview: this.buffer.slice(0, 240),
-          });
-        }
         if (!flushAll && this.buffer.length > 3000) {
           this.buffer = this.buffer.slice(-1500);
         }
@@ -156,12 +160,6 @@ class StreamEnvelopeExtractor {
       }
 
       if (start > 0) {
-        const skipped = this.buffer.slice(0, start);
-        if (DEBUG_ENABLED && /[A-Za-z]/.test(skipped)) {
-          debugLog(runId, "Skipping non-event stream text", {
-            preview: skipped.slice(0, 200),
-          });
-        }
         this.buffer = this.buffer.slice(start);
       }
 
@@ -170,73 +168,48 @@ class StreamEnvelopeExtractor {
       const nextMarkerPositions = markers
         .map((candidate) => afterMarker.indexOf(candidate))
         .filter((value) => value >= 0);
+
       const newline = afterMarker.indexOf("\n");
       const fence = afterMarker.indexOf("```");
-
       const candidates = [...nextMarkerPositions, newline, fence].filter((value) => value >= 0);
 
       if (candidates.length === 0 && !flushAll) {
         return;
       }
 
-      const endRelative =
-        candidates.length === 0
-          ? afterMarker.length
-          : Math.min(...candidates);
-
+      const endRelative = candidates.length === 0 ? afterMarker.length : Math.min(...candidates);
       const rawMessage = afterMarker.slice(0, endRelative);
       this.buffer = afterMarker.slice(endRelative);
 
       if (marker === "EVENT:") {
         const message = normalizeEventMessage(rawMessage);
-        if (!message) {
-          debugLog(runId, "Discarded empty/malformed EVENT payload", {
-            raw: rawMessage.slice(0, 200),
-          });
+        if (!message || message === this.lastEvent) {
           continue;
         }
-
-        if (message === this.lastEvent) {
-          debugLog(runId, "Deduped repeated EVENT payload", { message });
-          continue;
-        }
-
         this.lastEvent = message;
         output.progressMessages.push(message);
-        debugLog(runId, "Extracted EVENT payload", { message });
         continue;
       }
 
       const screenshotMatch = /^\s*([^|\s]+)\|([\s\S]+)$/.exec(rawMessage.trim());
       if (!screenshotMatch?.[1] || !screenshotMatch[2]) {
-        debugLog(runId, "Discarded malformed SCREENSHOT_URL payload", {
-          raw: rawMessage.slice(0, 200),
-        });
         continue;
       }
 
-      const stepId = screenshotMatch[1].trim();
+      const stepKey = screenshotMatch[1].trim();
       const imageUrl = normalizeScreenshotUrl(screenshotMatch[2]);
       if (!imageUrl) {
-        debugLog(runId, "Discarded invalid SCREENSHOT_URL value", {
-          stepId,
-          rawPreview: screenshotMatch[2].slice(0, 120),
-        });
         continue;
       }
 
-      const fingerprint = `${stepId}:${imageUrl}`;
-      if (fingerprint === this.lastScreenshotFingerprint) {
-        debugLog(runId, "Deduped repeated SCREENSHOT_URL payload", { stepId });
+      const fingerprint = `${stepKey}:${imageUrl}`;
+      if (this.screenshotFingerprints.has(fingerprint)) {
         continue;
       }
 
-      this.lastScreenshotFingerprint = fingerprint;
-      output.screenshots.push({ stepId, imageUrl });
-      debugLog(runId, "Extracted SCREENSHOT_URL payload", {
-        stepId,
-        imageUrl,
-      });
+      this.screenshotFingerprints.add(fingerprint);
+      output.screenshots.push({ stepKey, imageUrl });
+      debugLog(runKey, "Extracted screenshot", { stepKey, imageUrl });
     }
   }
 }
@@ -248,41 +221,48 @@ function toRunError(error: unknown): { code: string; message: string } {
   return { code: "ENGINE_ERROR", message: "Unknown engine error" };
 }
 
-function emitStepArtifacts(args: {
-  runId: string;
-  queue: AsyncEventQueue<TestRunEvent>;
-  steps: TestRunResult["steps"];
-}): void {
-  for (const step of args.steps) {
-    if (!step) {
-      continue;
-    }
-
-    args.queue.push({
-      type: "step.started",
-      runId: args.runId,
-      at: nowIso(),
-      step,
-    });
-
-    if (!step.screenshotUrl) {
-      continue;
-    }
-    args.queue.push({
-      type: "step.screenshot",
-      runId: args.runId,
-      at: nowIso(),
-      stepId: step.id,
-      imageUrl: step.screenshotUrl,
-    });
-  }
+function makeRunKey(): string {
+  return `run-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`;
 }
 
 function resolveScreenshotPublicBaseUrl(): string {
-  return (
-    process.env["TESTING_SCREENSHOT_PUBLIC_BASE_URL"]?.trim() ||
-    "http://76.13.77.252:8088"
-  );
+  return process.env["TESTING_SCREENSHOT_PUBLIC_BASE_URL"]?.trim() || "http://76.13.77.252:8088";
+}
+
+function buildRunMeta(args: {
+  runKey: string;
+  name: string;
+  category: "security" | "buttons" | "ux";
+  status: RunStatus;
+  startedAt: string;
+  summary?: string;
+  securitySynopsis?: string;
+}): RunMeta {
+  return {
+    runKey: args.runKey,
+    name: args.name,
+    category: args.category,
+    status: args.status,
+    startedAt: args.startedAt,
+    ...(args.summary ? { summary: args.summary } : {}),
+    ...(args.securitySynopsis ? { securitySynopsis: args.securitySynopsis } : {}),
+  };
+}
+
+function buildResult(args: {
+  run: RunMeta;
+  steps: StepItem[];
+  issues: IssueItem[];
+  nodes: FlowNodeItem[];
+  edges: FlowEdgeItem[];
+}): TestRunResult {
+  return {
+    run: args.run,
+    steps: args.steps,
+    issues: args.issues,
+    nodes: args.nodes,
+    edges: args.edges,
+  };
 }
 
 export function createTestRun(
@@ -293,214 +273,205 @@ export function createTestRun(
     throw new Error("request.url is required");
   }
 
-  const runId =
-    typeof crypto !== "undefined" && typeof crypto.randomUUID === "function"
-      ? crypto.randomUUID()
-      : `run-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`;
-
+  const runKey = makeRunKey();
   const queue = new AsyncEventQueue<TestRunEvent>();
   const controller = new AbortController();
   const messages = buildPrompt(request, {
-    runId,
+    runKey,
     screenshotPublicBaseUrl: resolveScreenshotPublicBaseUrl(),
   });
+
+  const startedAt = nowIso();
+  const stepImageByStepKey = new Map<string, string>();
 
   const result = (async (): Promise<TestRunResult> => {
     let content = "";
     const envelopeExtractor = new StreamEnvelopeExtractor();
-    let chunkCount = 0;
-    const streamedScreenshotStepIds = new Set<string>();
+
+    const initialRun = buildRunMeta({
+      runKey,
+      name: "Automated Test Run",
+      category: "ux",
+      status: "running",
+      startedAt,
+    });
 
     queue.push({
       type: "run.started",
-      runId,
+      runKey,
       at: nowIso(),
-      request: { url: request.url },
+      run: initialRun,
     });
-    debugLog(runId, "Run started", { url: request.url });
 
     try {
       for await (const chunk of streamEngine(messages, config, controller.signal)) {
         content += chunk.content;
-        chunkCount += 1;
-        debugLog(runId, "Received stream chunk", {
-          chunkCount,
-          chunkChars: chunk.content.length,
-          totalChars: content.length,
-          preview: chunk.content.slice(0, 200),
-        });
 
-        const envelope = envelopeExtractor.push(chunk.content, runId);
+        const envelope = envelopeExtractor.push(chunk.content, runKey);
         for (const message of envelope.progressMessages) {
           queue.push({
             type: "step.progress",
-            runId,
+            runKey,
             at: nowIso(),
-            stepId: "agent",
+            stepKey: "agent",
             message,
           });
-          debugLog(runId, "Emitted step.progress", { message });
         }
 
         for (const screenshot of envelope.screenshots) {
+          stepImageByStepKey.set(screenshot.stepKey, screenshot.imageUrl);
           queue.push({
-            type: "step.screenshot",
-            runId,
+            type: "step.image",
+            runKey,
             at: nowIso(),
-            stepId: screenshot.stepId,
-            imageUrl: screenshot.imageUrl,
-          });
-          streamedScreenshotStepIds.add(screenshot.stepId);
-          debugLog(runId, "Emitted streamed step.screenshot", {
-            stepId: screenshot.stepId,
+            stepKey: screenshot.stepKey,
             imageUrl: screenshot.imageUrl,
           });
         }
       }
 
-      debugLog(runId, "Stream ended", {
-        chunkCount,
-        totalChars: content.length,
-      });
-
-      const flushed = envelopeExtractor.flush(runId);
-
+      const flushed = envelopeExtractor.flush(runKey);
       for (const message of flushed.progressMessages) {
         queue.push({
           type: "step.progress",
-          runId,
+          runKey,
           at: nowIso(),
-          stepId: "agent",
+          stepKey: "agent",
           message,
         });
-        debugLog(runId, "Emitted flushed step.progress", { message });
       }
 
       for (const screenshot of flushed.screenshots) {
+        stepImageByStepKey.set(screenshot.stepKey, screenshot.imageUrl);
         queue.push({
-          type: "step.screenshot",
-          runId,
+          type: "step.image",
+          runKey,
           at: nowIso(),
-          stepId: screenshot.stepId,
-          imageUrl: screenshot.imageUrl,
-        });
-        streamedScreenshotStepIds.add(screenshot.stepId);
-        debugLog(runId, "Emitted flushed step.screenshot", {
-          stepId: screenshot.stepId,
+          stepKey: screenshot.stepKey,
           imageUrl: screenshot.imageUrl,
         });
       }
 
       const parsed = parseEngineOutput(content);
-      debugLog(runId, "Parsed engine output", {
-        parseError: parsed.parseError ?? null,
-        findings: parsed.findings.length,
-        steps: parsed.steps.length,
-        screenshots: parsed.screenshots.length,
-      });
-      const finalResult = buildResult({
-        findings: parsed.findings,
-        steps: parsed.steps,
-        summary: parsed.summary,
-        status: parsed.parseError ? "partial" : "completed",
-        ...(parsed.parseError
-          ? {
-              error: {
-                code: "PARSE_ERROR",
-                message: parsed.parseError,
-              },
-            }
-          : {}),
-      });
-
       if (parsed.parseError) {
         queue.push({
           type: "run.warning",
-          runId,
+          runKey,
           at: nowIso(),
           message: parsed.parseError,
         });
       }
 
-      emitStepArtifacts({
-        runId,
-        queue,
-        steps: finalResult.steps.filter(
-          (step) => !streamedScreenshotStepIds.has(step.id),
-        ),
-      });
-      debugLog(runId, "Emitted step artifacts", {
-        steps: finalResult.steps.length,
-        screenshots: parsed.screenshots.length,
-      });
+      const steps = [...parsed.steps].sort((a, b) => a.index - b.index);
+      const issues = backfillIssueNodeKeys(steps, parsed.issues);
+      const status = parsed.parseError
+        ? "warning"
+        : inferStatusFromStepsAndIssues(steps, issues);
 
-      for (const finding of finalResult.findings) {
-        queue.push({
-          type: "finding.created",
-          runId,
-          at: nowIso(),
-          finding,
-        });
+      const { nodes, edges } = buildFlowGraph(steps, stepImageByStepKey);
+
+      for (const step of steps) {
+        queue.push({ type: "step.upserted", runKey, at: nowIso(), step });
+
+        const imageUrl = stepImageByStepKey.get(step.stepKey);
+        if (imageUrl) {
+          queue.push({
+            type: "step.image",
+            runKey,
+            at: nowIso(),
+            stepKey: step.stepKey,
+            nodeKey: step.nodeKey,
+            imageUrl,
+          });
+        }
       }
-      debugLog(runId, "Emitted findings", { findings: finalResult.findings.length });
+
+      for (const node of nodes) {
+        queue.push({ type: "node.upserted", runKey, at: nowIso(), node });
+      }
+      for (const edge of edges) {
+        queue.push({ type: "edge.upserted", runKey, at: nowIso(), edge });
+      }
+      for (const issue of issues) {
+        queue.push({ type: "issue.created", runKey, at: nowIso(), issue });
+      }
+
+      const finishedAt = nowIso();
+      const durationMs = Math.max(0, Date.parse(finishedAt) - Date.parse(startedAt));
+      const finalRun: RunMeta = {
+        ...buildRunMeta({
+          runKey,
+          name: parsed.name,
+          category: parsed.category,
+          status,
+          startedAt,
+          summary: parsed.summary,
+          securitySynopsis: parsed.securitySynopsis,
+        }),
+        finishedAt,
+        durationMs,
+      };
+
+      queue.push({ type: "run.updated", runKey, at: nowIso(), run: finalRun });
+
+      const finalResult = buildResult({ run: finalRun, steps, issues, nodes, edges });
 
       queue.push({
         type: "run.completed",
-        runId,
+        runKey,
         at: nowIso(),
         result: finalResult,
       });
-      debugLog(runId, "Run completed", { status: finalResult.status });
 
       return finalResult;
     } catch (error) {
       const runError = toRunError(error);
-      debugLog(runId, "Run failed in catch", {
-        error: runError,
-        contentChars: content.length,
-      });
-      const parsed = content
-        ? parseEngineOutput(content)
-        : { findings: [], steps: [], screenshots: [], summary: "Run failed before output." };
+      const parsed = content ? parseEngineOutput(content) : undefined;
+      const steps = parsed?.steps ?? [];
+      const issues = backfillIssueNodeKeys(steps, parsed?.issues ?? []);
+      const { nodes, edges } = buildFlowGraph(steps, stepImageByStepKey);
 
-      const failedResult = buildResult({
-        findings: parsed.findings,
-        steps: parsed.steps,
-        summary: parsed.summary,
-        status: content ? "partial" : "failed",
-        error: runError,
-      });
+      const failedAt = nowIso();
+      const durationMs = Math.max(0, Date.parse(failedAt) - Date.parse(startedAt));
 
-      emitStepArtifacts({
-        runId,
-        queue,
-        steps: failedResult.steps,
-      });
+      const failedRun: RunMeta = {
+        ...buildRunMeta({
+          runKey,
+          name: parsed?.name ?? "Automated Test Run",
+          category: parsed?.category ?? "ux",
+          status: "failed",
+          startedAt,
+          ...(parsed?.summary ? { summary: parsed.summary } : {}),
+          ...(parsed?.securitySynopsis ? { securitySynopsis: parsed.securitySynopsis } : {}),
+        }),
+        finishedAt: failedAt,
+        durationMs,
+      };
 
-      for (const finding of failedResult.findings) {
-        queue.push({
-          type: "finding.created",
-          runId,
-          at: nowIso(),
-          finding,
-        });
-      }
+      const partialResult = buildResult({
+        run: failedRun,
+        steps,
+        issues,
+        nodes,
+        edges,
+      });
 
       queue.push({
         type: "run.failed",
-        runId,
+        runKey,
         at: nowIso(),
         error: runError,
+        partialResult,
       });
 
-      return failedResult;
+      return partialResult;
     } finally {
       queue.close();
     }
   })();
 
   return {
-    runId,
+    runKey,
     events: queue,
     result,
     cancel: () => controller.abort(),
