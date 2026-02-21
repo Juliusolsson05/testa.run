@@ -1,0 +1,326 @@
+/* ─── Global reset ─────────────────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  background: #0a0a12;
+  color: #e2e2f0;
+  font-family: 'Inter', system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ─── Workspace layout ─────────────────────────────────────── */
+.workspace {
+  display: flex;
+  flex-direction: column;
+  height: 100dvh;
+  overflow: hidden;
+}
+
+/* ─── Header ───────────────────────────────────────────────── */
+.workspace-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 24px;
+  height: 56px;
+  background: rgba(14, 14, 24, 0.95);
+  border-bottom: 1px solid rgba(99, 102, 241, 0.18);
+  backdrop-filter: blur(12px);
+  flex-shrink: 0;
+  z-index: 10;
+}
+
+.header-left { display: flex; align-items: center; gap: 16px; }
+
+.logo {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 17px;
+  font-weight: 700;
+  letter-spacing: -0.5px;
+}
+.logo-icon { color: #6366f1; font-size: 20px; }
+.logo-text { color: #e2e2f0; }
+.logo-dot  { color: #6366f1; }
+
+.header-divider {
+  width: 1px;
+  height: 22px;
+  background: rgba(255,255,255,0.1);
+}
+
+.run-info { display: flex; align-items: center; gap: 6px; font-size: 13px; }
+.run-label { color: #6b7280; }
+.run-id    { color: #a5b4fc; font-family: monospace; font-weight: 600; }
+.run-time  { color: #4b5563; }
+
+/* Progress track */
+.header-center { display: flex; align-items: center; }
+
+.progress-track {
+  display: flex;
+  align-items: center;
+  gap: 0;
+}
+
+.progress-step {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+}
+
+.progress-step span {
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  font-weight: 700;
+  border: 2px solid rgba(255,255,255,0.1);
+  background: rgba(255,255,255,0.04);
+  color: #6b7280;
+  transition: all 0.3s;
+}
+
+.progress-step.done span {
+  background: rgba(99,102,241,0.2);
+  border-color: #6366f1;
+  color: #a5b4fc;
+}
+
+.progress-step.active span {
+  background: rgba(245,158,11,0.15);
+  border-color: #f59e0b;
+  color: #fbbf24;
+  box-shadow: 0 0 10px rgba(245,158,11,0.3);
+}
+
+.progress-step label {
+  font-size: 10px;
+  color: #4b5563;
+  letter-spacing: 0.3px;
+}
+
+.progress-step.done label  { color: #818cf8; }
+.progress-step.active label { color: #fbbf24; }
+
+.progress-line {
+  width: 48px;
+  height: 2px;
+  background: rgba(255,255,255,0.08);
+  margin: 0 4px;
+  margin-bottom: 12px;
+  border-radius: 2px;
+}
+.progress-line.done   { background: #6366f1; }
+.progress-line.active {
+  background: linear-gradient(90deg, #6366f1, #f59e0b);
+}
+
+/* Agent pill */
+.agent-pill {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  background: rgba(245,158,11,0.08);
+  border: 1px solid rgba(245,158,11,0.2);
+  border-radius: 20px;
+  padding: 5px 13px;
+  font-size: 12px;
+  color: #fbbf24;
+  font-weight: 500;
+}
+
+.agent-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #f59e0b;
+  box-shadow: 0 0 8px #f59e0b;
+  animation: pulse 1.5s infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50%       { opacity: 0.5; transform: scale(0.8); }
+}
+
+/* ─── Canvas ───────────────────────────────────────────────── */
+.canvas-wrapper {
+  flex: 1;
+  overflow: hidden;
+  background: #0a0a12;
+}
+
+/* ─── Screenshot Node ──────────────────────────────────────── */
+.screenshot-node {
+  width: 400px;
+  border-radius: 14px;
+  background: rgba(18, 18, 32, 0.95);
+  border: 1px solid rgba(99, 102, 241, 0.2);
+  box-shadow:
+    0 0 0 1px rgba(0,0,0,0.5),
+    0 4px 32px rgba(0,0,0,0.5),
+    0 0 60px rgba(99,102,241,0.06);
+  overflow: hidden;
+  transition: border-color 0.2s, box-shadow 0.2s;
+  cursor: default;
+}
+
+.screenshot-node:hover,
+.screenshot-node.selected {
+  border-color: rgba(99, 102, 241, 0.6);
+  box-shadow:
+    0 0 0 1px rgba(0,0,0,0.5),
+    0 4px 48px rgba(0,0,0,0.6),
+    0 0 80px rgba(99,102,241,0.15);
+}
+
+.screenshot-node.status-running {
+  border-color: rgba(245, 158, 11, 0.3);
+  box-shadow:
+    0 0 0 1px rgba(0,0,0,0.5),
+    0 4px 32px rgba(0,0,0,0.5),
+    0 0 60px rgba(245,158,11,0.08);
+}
+
+/* Browser chrome */
+.browser-chrome {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 14px;
+  background: rgba(255,255,255,0.03);
+  border-bottom: 1px solid rgba(255,255,255,0.06);
+}
+
+.browser-url {
+  flex: 1;
+  background: rgba(255,255,255,0.05);
+  border: 1px solid rgba(255,255,255,0.07);
+  border-radius: 6px;
+  padding: 3px 10px;
+  font-size: 11px;
+  font-family: monospace;
+  color: #9ca3af;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.step-badge {
+  font-size: 10px;
+  font-weight: 600;
+  color: #6366f1;
+  background: rgba(99,102,241,0.12);
+  border: 1px solid rgba(99,102,241,0.25);
+  border-radius: 5px;
+  padding: 2px 8px;
+  white-space: nowrap;
+}
+
+/* Screenshot area */
+.screenshot-area {
+  width: 100%;
+  aspect-ratio: 16/10;
+  overflow: hidden;
+  background: #0f0f1e;
+}
+
+.screenshot-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.screenshot-placeholder {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  color: rgba(255,255,255,0.15);
+  font-size: 12px;
+  border: 2px dashed rgba(255,255,255,0.06);
+  margin: 0;
+}
+
+.placeholder-icon { font-size: 32px; opacity: 0.4; }
+
+/* Footer */
+.node-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 14px;
+  background: rgba(255,255,255,0.02);
+  border-top: 1px solid rgba(255,255,255,0.05);
+}
+
+.node-label {
+  font-size: 13px;
+  font-weight: 600;
+  color: #e2e2f0;
+  letter-spacing: -0.2px;
+}
+
+.status-badge {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  font-size: 11px;
+  font-weight: 500;
+  padding: 3px 9px;
+  border-radius: 20px;
+  border: 1px solid transparent;
+}
+
+.duration {
+  opacity: 0.7;
+}
+
+/* ─── Handles ──────────────────────────────────────────────── */
+.flow-handle {
+  width: 12px !important;
+  height: 12px !important;
+  background: #6366f1 !important;
+  border: 2px solid #0a0a12 !important;
+  box-shadow: 0 0 8px rgba(99,102,241,0.5) !important;
+}
+
+/* ─── Controls ─────────────────────────────────────────────── */
+.react-flow__controls {
+  background: rgba(18,18,32,0.9) !important;
+  border: 1px solid rgba(99,102,241,0.2) !important;
+  border-radius: 10px !important;
+  overflow: hidden;
+  box-shadow: 0 4px 24px rgba(0,0,0,0.4) !important;
+}
+
+.react-flow__controls-button {
+  background: transparent !important;
+  border: none !important;
+  color: #9ca3af !important;
+  border-bottom: 1px solid rgba(255,255,255,0.06) !important;
+}
+
+.react-flow__controls-button:hover {
+  background: rgba(99,102,241,0.12) !important;
+  color: #a5b4fc !important;
+}
+
+.react-flow__controls-button:last-child {
+  border-bottom: none !important;
+}
+
+.react-flow__controls-button svg { fill: currentColor !important; }
+
+/* Edge label background */
+.react-flow__edge-textbg { rx: 6 !important; }
