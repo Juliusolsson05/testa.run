@@ -8,7 +8,7 @@ export type ScreenshotNodeData = {
   imageSrc?: string
   duration?: string
   isMain?: boolean
-  sourceHandleOffset?: string  // CSS top value e.g. '12%'
+  sourceHandleOffset?: { top: string; left: string }
 }
 
 const statusConfig = {
@@ -60,12 +60,17 @@ export function ScreenshotNode({ data, selected }: NodeProps) {
         </div>
       </div>
 
-      {/* Source handle — offset to align with the action element in the screenshot */}
+      {/* Source handle — positioned over the action element in the screenshot */}
       <Handle
         type="source"
         position={Position.Right}
         className="flow-handle"
-        style={nodeData.sourceHandleOffset ? { top: nodeData.sourceHandleOffset } : undefined}
+        style={nodeData.sourceHandleOffset ? {
+          top: nodeData.sourceHandleOffset.top,
+          left: nodeData.sourceHandleOffset.left,
+          right: 'auto',
+          transform: 'translate(-50%, -50%)',
+        } : undefined}
       />
     </div>
   )
