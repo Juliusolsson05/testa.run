@@ -8,6 +8,7 @@ import { runs as demoRuns } from "@/data/runs"
 import { issues as demoIssues } from "@/data/issues"
 import type { Run, RunStatus } from "@/types/domain"
 import { cn } from "@/lib/utils"
+import { getBrowserSupabase } from "@/lib/supabase-browser"
 
 const statusConfig = {
   running: { label: "Running", dot: "bg-amber-400 shadow-[0_0_6px_#f59e0b]", badge: "bg-amber-400/10 text-amber-600" },
@@ -84,43 +85,90 @@ function mapApiRunToUi(run: ApiRun): Run {
 
 export default function HomePage() {
   const [filter, setFilter] = useState<FilterType>("all")
-  const [runs, setRuns] = useState<Run[]>(demoRuns)
-  const [issueCounts, setIssueCounts] = useState<Record<string, { errors: number; warnings: number }>>(
-    Object.fromEntries(
-      demoRuns.map((run) => {
-        const runIssues = demoIssues.filter((i) => i.runId === run.id && i.status === "open")
-        return [
-          run.id,
-          {
-            errors: runIssues.filter((i) => i.severity === "error").length,
-            warnings: runIssues.filter((i) => i.severity === "warning").length,
-          },
-        ]
-      })
-    )
-  )
+  const [runs, setRuns] = useState<Run[]>([])
+  const [usingDemoData, setUsingDemoData] = useState(false)
+  const [issueCounts, setIssueCounts] = useState<Record<string, { errors: number; warnings: number }>>({})
 
   useEffect(() => {
     let isMounted = true
 
-    async function loadRealRuns() {
+    async function loadRuns() {
+      const applyDemoFallback = () => {
+        if (!isMounted) return
+        setRuns(demoRuns)
+        setIssueCounts(
+          Object.fromEntries(
+            demoRuns.map((run) => {
+              const runIssues = demoIssues.filter((i) => i.runId === run.id && i.status === "open")
+              return [
+                run.id,
+                {
+                  errors: runIssues.filter((i) => i.severity === "error").length,
+                  warnings: runIssues.filter((i) => i.severity === "warning").length,
+                },
+              ]
+            })
+          )
+        )
+        setUsingDemoData(true)
+      }
+
       try {
-        const meRes = await fetch("/api/auth/me", { cache: "no-store" })
-        if (!meRes.ok) return
+        const supabase = getBrowserSupabase()
+        const sessionRes = await supabase.auth.getSession()
+        const accessToken = sessionRes.data.session?.access_token
+
+        if (!accessToken) {
+          applyDemoFallback()
+          return
+        }
+
+        const authHeaders = {
+          Authorization: `Bearer ${accessToken}`,
+        }
+
+        const syncRes = await fetch("/api/auth/sync-user", {
+          method: "POST",
+          headers: authHeaders,
+          cache: "no-store",
+        })
+        if (!syncRes.ok) {
+          applyDemoFallback()
+          return
+        }
+
+        const meRes = await fetch("/api/auth/me", {
+          headers: authHeaders,
+          cache: "no-store",
+        })
+        if (!meRes.ok) {
+          applyDemoFallback()
+          return
+        }
 
         const me: ApiMeResponse = await meRes.json()
         const projectId = me.orgs?.[0]?.projects?.[0]?.id
-        if (!projectId) return
+        if (!projectId) {
+          if (!isMounted) return
+          setRuns([])
+          setIssueCounts({})
+          setUsingDemoData(false)
+          return
+        }
 
-        const runsRes = await fetch(`/api/projects/${projectId}/runs`, { cache: "no-store" })
-        if (!runsRes.ok) return
+        const runsRes = await fetch(`/api/projects/${projectId}/runs`, {
+          headers: authHeaders,
+          cache: "no-store",
+        })
+        if (!runsRes.ok) {
+          applyDemoFallback()
+          return
+        }
 
         const payload: ApiRunsResponse = await runsRes.json()
         if (!isMounted) return
 
-        const mappedRuns = payload.runs.map(mapApiRunToUi)
-        setRuns(mappedRuns)
-
+        setRuns(payload.runs.map(mapApiRunToUi))
         setIssueCounts(
           Object.fromEntries(
             payload.runs.map((run) => [
@@ -129,12 +177,13 @@ export default function HomePage() {
             ])
           )
         )
+        setUsingDemoData(false)
       } catch {
-        // Keep demo data fallback for now until auth flow is wired in UI.
+        applyDemoFallback()
       }
     }
 
-    void loadRealRuns()
+    void loadRuns()
 
     return () => {
       isMounted = false
@@ -197,6 +246,9 @@ export default function HomePage() {
               </button>
             ))}
           </div>
+          {usingDemoData && (
+            <span className="ml-auto text-[11px] font-medium text-amber-600">Demo data (no active auth session)</span>
+          )}
         </div>
 
         <div className="flex-1 px-8 py-6">
