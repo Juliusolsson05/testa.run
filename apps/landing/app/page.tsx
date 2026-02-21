@@ -7,6 +7,7 @@ import {
   ArrowRight,
   Check,
 } from 'lucide-react'
+import { SiteNav, SiteFooter } from '@/app/components/SiteNav'
 
 const steps = [
   { num: '01', title: 'Enter your URL', desc: 'Paste any web app URL and describe what a user would do — sign up, buy something, reset a password.' },
@@ -92,19 +93,7 @@ export default function Home() {
       <div className="pointer-events-none fixed inset-0 z-[1] opacity-[0.14]" style={{ backgroundImage: 'radial-gradient(circle, #64748b 0.9px, transparent 0.9px)', backgroundSize: '20px 20px' }} />
       <div className="relative z-[2]">
 
-      {/* ── Nav ── */}
-      <nav className="fixed top-0 inset-x-0 z-50 h-14 flex items-center justify-between px-8 bg-white/80 backdrop-blur-md border-b border-gray-100">
-        <a href="/" className="text-sm tracking-tight text-gray-900">
-          testa<span className="text-brand">.run</span>
-        </a>
-        <ul className="hidden md:flex items-center gap-8 list-none">
-          <li><a href="#how-it-works" className="text-[13px] text-gray-500 hover:text-gray-900 transition-colors">How it works</a></li>
-          <li><a href="#pricing" className="text-[13px] text-gray-500 hover:text-gray-900 transition-colors">Pricing</a></li>
-        </ul>
-        <Button size="sm" asChild>
-          <a href="#pricing">Get started</a>
-        </Button>
-      </nav>
+      <SiteNav />
 
       {/* ── Hero ── */}
       <section className="relative pt-44 pb-28 text-center">
@@ -302,27 +291,7 @@ export default function Home() {
         </div>
       </section>
 
-      {/* ── Footer ── */}
-      <footer className="border-t border-gray-100">
-        <div className="max-w-5xl mx-auto px-8 py-10 flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
-          <div>
-            <a href="/" className="text-sm tracking-tight text-gray-900">
-              testa<span className="text-brand">.run</span>
-            </a>
-            <p className="text-[13px] text-gray-400 mt-1">QA and security testing that runs itself.</p>
-          </div>
-          <div className="flex gap-8 text-[13px] text-gray-500">
-            <a href="#pricing" className="hover:text-gray-900 transition-colors">Pricing</a>
-            <a href="#" className="hover:text-gray-900 transition-colors">Docs</a>
-            <a href="#" className="hover:text-gray-900 transition-colors">GitHub</a>
-            <a href="#" className="hover:text-gray-900 transition-colors">Twitter</a>
-            <a href="mailto:hello@testa.run" className="hover:text-gray-900 transition-colors">Contact</a>
-          </div>
-        </div>
-        <div className="max-w-5xl mx-auto px-8 py-4 border-t border-gray-100">
-          <span className="text-[12px] text-gray-400">&copy; 2026 testa.run</span>
-        </div>
-      </footer>
+      <SiteFooter />
 
       </div>
     </div>
