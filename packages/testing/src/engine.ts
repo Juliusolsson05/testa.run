@@ -1,5 +1,25 @@
 import type { ChatMessage, EngineConfig } from "./types.js";
 
+const DEBUG_ENABLED = /^(1|true|yes)$/i.test(
+  process.env["TESTING_DEBUG"] ?? "",
+);
+
+function debugLog(message: string, details?: unknown): void {
+  if (!DEBUG_ENABLED) {
+    return;
+  }
+  // eslint-disable-next-line no-console
+  console.error(
+    JSON.stringify({
+      type: "debug",
+      scope: "testing-engine",
+      at: new Date().toISOString(),
+      message,
+      ...(details !== undefined ? { details } : {}),
+    }),
+  );
+}
+
 function resolveConfig(config?: EngineConfig) {
   return {
     url: config?.engineUrl ?? process.env["TESTING_ENGINE_URL"] ?? "",
@@ -94,6 +114,11 @@ export async function* streamEngine(
   signal?: AbortSignal,
 ): AsyncGenerator<StreamChunk> {
   const { url, token } = resolveConfig(config);
+  debugLog("Starting streamed engine call", {
+    hasUrl: Boolean(url),
+    hasToken: Boolean(token),
+    messageCount: messages.length,
+  });
 
   if (!url) {
     throw new Error(
@@ -119,12 +144,21 @@ export async function* streamEngine(
 
   if (!response.ok) {
     const body = await response.text().catch(() => "");
+    debugLog("Engine response not OK", {
+      status: response.status,
+      statusText: response.statusText,
+      bodyPreview: body.slice(0, 300),
+    });
     throw new Error(
       `Engine request failed: ${String(response.status)} ${response.statusText} — ${body}`,
     );
   }
 
   const contentType = response.headers.get("content-type") ?? "";
+  debugLog("Received engine response", {
+    status: response.status,
+    contentType,
+  });
   if (!contentType.includes("text/event-stream")) {
     const data = (await response.json()) as {
       choices?: { message?: { content?: string } }[];
@@ -149,10 +183,15 @@ export async function* streamEngine(
     while (true) {
       const { done, value } = await reader.read();
       if (done) {
+        debugLog("SSE reader done");
         break;
       }
 
       buffer += decoder.decode(value, { stream: true });
+      debugLog("SSE chunk received", {
+        bytes: value.byteLength,
+        bufferChars: buffer.length,
+      });
       let separatorIndex = buffer.indexOf("\n\n");
 
       while (separatorIndex !== -1) {
@@ -163,9 +202,14 @@ export async function* streamEngine(
         if (data) {
           const content = extractChunkContent(data);
           if (content) {
+            debugLog("Yielding stream content chunk", {
+              chars: content.length,
+              preview: content.slice(0, 180),
+            });
             yield { content };
           }
           if (data === "[DONE]") {
+            debugLog("Received [DONE] marker");
             return;
           }
         }
@@ -176,6 +220,7 @@ export async function* streamEngine(
 
     const tail = buffer.trim();
     if (tail) {
+      debugLog("Processing tail buffer", { tailChars: tail.length });
       const data = parseSseData(tail);
       if (data) {
         const content = extractChunkContent(data);

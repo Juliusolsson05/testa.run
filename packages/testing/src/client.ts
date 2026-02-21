@@ -59,8 +59,193 @@ function nowIso(): string {
   return new Date().toISOString();
 }
 
-function normalizeProgressChunk(content: string): string {
-  return content.replace(/\s+/g, " ").trim().slice(0, 200);
+const DEBUG_ENABLED = /^(1|true|yes)$/i.test(
+  process.env["TESTING_DEBUG"] ?? "",
+);
+
+function debugLog(runId: string, message: string, details?: unknown): void {
+  if (!DEBUG_ENABLED) {
+    return;
+  }
+
+  const payload = {
+    type: "debug",
+    scope: "testing-client",
+    runId,
+    at: nowIso(),
+    message,
+    ...(details !== undefined ? { details } : {}),
+  };
+  // Use stderr so event stream on stdout remains unchanged.
+  // eslint-disable-next-line no-console
+  console.error(JSON.stringify(payload));
+}
+
+function normalizeEventMessage(content: string): string | null {
+  const message = content
+    .replace(/```[\s\S]*$/g, "")
+    .replace(/\{[\s\S]*$/g, "")
+    .replace(/\s+/g, " ")
+    .trim();
+  if (!message) {
+    return null;
+  }
+  return message.slice(0, 140);
+}
+
+function normalizeScreenshotPayload(raw: string): string | null {
+  const stripped = raw
+    .trim()
+    .replace(/^data:image\/png;base64,/i, "")
+    .replace(/\s+/g, "");
+
+  if (stripped.length < 64) {
+    return null;
+  }
+  if (!/^[A-Za-z0-9+/=]+$/.test(stripped)) {
+    return null;
+  }
+  return stripped;
+}
+
+type ExtractedEnvelope = {
+  progressMessages: string[];
+  screenshots: Array<{ stepId: string; base64: string }>;
+};
+
+class StreamEnvelopeExtractor {
+  private buffer = "";
+  private lastEvent = "";
+  private lastScreenshotFingerprint = "";
+
+  push(content: string, runId: string): ExtractedEnvelope {
+    this.buffer += content;
+    if (this.buffer.length > 10000) {
+      this.buffer = this.buffer.slice(-5000);
+    }
+
+    const envelope: ExtractedEnvelope = { progressMessages: [], screenshots: [] };
+    this.extractFromBuffer(runId, envelope, false);
+    return envelope;
+  }
+
+  flush(runId: string): ExtractedEnvelope {
+    const envelope: ExtractedEnvelope = { progressMessages: [], screenshots: [] };
+    this.extractFromBuffer(runId, envelope, true);
+    this.buffer = "";
+    return envelope;
+  }
+
+  private extractFromBuffer(
+    runId: string,
+    output: ExtractedEnvelope,
+    flushAll: boolean,
+  ): void {
+    const markers = ["EVENT:", "SCREENSHOT:"];
+    while (true) {
+      const positions = markers
+        .map((marker) => ({ marker, index: this.buffer.indexOf(marker) }))
+        .filter((candidate) => candidate.index >= 0)
+        .sort((a, b) => a.index - b.index);
+
+      const first = positions[0];
+      const start = first?.index ?? -1;
+      if (start === -1) {
+        if (flushAll && this.buffer.length > 0) {
+          debugLog(runId, "No stream marker found in remaining buffer", {
+            preview: this.buffer.slice(0, 240),
+          });
+        }
+        if (!flushAll && this.buffer.length > 3000) {
+          this.buffer = this.buffer.slice(-1500);
+        }
+        return;
+      }
+
+      if (start > 0) {
+        const skipped = this.buffer.slice(0, start);
+        if (DEBUG_ENABLED && /[A-Za-z]/.test(skipped)) {
+          debugLog(runId, "Skipping non-event stream text", {
+            preview: skipped.slice(0, 200),
+          });
+        }
+        this.buffer = this.buffer.slice(start);
+      }
+
+      const marker = first?.marker ?? "EVENT:";
+      const afterMarker = this.buffer.slice(marker.length);
+      const nextMarkerPositions = markers
+        .map((candidate) => afterMarker.indexOf(candidate))
+        .filter((value) => value >= 0);
+      const newline = afterMarker.indexOf("\n");
+      const fence = afterMarker.indexOf("```");
+
+      const candidates = [...nextMarkerPositions, newline, fence].filter((value) => value >= 0);
+
+      if (candidates.length === 0 && !flushAll) {
+        return;
+      }
+
+      const endRelative =
+        candidates.length === 0
+          ? afterMarker.length
+          : Math.min(...candidates);
+
+      const rawMessage = afterMarker.slice(0, endRelative);
+      this.buffer = afterMarker.slice(endRelative);
+
+      if (marker === "EVENT:") {
+        const message = normalizeEventMessage(rawMessage);
+        if (!message) {
+          debugLog(runId, "Discarded empty/malformed EVENT payload", {
+            raw: rawMessage.slice(0, 200),
+          });
+          continue;
+        }
+
+        if (message === this.lastEvent) {
+          debugLog(runId, "Deduped repeated EVENT payload", { message });
+          continue;
+        }
+
+        this.lastEvent = message;
+        output.progressMessages.push(message);
+        debugLog(runId, "Extracted EVENT payload", { message });
+        continue;
+      }
+
+      const screenshotMatch = /^\s*([^|\s]+)\|([\s\S]+)$/.exec(rawMessage.trim());
+      if (!screenshotMatch?.[1] || !screenshotMatch[2]) {
+        debugLog(runId, "Discarded malformed SCREENSHOT payload", {
+          raw: rawMessage.slice(0, 200),
+        });
+        continue;
+      }
+
+      const stepId = screenshotMatch[1].trim();
+      const base64 = normalizeScreenshotPayload(screenshotMatch[2]);
+      if (!base64) {
+        debugLog(runId, "Discarded invalid SCREENSHOT base64", {
+          stepId,
+          rawPreview: screenshotMatch[2].slice(0, 120),
+        });
+        continue;
+      }
+
+      const fingerprint = `${stepId}:${base64.slice(0, 24)}:${base64.length}`;
+      if (fingerprint === this.lastScreenshotFingerprint) {
+        debugLog(runId, "Deduped repeated SCREENSHOT payload", { stepId });
+        continue;
+      }
+
+      this.lastScreenshotFingerprint = fingerprint;
+      output.screenshots.push({ stepId, base64 });
+      debugLog(runId, "Extracted SCREENSHOT payload", {
+        stepId,
+        size: base64.length,
+      });
+    }
+  }
 }
 
 function toRunError(error: unknown): { code: string; message: string } {
@@ -120,6 +305,9 @@ export function createTestRun(
 
   const result = (async (): Promise<TestRunResult> => {
     let content = "";
+    const envelopeExtractor = new StreamEnvelopeExtractor();
+    let chunkCount = 0;
+    const streamedScreenshotStepIds = new Set<string>();
 
     queue.push({
       type: "run.started",
@@ -127,23 +315,89 @@ export function createTestRun(
       at: nowIso(),
       request: { url: request.url },
     });
+    debugLog(runId, "Run started", { url: request.url });
 
     try {
       for await (const chunk of streamEngine(messages, config, controller.signal)) {
         content += chunk.content;
-        const progress = normalizeProgressChunk(chunk.content);
-        if (progress.length > 0) {
+        chunkCount += 1;
+        debugLog(runId, "Received stream chunk", {
+          chunkCount,
+          chunkChars: chunk.content.length,
+          totalChars: content.length,
+          preview: chunk.content.slice(0, 200),
+        });
+
+        const envelope = envelopeExtractor.push(chunk.content, runId);
+        for (const message of envelope.progressMessages) {
           queue.push({
             type: "step.progress",
             runId,
             at: nowIso(),
             stepId: "agent",
-            message: progress,
+            message,
+          });
+          debugLog(runId, "Emitted step.progress", { message });
+        }
+
+        for (const screenshot of envelope.screenshots) {
+          queue.push({
+            type: "step.screenshot",
+            runId,
+            at: nowIso(),
+            stepId: screenshot.stepId,
+            mimeType: "image/png",
+            base64: screenshot.base64,
+          });
+          streamedScreenshotStepIds.add(screenshot.stepId);
+          debugLog(runId, "Emitted streamed step.screenshot", {
+            stepId: screenshot.stepId,
+            size: screenshot.base64.length,
           });
         }
       }
 
+      debugLog(runId, "Stream ended", {
+        chunkCount,
+        totalChars: content.length,
+      });
+
+      const flushed = envelopeExtractor.flush(runId);
+
+      for (const message of flushed.progressMessages) {
+        queue.push({
+          type: "step.progress",
+          runId,
+          at: nowIso(),
+          stepId: "agent",
+          message,
+        });
+        debugLog(runId, "Emitted flushed step.progress", { message });
+      }
+
+      for (const screenshot of flushed.screenshots) {
+        queue.push({
+          type: "step.screenshot",
+          runId,
+          at: nowIso(),
+          stepId: screenshot.stepId,
+          mimeType: "image/png",
+          base64: screenshot.base64,
+        });
+        streamedScreenshotStepIds.add(screenshot.stepId);
+        debugLog(runId, "Emitted flushed step.screenshot", {
+          stepId: screenshot.stepId,
+          size: screenshot.base64.length,
+        });
+      }
+
       const parsed = parseEngineOutput(content);
+      debugLog(runId, "Parsed engine output", {
+        parseError: parsed.parseError ?? null,
+        findings: parsed.findings.length,
+        steps: parsed.steps.length,
+        screenshots: parsed.screenshots.length,
+      });
       const finalResult = buildResult({
         findings: parsed.findings,
         steps: parsed.steps,
@@ -171,8 +425,14 @@ export function createTestRun(
       emitStepArtifacts({
         runId,
         queue,
-        steps: finalResult.steps,
+        steps: finalResult.steps.filter(
+          (step) => !streamedScreenshotStepIds.has(step.id),
+        ),
         screenshots: parsed.screenshots,
+      });
+      debugLog(runId, "Emitted step artifacts", {
+        steps: finalResult.steps.length,
+        screenshots: parsed.screenshots.length,
       });
 
       for (const finding of finalResult.findings) {
@@ -183,6 +443,7 @@ export function createTestRun(
           finding,
         });
       }
+      debugLog(runId, "Emitted findings", { findings: finalResult.findings.length });
 
       queue.push({
         type: "run.completed",
@@ -190,10 +451,15 @@ export function createTestRun(
         at: nowIso(),
         result: finalResult,
       });
+      debugLog(runId, "Run completed", { status: finalResult.status });
 
       return finalResult;
     } catch (error) {
       const runError = toRunError(error);
+      debugLog(runId, "Run failed in catch", {
+        error: runError,
+        contentChars: content.length,
+      });
       const parsed = content
         ? parseEngineOutput(content)
         : { findings: [], steps: [], screenshots: [], summary: "Run failed before output." };

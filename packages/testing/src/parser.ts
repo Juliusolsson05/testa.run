@@ -11,24 +11,65 @@ type ParsedOutput = {
   parseError?: string;
 };
 
+const DEBUG_ENABLED = /^(1|true|yes)$/i.test(
+  process.env["TESTING_DEBUG"] ?? "",
+);
+
+function debugLog(message: string, details?: unknown): void {
+  if (!DEBUG_ENABLED) {
+    return;
+  }
+  // eslint-disable-next-line no-console
+  console.error(
+    JSON.stringify({
+      type: "debug",
+      scope: "testing-parser",
+      at: new Date().toISOString(),
+      message,
+      ...(details !== undefined ? { details } : {}),
+    }),
+  );
+}
+
 /**
  * Extract JSON from a fenced code block, or try parsing the entire string.
  */
 function extractJson(content: string): unknown {
+  const sanitized = stripEventLines(content);
+  debugLog("Attempting JSON extraction", {
+    rawChars: content.length,
+    sanitizedChars: sanitized.length,
+    preview: sanitized.slice(0, 240),
+  });
+
   // Try fenced code block first: ```json ... ``` or ``` ... ```
-  const fenceMatch = /```(?:json)?\s*\n?([\s\S]*?)```/.exec(content);
+  const fenceMatch = /```(?:json)?\s*\n?([\s\S]*?)```/.exec(sanitized);
   if (fenceMatch?.[1]) {
+    debugLog("Found fenced JSON block", { blockChars: fenceMatch[1].length });
     return JSON.parse(fenceMatch[1]);
   }
 
   // Fall back to finding a top-level JSON object
-  const braceStart = content.indexOf("{");
-  const braceEnd = content.lastIndexOf("}");
+  const braceStart = sanitized.indexOf("{");
+  const braceEnd = sanitized.lastIndexOf("}");
   if (braceStart !== -1 && braceEnd > braceStart) {
-    return JSON.parse(content.slice(braceStart, braceEnd + 1));
+    debugLog("Falling back to brace JSON extraction", {
+      braceStart,
+      braceEnd,
+      objectChars: braceEnd - braceStart + 1,
+    });
+    return JSON.parse(sanitized.slice(braceStart, braceEnd + 1));
   }
 
+  debugLog("JSON extraction failed: no candidate object found");
   throw new Error("No JSON found in engine response");
+}
+
+function stripEventLines(content: string): string {
+  return content
+    .split(/\r?\n/)
+    .filter((line) => !/^\s*(EVENT|SCREENSHOT):\s*/i.test(line))
+    .join("\n");
 }
 
 function stripDataUrl(raw: string): string {
@@ -164,6 +205,10 @@ export function parseEngineOutput(content: string): ParsedOutput {
       screenshots,
     };
   } catch (error) {
+    debugLog("parseEngineOutput failed", {
+      error: error instanceof Error ? error.message : "Unknown parse error",
+      preview: content.slice(0, 240),
+    });
     return {
       findings: [],
       steps: [],
