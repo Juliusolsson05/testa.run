@@ -65,7 +65,7 @@ export function SpringEdge({
   labelBgStyle,
   labelBgPadding,
 }: EdgeProps) {
-  const { activeNodeId } = useIssueContext()
+  const { activeNodeId, selectNode } = useIssueContext()
 
   // Reactive viewport: x/y = canvas pan offset in px, zoom = scale
   const { x: vpX, zoom: vpZoom } = useViewport()
@@ -93,7 +93,10 @@ export function SpringEdge({
   }, [isFocused, isOutgoing, sourceX, sourceY, targetX, targetY, vpX, vpZoom, containerWidth])
 
   const [badgeX, badgeY] = bezierPoint(sourceX, sourceY, targetX, targetY, t)
-  const badgeAngle = bezierAngle(sourceX, sourceY, targetX, targetY, t)
+  // Incoming edges point back (←), so flip 180°
+  const badgeAngle = bezierAngle(sourceX, sourceY, targetX, targetY, t) + (isIncoming ? 180 : 0)
+  // Clicking navigates to the other end of the edge
+  const navigateTo = isOutgoing ? target : source
 
   const spring = useSpring({
     sx: sourceX,
@@ -130,16 +133,21 @@ export function SpringEdge({
             translate(-50%,-50%) centers it pixel-perfectly on the bezier point.
             Nothing inside affects this centering — label is absolutely positioned.
           */}
-          <div
+          <button
+            onClick={() => selectNode(navigateTo)}
             style={{
               position: "absolute",
               width: 28,
               height: 28,
               transform: `translate(-50%, -50%) translate(${badgeX}px, ${badgeY}px)`,
-              pointerEvents: "none",
+              pointerEvents: "auto",
+              cursor: "pointer",
+              background: "none",
+              border: "none",
+              padding: 0,
             }}
           >
-            {/* Circle rotated to match the edge tangent */}
+            {/* Circle rotated to match the edge tangent (180° flip for back-step) */}
             <div
               style={{
                 transform: `rotate(${badgeAngle}deg)`,
@@ -151,6 +159,7 @@ export function SpringEdge({
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
+                transition: "transform 0.15s, box-shadow 0.15s",
               }}
             >
               <ArrowIcon />
@@ -173,12 +182,13 @@ export function SpringEdge({
                   fontSize: 11,
                   fontFamily: "var(--font-geist-mono), ui-monospace, SFMono-Regular, monospace",
                   boxShadow: "0 1px 4px rgba(29,110,245,0.1)",
+                  pointerEvents: "none",
                 }}
               >
                 {String(label)}
               </div>
             )}
-          </div>
+          </button>
         </EdgeLabelRenderer>
       )}
 
