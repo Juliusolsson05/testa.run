@@ -226,7 +226,7 @@ export function Sidebar() {
                     <div className="mb-1 font-medium text-white">
                       {issue.title}
                     </div>
-                    <p className="mb-2 line-clamp-2 text-[11px] leading-relaxed text-white/40">
+                    <p className="mb-2 line-clamp-2 break-all text-[11px] leading-relaxed text-white/40">
                       {issue.reasoning}
                     </p>
                     <div className="flex items-center gap-2 text-[10px] text-white/50">
