@@ -10,6 +10,9 @@
   --color-brand: #1d6ef5;
   --color-brand-soft: #dbeafe;
   --color-brand-dark: #1559d4;
+  --color-app-bg: #eff6ff;
+  --color-ui-muted: #4a7ab5;
+  --color-ui-border: #c7d9f0;
 }
 
 @theme inline {

@@ -71,7 +71,7 @@ export default function RunsPage() {
   const totalWarnings = runs.flatMap((r) => r.steps).filter((s) => s.status === "warning").length
 
   return (
-    <div className="flex h-dvh bg-[#eff6ff] font-sans">
+    <div className="flex h-dvh bg-app-bg font-sans">
       <AppSidebar />
 
       <div className="flex min-w-0 flex-1 flex-col overflow-y-auto">
