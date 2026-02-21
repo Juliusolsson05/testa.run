@@ -51,8 +51,17 @@ const pricing = [
 
 function CloudBackground({ position }: { position: 'top' | 'bottom' }) {
   const isTop = position === 'top'
+  const id = `cloud-displace-${position}`
   return (
     <div className="absolute inset-0 -z-10 overflow-hidden">
+      {/* SVG filter: feTurbulence distorts edges so blobs look like clouds, not circles */}
+      <svg className="absolute w-0 h-0">
+        <filter id={id}>
+          <feTurbulence type="fractalNoise" baseFrequency="0.015" numOctaves="3" seed={isTop ? 3 : 8} result="noise" />
+          <feDisplacementMap in="SourceGraphic" in2="noise" scale="45" xChannelSelector="R" yChannelSelector="G" />
+        </filter>
+      </svg>
+
       <div
         className="absolute rounded-full"
         style={{
@@ -60,6 +69,7 @@ function CloudBackground({ position }: { position: 'top' | 'bottom' }) {
           top: isTop ? -220 : undefined, bottom: isTop ? undefined : -220,
           left: '50%', transform: 'translateX(-50%)',
           background: 'radial-gradient(ellipse at center, rgba(147,197,253,0.5) 0%, rgba(191,219,254,0.3) 40%, transparent 70%)',
+          filter: `url(#${id})`,
         }}
       />
       <div
@@ -69,6 +79,7 @@ function CloudBackground({ position }: { position: 'top' | 'bottom' }) {
           top: isTop ? -100 : undefined, bottom: isTop ? undefined : -100,
           left: isTop ? -80 : undefined, right: isTop ? undefined : -80,
           background: 'radial-gradient(ellipse at center, rgba(96,165,250,0.35) 0%, rgba(147,197,253,0.2) 50%, transparent 75%)',
+          filter: `url(#${id})`,
         }}
       />
       <div
@@ -78,6 +89,7 @@ function CloudBackground({ position }: { position: 'top' | 'bottom' }) {
           top: isTop ? -60 : undefined, bottom: isTop ? undefined : -60,
           right: isTop ? -60 : undefined, left: isTop ? undefined : -60,
           background: 'radial-gradient(ellipse at center, rgba(59,130,246,0.2) 0%, rgba(147,197,253,0.15) 50%, transparent 75%)',
+          filter: `url(#${id})`,
         }}
       />
       <div
