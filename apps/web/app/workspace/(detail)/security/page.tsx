@@ -107,50 +107,50 @@ export default function SecurityPage() {
                       key={issue.id}
                       href={`/workspace?issueId=${issue.id}`}
                       className={cn(
-                        "group flex items-center gap-5 px-5 py-3.5 transition-colors hover:bg-[#eff6ff] cursor-pointer",
+                        "group flex flex-col gap-2.5 px-5 py-4 transition-colors hover:bg-[#eff6ff] cursor-pointer",
                         idx !== 0 && "border-t border-[#eff6ff]"
                       )}
                     >
-                      {/* Severity badge */}
-                      <div className={cn(
-                        "flex w-[90px] shrink-0 items-center gap-1.5 rounded px-2.5 py-1 text-[11px] font-semibold",
-                        isResolved && "bg-emerald-500/10 text-emerald-600",
-                        isError    && "bg-red-500/10 text-red-600",
-                        isWarning  && "bg-amber-400/10 text-amber-600"
-                      )}>
-                        <span className={cn(
-                          "h-1.5 w-1.5 shrink-0 rounded-full",
-                          isResolved && "bg-emerald-500",
-                          isError    && "bg-red-500",
-                          isWarning  && "bg-amber-400"
-                        )} />
-                        {isResolved ? "Resolved" : isError ? "Error" : "Warning"}
-                      </div>
-
-                      {/* Title + description */}
-                      <div className="min-w-0 flex-1">
+                      {/* Top row: badge + title + element + step + arrow */}
+                      <div className="flex items-center gap-5">
                         <div className={cn(
-                          "text-[13px] font-medium text-[#1a2a33]",
+                          "flex w-[90px] shrink-0 items-center gap-1.5 rounded px-2.5 py-1 text-[11px] font-semibold",
+                          isResolved && "bg-emerald-500/10 text-emerald-600",
+                          isError    && "bg-red-500/10 text-red-600",
+                          isWarning  && "bg-amber-400/10 text-amber-600"
+                        )}>
+                          <span className={cn(
+                            "h-1.5 w-1.5 shrink-0 rounded-full",
+                            isResolved && "bg-emerald-500",
+                            isError    && "bg-red-500",
+                            isWarning  && "bg-amber-400"
+                          )} />
+                          {isResolved ? "Resolved" : isError ? "Error" : "Warning"}
+                        </div>
+
+                        <div className={cn(
+                          "min-w-0 flex-1 text-[13px] font-medium text-[#1a2a33]",
                           isResolved && "text-[#4a7ab5] line-through"
                         )}>
                           {issue.title}
                         </div>
-                        <div className="mt-0.5 truncate text-[11px] text-[#4a7ab5]">
-                          {issue.description}
+
+                        <code className="shrink-0 font-mono text-[11px] text-[#4a7ab5]">
+                          {issue.element}
+                        </code>
+
+                        <div className="shrink-0 rounded bg-[#dbeafe] px-2 py-0.5 font-mono text-[10px] font-semibold text-[#1559d4]">
+                          Step {step}
                         </div>
+
+                        <span className="text-[#4a7ab5] opacity-0 transition-opacity group-hover:opacity-100">→</span>
                       </div>
 
-                      {/* Element */}
-                      <code className="shrink-0 font-mono text-[11px] text-[#4a7ab5]">
-                        {issue.element}
-                      </code>
-
-                      {/* Step pill */}
-                      <div className="shrink-0 rounded bg-[#dbeafe] px-2 py-0.5 font-mono text-[10px] font-semibold text-[#1559d4]">
-                        Step {step}
+                      {/* Description + reasoning */}
+                      <div className="pl-[118px] flex flex-col gap-1.5">
+                        <p className="text-[12px] text-[#1a2a33]">{issue.description}</p>
+                        <p className="text-[12px] leading-relaxed text-[#4a7ab5]">{issue.reasoning}</p>
                       </div>
-
-                      <span className="text-[#4a7ab5] opacity-0 transition-opacity group-hover:opacity-100">→</span>
                     </Link>
                   )
                 })}
