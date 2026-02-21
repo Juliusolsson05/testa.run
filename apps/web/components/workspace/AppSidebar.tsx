@@ -38,7 +38,7 @@ export function AppSidebar() {
   const pathname = usePathname()
 
   return (
-    <aside className="flex h-full w-[240px] shrink-0 flex-col border-r border-white/8 bg-[#111318] text-white">
+    <aside className="flex h-full w-[240px] shrink-0 flex-col border-r border-white/8 bg-[#1c2030] text-white">
 
       {/* Logo */}
       <div className="px-5 py-5">
