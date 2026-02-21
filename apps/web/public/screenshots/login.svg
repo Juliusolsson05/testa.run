@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="1000" viewBox="0 0 1600 1000">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#e9f1ff" />
+      <stop offset="100%" stop-color="#ffffff" />
+    </linearGradient>
+  </defs>
+  <rect width="1600" height="1000" fill="url(#bg)" />
+  <rect x="420" y="140" width="760" height="720" fill="#ffffff" stroke="#c6d6f5" stroke-width="6" />
+  <rect x="520" y="240" width="560" height="60" fill="#f0f5ff" stroke="#d3e0f7" stroke-width="4" />
+  <rect x="520" y="340" width="560" height="60" fill="#f0f5ff" stroke="#d3e0f7" stroke-width="4" />
+  <rect x="520" y="460" width="320" height="70" fill="#2a62f4" />
+  <text x="520" y="220" font-family="Arial, sans-serif" font-size="40" fill="#2a3d6a">Login Flow</text>
+</svg>
