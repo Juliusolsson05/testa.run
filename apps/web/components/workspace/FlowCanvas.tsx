@@ -37,7 +37,13 @@ function FlowController() {
   const { setCenter } = useReactFlow()
   const nodes = useNodes<Node<ScreenshotNodeData>>()
   const lastRef      = useRef<{ nodeId: string; height: number } | null>(null)
-  const animatingRef = useRef(false)   // true while a zoom animation is in flight
+  const animatingRef = useRef(true)    // start true to block fitView from clearing seeded state
+
+  // Allow pan-to-clear after React Flow's initial fitView has had time to run
+  useEffect(() => {
+    const t = setTimeout(() => { animatingRef.current = false }, 300)
+    return () => clearTimeout(t)
+  }, [])
 
   // ── Auto-zoom when focused node changes or its height shifts ────────────
   useEffect(() => {
