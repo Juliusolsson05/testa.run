@@ -19,6 +19,8 @@ export async function POST(req: Request, { params }: { params: Promise<{ project
   const name = String(body?.name || 'Manual Test Run').trim()
   const category = String(body?.category || 'ux').trim()
 
+  const label = body?.label || `#${Date.now().toString(36)}`
+
   const run = await db.testRun.create({
     data: {
       projectId,
@@ -26,7 +28,7 @@ export async function POST(req: Request, { params }: { params: Promise<{ project
       category: category as never,
       status: 'running',
       targetUrl: project.targetUrl,
-      label: body?.label || null,
+      label,
       metadata: body?.metadata || null,
     },
   })
