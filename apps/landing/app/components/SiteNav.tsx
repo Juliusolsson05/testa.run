@@ -3,7 +3,7 @@ import { Button } from '@/components/ui/button'
 
 export function SiteNav() {
   return (
-    <nav className="sticky top-0 inset-x-0 z-50 h-14 flex items-center justify-between px-6 md:px-8 bg-white/85 backdrop-blur-md border-b border-gray-100">
+    <nav className="fixed top-0 inset-x-0 z-50 h-14 flex items-center justify-between px-6 md:px-8 bg-white/85 backdrop-blur-md border-b border-gray-100">
       <Link href="/" className="text-sm tracking-tight text-gray-900">
         testa<span className="text-brand">.run</span>
       </Link>
@@ -54,6 +54,7 @@ export function PageShell({ children }: { children: React.ReactNode }) {
       <div className="pointer-events-none fixed inset-0 z-[1] opacity-[0.14]" style={{ backgroundImage: 'radial-gradient(circle, #64748b 0.9px, transparent 0.9px)', backgroundSize: '20px 20px' }} />
       <div className="relative z-[2]">
         <SiteNav />
+        <div className="h-14" />
         <main>{children}</main>
         <SiteFooter />
       </div>
