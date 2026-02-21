@@ -1,8 +1,5 @@
 import type { Finding, Step, TestRunResult } from "./types.js";
 
-const EMPTY_PNG_BASE64 =
-  "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO8W8l0AAAAASUVORK5CYII=";
-
 type ParsedOutput = {
   summary: string;
   findings: Finding[];
@@ -68,26 +65,19 @@ function extractJson(content: string): unknown {
 function stripEventLines(content: string): string {
   return content
     .split(/\r?\n/)
-    .filter((line) => !/^\s*(EVENT|SCREENSHOT):\s*/i.test(line))
+    .filter((line) => !/^\s*(EVENT|SCREENSHOT_URL):\s*/i.test(line))
     .join("\n");
 }
 
-function stripDataUrl(raw: string): string {
-  const match = /^data:image\/png;base64,(.*)$/i.exec(raw.trim());
-  return match?.[1] ?? raw.trim();
-}
-
-function isLikelyBase64(input: string): boolean {
-  return /^[A-Za-z0-9+/=\s]+$/.test(input) && input.replace(/\s+/g, "").length > 32;
-}
-
-function normalizeScreenshot(raw: unknown): string {
+function normalizeScreenshotUrl(raw: unknown): string | undefined {
   if (typeof raw !== "string") {
-    return EMPTY_PNG_BASE64;
+    return undefined;
   }
-
-  const stripped = stripDataUrl(raw);
-  return isLikelyBase64(stripped) ? stripped.replace(/\s+/g, "") : EMPTY_PNG_BASE64;
+  const value = raw.trim();
+  if (!/^https?:\/\/\S+/i.test(value)) {
+    return undefined;
+  }
+  return value;
 }
 
 function inferDomain(raw: Record<string, unknown>): "qa" | "security" {
@@ -145,6 +135,9 @@ function coerceFinding(raw: Record<string, unknown>, index: number): Finding {
 }
 
 function coerceStep(raw: Record<string, unknown>, index: number): Step {
+  const screenshotUrl = normalizeScreenshotUrl(
+    raw["screenshotUrl"] ?? raw["screenshot"],
+  );
   return {
     id: typeof raw["id"] === "string" ? raw["id"] : `s-${String(index + 1)}`,
     label: typeof raw["label"] === "string" ? raw["label"] : "Unknown step",
@@ -157,6 +150,7 @@ function coerceStep(raw: Record<string, unknown>, index: number): Step {
         ? raw["status"]
         : "passed",
     ...(typeof raw["duration"] === "number" ? { duration: raw["duration"] } : {}),
+    ...(screenshotUrl ? { screenshotUrl } : {}),
   };
 }
 
@@ -185,14 +179,9 @@ export function parseEngineOutput(content: string): ParsedOutput {
         i,
       ),
     );
-    const screenshots = rawSteps.map((s: unknown) =>
-      normalizeScreenshot(
-        typeof s === "object" && s !== null
-          ? (s as Record<string, unknown>)["screenshotBase64"] ??
-              (s as Record<string, unknown>)["screenshot"]
-          : undefined,
-      ),
-    );
+    const screenshots = steps
+      .map((step) => step.screenshotUrl)
+      .filter((value): value is string => typeof value === "string");
     const summary =
       typeof parsed["summary"] === "string"
         ? parsed["summary"]

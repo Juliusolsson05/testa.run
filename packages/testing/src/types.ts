@@ -19,6 +19,7 @@ export type Step = {
   url: string;
   status: StepStatus;
   duration?: number;
+  screenshotUrl?: string;
 };
 
 export type Finding = {
@@ -73,8 +74,7 @@ export type TestRunEvent =
       runId: string;
       at: string;
       stepId: string;
-      mimeType: "image/png";
-      base64: string;
+      imageUrl: string;
     }
   | {
       type: "finding.created";

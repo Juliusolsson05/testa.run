@@ -1,5 +1,10 @@
 import type { ChatMessage, TestRunRequest } from "./types.js";
 
+type PromptContext = {
+  runId: string;
+  screenshotPublicBaseUrl: string;
+};
+
 const SYSTEM_PROMPT = `You are a QA + security testing agent with access to a headless browser. Navigate to the provided URL, test real behavior, and return structured findings.
 
 ## Output format
@@ -28,7 +33,7 @@ You MUST return a single fenced JSON code block with this exact shape:
       "url": "URL at this point",
       "status": "passed" | "failed" | "running" | "pending",
       "duration": 1200,
-      "screenshotBase64": "base64 encoded PNG screenshot for this step"
+      "screenshotUrl": "public URL for this step screenshot"
     }
   ],
   "summary": "One-paragraph summary of the test run"
@@ -48,12 +53,12 @@ You MUST return a single fenced JSON code block with this exact shape:
   - EVENT: Verified dashboard loaded
 - Do not output JSON keys, quotes, code fences, or base64 in EVENT lines.
 - Do not output per-word narration or chain-of-thought text.
-- Stream screenshots in this exact format: SCREENSHOT:<stepId>|<base64png>.
-- SCREENSHOT examples:
-  - SCREENSHOT:s-1|iVBORw0KGgoAAAANSUhEUgAA...
-  - SCREENSHOT:s-2|iVBORw0KGgoAAAANSUhEUgAA...
-- SCREENSHOT lines must be single-line and include PNG base64 only (no data URL prefix).
-- Emit a SCREENSHOT line close to each meaningful test step.
+- Stream screenshot updates in this exact format: SCREENSHOT_URL:<stepId>|<publicUrl>.
+- SCREENSHOT_URL examples:
+  - SCREENSHOT_URL:s-1|http://76.13.77.252:8088/runs/abc123/s-1.png
+  - SCREENSHOT_URL:s-2|http://76.13.77.252:8088/runs/abc123/s-2.png
+- SCREENSHOT_URL lines must be single-line and include a valid absolute URL.
+- Emit a SCREENSHOT_URL line close to each meaningful test step.
 
 Rules:
 - Add BOTH qa and security findings when relevant.
@@ -66,12 +71,26 @@ Rules:
 - Each step should represent one meaningful action, not token-level narration.
 - Do NOT produce per-word or fragmented status text.
 - The final answer must still be one fenced JSON block with findings, steps, and summary.
-- Every step must include screenshotBase64 (PNG).
+- Save screenshots as files and return public URLs only; never return base64 image data.
+- Every step must include screenshotUrl.
 - If nothing fails, return empty findings and a meaningful summary.
 - Keep credentials or secrets out of findings/evidence unless strictly required for debugging.`;
 
-export function buildPrompt(request: TestRunRequest): ChatMessage[] {
+export function buildPrompt(
+  request: TestRunRequest,
+  context: PromptContext,
+): ChatMessage[] {
   const parts: string[] = [`Test target: ${request.url}`];
+  const normalizedBase = context.screenshotPublicBaseUrl.replace(/\/+$/, "");
+  parts.push(
+    [
+      "Screenshot requirements:",
+      `- runId: ${context.runId}`,
+      `- Save every step screenshot to filesystem path: /home/node/.openclaw/workspace/runs/${context.runId}/{stepId}.png`,
+      `- Return screenshotUrl using this template: ${normalizedBase}/runs/${context.runId}/{stepId}.png`,
+      "- stepId must exactly match the step id used in the JSON steps array.",
+    ].join("\n"),
+  );
 
   if (request.prompt?.trim()) {
     parts.push(`Extra instructions/context:\n${request.prompt.trim()}`);

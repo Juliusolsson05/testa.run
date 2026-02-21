@@ -9,9 +9,6 @@ import { streamEngine } from "./engine.js";
 import { buildPrompt } from "./prompt.js";
 import { buildResult, parseEngineOutput } from "./parser.js";
 
-const EMPTY_PNG_BASE64 =
-  "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO8W8l0AAAAASUVORK5CYII=";
-
 class AsyncEventQueue<T> implements AsyncIterable<T> {
   private items: T[] = [];
   private resolvers: Array<(value: IteratorResult<T>) => void> = [];
@@ -93,16 +90,12 @@ function normalizeEventMessage(content: string): string | null {
   return message.slice(0, 140);
 }
 
-function normalizeScreenshotPayload(raw: string): string | null {
-  const stripped = raw
-    .trim()
-    .replace(/^data:image\/png;base64,/i, "")
-    .replace(/\s+/g, "");
-
-  if (stripped.length < 64) {
+function normalizeScreenshotUrl(raw: string): string | null {
+  const stripped = raw.trim();
+  if (!stripped) {
     return null;
   }
-  if (!/^[A-Za-z0-9+/=]+$/.test(stripped)) {
+  if (!/^https?:\/\/\S+$/i.test(stripped)) {
     return null;
   }
   return stripped;
@@ -110,7 +103,7 @@ function normalizeScreenshotPayload(raw: string): string | null {
 
 type ExtractedEnvelope = {
   progressMessages: string[];
-  screenshots: Array<{ stepId: string; base64: string }>;
+  screenshots: Array<{ stepId: string; imageUrl: string }>;
 };
 
 class StreamEnvelopeExtractor {
@@ -141,7 +134,7 @@ class StreamEnvelopeExtractor {
     output: ExtractedEnvelope,
     flushAll: boolean,
   ): void {
-    const markers = ["EVENT:", "SCREENSHOT:"];
+    const markers = ["EVENT:", "SCREENSHOT_URL:"];
     while (true) {
       const positions = markers
         .map((marker) => ({ marker, index: this.buffer.indexOf(marker) }))
@@ -216,33 +209,33 @@ class StreamEnvelopeExtractor {
 
       const screenshotMatch = /^\s*([^|\s]+)\|([\s\S]+)$/.exec(rawMessage.trim());
       if (!screenshotMatch?.[1] || !screenshotMatch[2]) {
-        debugLog(runId, "Discarded malformed SCREENSHOT payload", {
+        debugLog(runId, "Discarded malformed SCREENSHOT_URL payload", {
           raw: rawMessage.slice(0, 200),
         });
         continue;
       }
 
       const stepId = screenshotMatch[1].trim();
-      const base64 = normalizeScreenshotPayload(screenshotMatch[2]);
-      if (!base64) {
-        debugLog(runId, "Discarded invalid SCREENSHOT base64", {
+      const imageUrl = normalizeScreenshotUrl(screenshotMatch[2]);
+      if (!imageUrl) {
+        debugLog(runId, "Discarded invalid SCREENSHOT_URL value", {
           stepId,
           rawPreview: screenshotMatch[2].slice(0, 120),
         });
         continue;
       }
 
-      const fingerprint = `${stepId}:${base64.slice(0, 24)}:${base64.length}`;
+      const fingerprint = `${stepId}:${imageUrl}`;
       if (fingerprint === this.lastScreenshotFingerprint) {
-        debugLog(runId, "Deduped repeated SCREENSHOT payload", { stepId });
+        debugLog(runId, "Deduped repeated SCREENSHOT_URL payload", { stepId });
         continue;
       }
 
       this.lastScreenshotFingerprint = fingerprint;
-      output.screenshots.push({ stepId, base64 });
-      debugLog(runId, "Extracted SCREENSHOT payload", {
+      output.screenshots.push({ stepId, imageUrl });
+      debugLog(runId, "Extracted SCREENSHOT_URL payload", {
         stepId,
-        size: base64.length,
+        imageUrl,
       });
     }
   }
@@ -259,10 +252,8 @@ function emitStepArtifacts(args: {
   runId: string;
   queue: AsyncEventQueue<TestRunEvent>;
   steps: TestRunResult["steps"];
-  screenshots: string[];
 }): void {
-  for (let index = 0; index < args.steps.length; index += 1) {
-    const step = args.steps[index];
+  for (const step of args.steps) {
     if (!step) {
       continue;
     }
@@ -274,16 +265,24 @@ function emitStepArtifacts(args: {
       step,
     });
 
-    const screenshot = args.screenshots[index] ?? EMPTY_PNG_BASE64;
+    if (!step.screenshotUrl) {
+      continue;
+    }
     args.queue.push({
       type: "step.screenshot",
       runId: args.runId,
       at: nowIso(),
       stepId: step.id,
-      mimeType: "image/png",
-      base64: screenshot,
+      imageUrl: step.screenshotUrl,
     });
   }
+}
+
+function resolveScreenshotPublicBaseUrl(): string {
+  return (
+    process.env["TESTING_SCREENSHOT_PUBLIC_BASE_URL"]?.trim() ||
+    "http://76.13.77.252:8088"
+  );
 }
 
 export function createTestRun(
@@ -301,7 +300,10 @@ export function createTestRun(
 
   const queue = new AsyncEventQueue<TestRunEvent>();
   const controller = new AbortController();
-  const messages = buildPrompt(request);
+  const messages = buildPrompt(request, {
+    runId,
+    screenshotPublicBaseUrl: resolveScreenshotPublicBaseUrl(),
+  });
 
   const result = (async (): Promise<TestRunResult> => {
     let content = "";
@@ -346,13 +348,12 @@ export function createTestRun(
             runId,
             at: nowIso(),
             stepId: screenshot.stepId,
-            mimeType: "image/png",
-            base64: screenshot.base64,
+            imageUrl: screenshot.imageUrl,
           });
           streamedScreenshotStepIds.add(screenshot.stepId);
           debugLog(runId, "Emitted streamed step.screenshot", {
             stepId: screenshot.stepId,
-            size: screenshot.base64.length,
+            imageUrl: screenshot.imageUrl,
           });
         }
       }
@@ -381,13 +382,12 @@ export function createTestRun(
           runId,
           at: nowIso(),
           stepId: screenshot.stepId,
-          mimeType: "image/png",
-          base64: screenshot.base64,
+          imageUrl: screenshot.imageUrl,
         });
         streamedScreenshotStepIds.add(screenshot.stepId);
         debugLog(runId, "Emitted flushed step.screenshot", {
           stepId: screenshot.stepId,
-          size: screenshot.base64.length,
+          imageUrl: screenshot.imageUrl,
         });
       }
 
@@ -428,7 +428,6 @@ export function createTestRun(
         steps: finalResult.steps.filter(
           (step) => !streamedScreenshotStepIds.has(step.id),
         ),
-        screenshots: parsed.screenshots,
       });
       debugLog(runId, "Emitted step artifacts", {
         steps: finalResult.steps.length,
@@ -476,7 +475,6 @@ export function createTestRun(
         runId,
         queue,
         steps: failedResult.steps,
-        screenshots: parsed.screenshots,
       });
 
       for (const finding of failedResult.findings) {
