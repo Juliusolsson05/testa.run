@@ -173,6 +173,62 @@ export default function Home() {
         </div>
       </section>
 
+      {/* ── Anonymous security case ── */}
+      <section className="py-20 bg-white border-b border-gray-100">
+        <div className="max-w-5xl mx-auto px-8">
+          <h2 className="text-3xl tracking-tight text-center mb-4">
+            Most websites are leaking security
+          </h2>
+          <p className="text-[15px] text-gray-500 max-w-3xl mx-auto text-center leading-relaxed mb-10">
+            Most devs think their website is fully secure. Most websites are not.
+            This was a website built by a senior developer, and critical issues still slipped through.
+            Do not take the risk. Let us run the same tests for you.
+          </p>
+
+          <div className="rounded-2xl border border-gray-200 bg-white overflow-hidden">
+            <div className="px-6 py-4 border-b border-gray-100 bg-gray-50">
+              <p className="text-[14px] text-gray-700">Anonymous Security Assessment — Full Review</p>
+            </div>
+
+            <div className="px-6 py-6 grid md:grid-cols-2 gap-6">
+              <div className="space-y-3">
+                <p className="text-[13px] text-gray-400">Summary of what we found</p>
+                <ul className="space-y-2 text-[14px] text-gray-700 leading-relaxed">
+                  <li>• Infrastructure endpoint exposed outside intended protection layer</li>
+                  <li>• Login flow returned different errors, enabling account enumeration</li>
+                  <li>• Registration lacked effective rate limiting controls</li>
+                  <li>• Internal integration configuration data exposed without auth</li>
+                  <li>• Premium-gated data could be fetched without valid session</li>
+                  <li>• Public automation webhook accepted unauthenticated requests</li>
+                </ul>
+              </div>
+
+              <div className="space-y-3">
+                <p className="text-[13px] text-gray-400">Severity distribution</p>
+                <div className="space-y-2 text-[14px]">
+                  <div className="flex items-center justify-between rounded-lg border border-red-200 bg-red-50 px-3 py-2">
+                    <span className="text-red-700">Critical</span>
+                    <span className="text-red-700">3 findings</span>
+                  </div>
+                  <div className="flex items-center justify-between rounded-lg border border-amber-200 bg-amber-50 px-3 py-2">
+                    <span className="text-amber-700">High</span>
+                    <span className="text-amber-700">4 findings</span>
+                  </div>
+                  <div className="flex items-center justify-between rounded-lg border border-blue-200 bg-blue-50 px-3 py-2">
+                    <span className="text-blue-700">Medium</span>
+                    <span className="text-blue-700">2 findings</span>
+                  </div>
+                </div>
+                <p className="text-[13px] text-gray-500 leading-relaxed pt-2">
+                  Full assessment included architecture review, auth path testing,
+                  rate-limit validation, access-control checks, and webhook exposure tests.
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* ── What it does ── */}
       <section className="py-20 bg-white" data-spot="platform">
         <div className="max-w-5xl mx-auto px-8 grid grid-cols-1 md:grid-cols-2 gap-16 items-center">
