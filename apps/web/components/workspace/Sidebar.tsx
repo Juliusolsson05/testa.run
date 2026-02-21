@@ -1,5 +1,6 @@
 "use client"
 
+import { useState } from "react"
 import { AlertTriangle, Clock, XCircle } from "lucide-react"
 
 import { Wordmark } from "@/components/ui/TestaRunLogo"
@@ -29,6 +30,11 @@ export function Sidebar() {
   const nodeIssues = activeNodeId ? (issuesByNodeId[activeNodeId] ?? []) : []
   const nodeOpenIssues = nodeIssues.filter((i) => i.status === "open")
   const nodeResolvedIssues = nodeIssues.filter((i) => i.status === "resolved")
+
+  // ── Show-more state for global issue lists ───────────────────────────────
+  const [showAllOpen,     setShowAllOpen]     = useState(false)
+  const [showAllResolved, setShowAllResolved] = useState(false)
+  const ISSUE_LIMIT = 3
 
   // ── Active issue ─────────────────────────────────────────────────────────
   const activeIssue = activeIssueId ? issues.find((i) => i.id === activeIssueId) ?? null : null
@@ -343,7 +349,7 @@ export function Sidebar() {
               <div className="mb-2 rounded-none bg-[#1d6ef5]/20 px-2 py-1 text-center text-[10px] font-bold uppercase text-[#7eb3f5]">
                 Open
               </div>
-              {openIssues.map((issue) => {
+              {(showAllOpen ? openIssues : openIssues.slice(0, ISSUE_LIMIT)).map((issue) => {
                 const nd = nodesById[issue.nodeId]; const meta = { step: nd?.data.step ?? 0, label: nd?.data.label ?? "Unknown" }
                 const isActive = activeIssueId === issue.id
                 return (
@@ -385,13 +391,21 @@ export function Sidebar() {
                   </button>
                 )
               })}
+              {openIssues.length > ISSUE_LIMIT && (
+                <button
+                  onClick={() => setShowAllOpen((v) => !v)}
+                  className="w-full py-1 text-[10px] text-white/30 hover:text-white/60 transition-colors"
+                >
+                  {showAllOpen ? "Show less" : `Show ${openIssues.length - ISSUE_LIMIT} more`}
+                </button>
+              )}
             </div>
 
             <div>
               <div className="mb-2 rounded-none bg-emerald-500/20 px-2 py-1 text-center text-[10px] font-bold uppercase text-emerald-300">
                 Resolved
               </div>
-              {resolvedIssues.map((issue) => {
+              {(showAllResolved ? resolvedIssues : resolvedIssues.slice(0, ISSUE_LIMIT)).map((issue) => {
                 const nd = nodesById[issue.nodeId]; const meta = { step: nd?.data.step ?? 0, label: nd?.data.label ?? "Unknown" }
                 const isActive = activeIssueId === issue.id
                 return (
@@ -413,6 +427,14 @@ export function Sidebar() {
                   </button>
                 )
               })}
+              {resolvedIssues.length > ISSUE_LIMIT && (
+                <button
+                  onClick={() => setShowAllResolved((v) => !v)}
+                  className="w-full py-1 text-[10px] text-white/30 hover:text-white/60 transition-colors"
+                >
+                  {showAllResolved ? "Show less" : `Show ${resolvedIssues.length - ISSUE_LIMIT} more`}
+                </button>
+              )}
             </div>
           </div>
         </>
