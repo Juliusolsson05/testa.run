@@ -125,12 +125,12 @@ export default function Home() {
           </p>
 
           {/* URL input CTA */}
-          <div className="max-w-2xl mx-auto rounded-2xl bg-gray-200 p-5">
+          <div className="max-w-2xl mx-auto rounded-2xl bg-gray-900 p-5">
             <input
               type="url"
               aria-label="Website URL"
               placeholder="https://your-app.com"
-              className="w-full bg-transparent text-[15px] text-gray-900 placeholder:text-gray-400 focus:outline-none mb-8"
+              className="w-full bg-transparent text-[15px] text-white placeholder:text-white/50 focus:outline-none mb-8"
             />
             <div className="flex justify-end">
               <Button size="icon" className="h-9 w-9 rounded-full bg-brand hover:bg-brand/90 text-white">
@@ -293,12 +293,12 @@ export default function Home() {
           <p className="text-[15px] text-gray-500 max-w-md mx-auto mb-8 leading-relaxed">
             Paste a URL and find out in minutes. No setup, no scripts, no waiting.
           </p>
-          <div className="max-w-2xl mx-auto rounded-2xl bg-gray-200 p-5">
+          <div className="max-w-2xl mx-auto rounded-2xl bg-gray-900 p-5">
             <input
               type="url"
               aria-label="Website URL"
               placeholder="https://your-app.com"
-              className="w-full bg-transparent text-[15px] text-gray-900 placeholder:text-gray-400 focus:outline-none mb-8"
+              className="w-full bg-transparent text-[15px] text-white placeholder:text-white/50 focus:outline-none mb-8"
             />
             <div className="flex justify-end">
               <Button size="icon" className="h-9 w-9 rounded-full bg-brand hover:bg-brand/90 text-white">
