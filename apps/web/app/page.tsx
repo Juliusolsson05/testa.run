@@ -1,7 +1,9 @@
 "use client"
 
-import { useEffect, useMemo, useState } from "react"
+import { useCallback, useEffect, useMemo, useState } from "react"
 import Link from "next/link"
+import { useRouter } from "next/navigation"
+import { Play, X } from "lucide-react"
 import { AppSidebar } from "@/components/workspace/AppSidebar"
 import { Badge } from "@/components/ui/badge"
 import { RequireAuth } from "@/components/auth/RequireAuth"
@@ -83,12 +85,16 @@ function mapApiRunToUi(run: ApiRun): Run {
 }
 
 function RunsHome() {
+  const router = useRouter()
   const { accessToken } = useAuth()
   const [filter, setFilter] = useState<FilterType>("all")
   const [runs, setRuns] = useState<Run[]>([])
   const [issueCounts, setIssueCounts] = useState<Record<string, { errors: number; warnings: number }>>({})
   const [loadingRuns, setLoadingRuns] = useState(true)
   const [hasProject, setHasProject] = useState(true)
+  const [projectId, setProjectId] = useState<string | null>(null)
+  const [showConfirm, setShowConfirm] = useState(false)
+  const [starting, setStarting] = useState(false)
 
   useEffect(() => {
     let isMounted = true
@@ -107,9 +113,9 @@ function RunsHome() {
       if (!meRes.ok) throw new Error("Failed to load user context")
 
       const me: ApiMeResponse = await meRes.json()
-      const projectId = me.orgs?.[0]?.projects?.[0]?.id
+      const pId = me.orgs?.[0]?.projects?.[0]?.id
 
-      if (!projectId) {
+      if (!pId) {
         if (!isMounted) return
         setRuns([])
         setIssueCounts({})
@@ -117,6 +123,9 @@ function RunsHome() {
         setLoadingRuns(false)
         return
       }
+
+      setProjectId(pId)
+      const projectId = pId
 
       const runsRes = await fetch(`/api/projects/${projectId}/runs`, {
         headers: authHeaders,
@@ -160,6 +169,27 @@ function RunsHome() {
     () => Object.values(issueCounts).reduce((sum, count) => sum + count.errors + count.warnings, 0),
     [issueCounts]
   )
+
+  const startNewRun = useCallback(async () => {
+    if (!accessToken || !projectId) return
+    setStarting(true)
+    try {
+      const res = await fetch(`/api/projects/${projectId}/runs/start`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${accessToken}`,
+        },
+        body: JSON.stringify({ name: "New Test Run", category: "ux" }),
+      })
+      if (!res.ok) throw new Error("Failed to start run")
+      const data = await res.json()
+      setShowConfirm(false)
+      router.push(`/workspace/${data.run.id}`)
+    } catch {
+      setStarting(false)
+    }
+  }, [accessToken, projectId, router])
 
   const filtered = filter === "all" ? runs : runs.filter((r) => r.status === filter)
 
@@ -211,9 +241,49 @@ function RunsHome() {
         </div>
 
         <div className="flex-1 px-8 py-6">
-          <div className="mb-4 flex items-baseline justify-between">
+          <div className="mb-4 flex items-center justify-between">
             <h1 className="text-[22px] font-bold tracking-tight text-[#1a2a33]">Test runs</h1>
+            {hasProject && (
+              <button
+                onClick={() => setShowConfirm(true)}
+                className="flex items-center gap-2 rounded bg-[#1d6ef5] px-4 py-2 text-[13px] font-semibold text-white transition-colors hover:bg-[#1557d0]"
+              >
+                <Play className="h-3.5 w-3.5" />
+                New Run
+              </button>
+            )}
           </div>
+
+          {showConfirm && (
+            <div className="fixed inset-0 z-[9000] flex items-center justify-center bg-black/40">
+              <div className="w-full max-w-sm rounded-lg border border-ui-border bg-white p-6 shadow-xl">
+                <div className="flex items-start justify-between">
+                  <h2 className="text-lg font-semibold text-[#1a2a33]">Start new run?</h2>
+                  <button onClick={() => setShowConfirm(false)} className="text-ui-muted hover:text-[#1a2a33]">
+                    <X className="h-4 w-4" />
+                  </button>
+                </div>
+                <p className="mt-2 text-sm text-ui-muted">
+                  This will start a new test run against your project target. The agent will begin testing immediately.
+                </p>
+                <div className="mt-5 flex gap-3">
+                  <button
+                    onClick={() => setShowConfirm(false)}
+                    className="flex-1 rounded border border-ui-border px-3 py-2 text-sm font-semibold text-[#1a2a33]"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    onClick={() => void startNewRun()}
+                    disabled={starting}
+                    className="flex-1 rounded bg-[#1d6ef5] px-3 py-2 text-sm font-semibold text-white disabled:opacity-60"
+                  >
+                    {starting ? "Starting…" : "Start Run"}
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
 
           {loadingRuns ? (
             <div className="text-sm text-ui-muted">Loading runs…</div>
