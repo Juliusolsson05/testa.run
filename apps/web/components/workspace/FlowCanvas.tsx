@@ -35,7 +35,8 @@ function FlowController() {
   const { activeNodeId, clearSelection } = useIssueContext()
   const { setCenter } = useReactFlow()
   const nodes = useNodes<ScreenshotNodeData>()
-  const lastRef = useRef<{ nodeId: string; height: number } | null>(null)
+  const lastRef      = useRef<{ nodeId: string; height: number } | null>(null)
+  const animatingRef = useRef(false)   // true while a zoom animation is in flight
 
   // ── Auto-zoom when focused node changes or its height shifts ────────────
   useEffect(() => {
@@ -60,7 +61,11 @@ function FlowController() {
       const centerX = node.position.x + nodeWidth / 2 + 200 / targetZoom
       const centerY = node.position.y + nodeHeight / 2
 
+      // Block pan-exit detection for the duration of the animation + a small buffer
+      animatingRef.current = true
       setCenter(centerX, centerY, { zoom: targetZoom, duration: 600 })
+      const cooldown = setTimeout(() => { animatingRef.current = false }, 700)
+      return () => clearTimeout(cooldown)
     }, 40)
 
     return () => clearTimeout(timer)
@@ -72,8 +77,8 @@ function FlowController() {
   const containerHeight = useStore((s) => s.height)
 
   useEffect(() => {
-    // Only fire after the zoom has settled for THIS node specifically
-    if (!activeNodeId || lastRef.current?.nodeId !== activeNodeId) return
+    // Only fire after the zoom has settled for THIS node, and not during an animation
+    if (!activeNodeId || lastRef.current?.nodeId !== activeNodeId || animatingRef.current) return
 
     const node = nodes.find((n) => n.id === activeNodeId)
     if (!node?.measured?.height) return
