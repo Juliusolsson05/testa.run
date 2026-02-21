@@ -10,9 +10,9 @@ import {
   Home,
   LogOut,
   Settings,
-  Sparkles,
   User,
 } from "lucide-react"
+import { TestaRunLogo } from "@/components/ui/TestaRunLogo"
 import { cn } from "@/lib/utils"
 
 const NAV = [
@@ -41,11 +41,8 @@ export function AppSidebar() {
     <aside className="flex h-full w-[240px] shrink-0 flex-col border-r border-white/8 bg-[#111318] text-white">
 
       {/* Logo */}
-      <div className="flex items-center gap-2 px-5 py-5">
-        <Sparkles className="h-4 w-4 text-[#1d6ef5]" />
-        <span className="text-[16px] font-bold tracking-tight text-[#e8edf5]">
-          testa<span className="text-[#1d6ef5]">.run</span>
-        </span>
+      <div className="px-5 py-5">
+        <TestaRunLogo />
       </div>
 
       {/* Project selector */}
