@@ -58,7 +58,11 @@ pnpm -C apps/web prisma:migrate:dev --name init
 - Prisma client singleton: `apps/web/lib/db.ts`
 - Supabase clients: `apps/web/lib/supabase.ts`
 - Supabase auth helper (Bearer token): `apps/web/lib/supabase-auth.ts`
+- App user sync helper: `apps/web/lib/auth.ts`
 - DB health endpoint: `GET /api/health/db`
+- Auth endpoints:
+  - `POST /api/auth/sync-user`
+  - `GET /api/auth/me`
 
 ## Conventions
 
