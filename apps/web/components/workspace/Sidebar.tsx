@@ -47,7 +47,7 @@ export function Sidebar() {
 
       {activeIssue ? (
         // ── ISSUE DETAIL VIEW ───────────────────────────────────────────────
-        <div key={activeIssueId} className="node-focus-in flex flex-col gap-4">
+        <div key={activeIssueId} className="node-focus-in flex w-[440px] flex-col gap-4">
           {/* Back */}
           <button
             onClick={() => selectNode(activeIssue.nodeId)}
