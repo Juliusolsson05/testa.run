@@ -1,16 +1,21 @@
+import { useState, useCallback } from 'react'
 import {
   ReactFlow,
   Background,
   BackgroundVariant,
   Controls,
+  applyNodeChanges,
   type Edge,
   type Node,
+  type NodeChange,
 } from '@xyflow/react'
 import '@xyflow/react/dist/style.css'
 import './App.css'
 import { ScreenshotNode, type ScreenshotNodeData } from './nodes/ScreenshotNode'
+import { SpringEdge } from './edges/SpringEdge'
 
 const nodeTypes = { screenshot: ScreenshotNode }
+const edgeTypes = { spring: SpringEdge }
 
 const initialNodes: Node<ScreenshotNodeData>[] = [
   {
@@ -61,7 +66,7 @@ const initialEdges: Edge[] = [
     id: 'e1-2',
     source: '1',
     target: '2',
-    animated: true,
+    type: 'spring',
     zIndex: 10,
     style: { stroke: 'rgba(37,99,235,0.45)', strokeWidth: 2 },
     label: 'Click "Get Started"',
@@ -73,7 +78,7 @@ const initialEdges: Edge[] = [
     id: 'e2-3',
     source: '2',
     target: '3',
-    animated: true,
+    type: 'spring',
     zIndex: 10,
     style: { stroke: 'rgba(37,99,235,0.45)', strokeWidth: 2 },
     label: 'Submit credentials',
@@ -84,6 +89,13 @@ const initialEdges: Edge[] = [
 ]
 
 export default function App() {
+  const [nodes, setNodes] = useState(initialNodes)
+
+  const onNodesChange = useCallback(
+    (changes: NodeChange[]) => setNodes(nds => applyNodeChanges(changes, nds) as Node<ScreenshotNodeData>[]),
+    [],
+  )
+
   return (
     <div className="workspace">
       {/* Sidebar */}
@@ -129,9 +141,11 @@ export default function App() {
       {/* Canvas */}
       <div className="canvas-wrapper">
         <ReactFlow
-          nodes={initialNodes}
+          nodes={nodes}
           edges={initialEdges}
           nodeTypes={nodeTypes}
+          edgeTypes={edgeTypes}
+          onNodesChange={onNodesChange}
           fitView
           fitViewOptions={{ padding: 0.2 }}
           minZoom={0.2}
@@ -140,7 +154,7 @@ export default function App() {
         >
           <Background
             variant={BackgroundVariant.Dots}
-            color="#2563EB"
+            color="#1B3A6B"
             gap={28}
             size={2.5}
           />
