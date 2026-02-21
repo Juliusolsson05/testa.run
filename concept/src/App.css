@@ -69,14 +69,14 @@ body {
   padding: 10px 12px;
   background: var(--sb-card-bg);
   border: 1px solid var(--sb-card-border);
-  border-radius: 10px;
+  border-radius: 0;
   margin-bottom: 12px;
 }
 
 .site-favicon {
   width: 24px;
   height: 24px;
-  border-radius: 5px;
+  border-radius: 0;
   flex-shrink: 0;
 }
 
@@ -102,7 +102,7 @@ body {
   padding: 10px 12px;
   background: var(--sb-card-bg);
   border: 1px solid var(--sb-card-border);
-  border-radius: 10px;
+  border-radius: 0;
 }
 
 .run-row {
@@ -132,7 +132,7 @@ body {
 .stat-card {
   background: var(--sb-card-bg);
   border: 1px solid var(--sb-card-border);
-  border-radius: 10px;
+  border-radius: 0;
   padding: 10px 12px;
   display: flex;
   flex-direction: column;
@@ -167,7 +167,7 @@ body {
   gap: 7px;
   background: var(--sb-card-bg);
   border: 1px solid var(--sb-card-border);
-  border-radius: 20px;
+  border-radius: 0;
   padding: 7px 13px;
   font-size: 12px;
   color: var(--sb-text-muted);
@@ -199,7 +199,7 @@ body {
 /* ─── Screenshot Node ──────────────────────────────────────── */
 .screenshot-node {
   width: 260px;
-  border-radius: 14px;
+  border-radius: 0;
   background: rgba(255,255,255,0.72);
   border: 1.5px solid #4a7ab5;
   box-shadow:
@@ -249,7 +249,7 @@ body {
   flex: 1;
   background: rgba(255,255,255,0.55);
   border: 1px solid #7aaad4;
-  border-radius: 6px;
+  border-radius: 0;
   padding: 3px 10px;
   font-size: 11px;
   font-family: monospace;
@@ -265,7 +265,7 @@ body {
   color: var(--blue-dark);
   background: var(--blue-light);
   border: 1px solid #7aaad4;
-  border-radius: 5px;
+  border-radius: 0;
   padding: 2px 8px;
   white-space: nowrap;
 }
@@ -324,7 +324,7 @@ body {
   font-size: 11px;
   font-weight: 500;
   padding: 3px 9px;
-  border-radius: 20px;
+  border-radius: 0;
   border: 1px solid transparent;
 }
 
@@ -343,7 +343,7 @@ body {
 .react-flow__controls {
   background: #ffffff !important;
   border: 1px solid #c0d4ec !important;
-  border-radius: 10px !important;
+  border-radius: 0 !important;
   overflow: hidden;
   box-shadow: 0 2px 12px rgba(37,99,235,0.10) !important;
 }
@@ -384,7 +384,7 @@ body {
   color: #fff;
   font-size: 10px;
   font-weight: 700;
-  border-radius: 20px;
+  border-radius: 0;
   padding: 1px 6px;
   letter-spacing: 0;
   text-transform: none;
@@ -405,7 +405,7 @@ body {
   letter-spacing: 0.5px;
   margin-bottom: 6px;
   padding: 3px 6px;
-  border-radius: 5px;
+  border-radius: 0;
   text-align: center;
 }
 
@@ -415,7 +415,7 @@ body {
 .kanban-card {
   background: var(--sb-card-bg);
   border: 1px solid var(--sb-card-border);
-  border-radius: 8px;
+  border-radius: 0;
   padding: 7px 8px;
   margin-bottom: 5px;
   border-left: 3px solid rgba(255,255,255,0.15);
@@ -462,7 +462,7 @@ body {
   font-size: 9px;
   font-weight: 600;
   padding: 1px 5px;
-  border-radius: 4px;
+  border-radius: 0;
   width: fit-content;
   text-transform: uppercase;
   letter-spacing: 0.3px;
@@ -507,7 +507,7 @@ body {
   font-size: 10px;
   font-weight: 700;
   padding: 1px 6px;
-  border-radius: 20px;
+  border-radius: 0;
 }
 .issues-toggle-badge.error    { background: rgba(239,68,68,0.12); color: #dc2626; }
 .issues-toggle-badge.resolved { background: rgba(34,197,94,0.12); color: #16a34a; }
@@ -564,7 +564,7 @@ body {
   font-size: 9px;
   font-weight: 600;
   padding: 2px 6px;
-  border-radius: 10px;
+  border-radius: 0;
   flex-shrink: 0;
   margin-top: 1px;
   text-transform: uppercase;
