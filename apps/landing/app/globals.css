@@ -127,8 +127,6 @@
     @apply border-border outline-ring/50;
   }
   body {
-    @apply bg-background text-foreground;
-    background-image: radial-gradient(circle, #b0b7c3 1.5px, transparent 1.5px);
-    background-size: 24px 24px;
+    @apply bg-white text-foreground;
   }
 }

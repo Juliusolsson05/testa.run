@@ -199,11 +199,13 @@ export default function Home() {
       </section>
 
       {/* ── Footer ───────────────────────────────────────── */}
-      <footer className="bg-white border-t border-gray-100 max-w-5xl mx-auto px-10 py-6 flex items-center justify-between">
+      <footer className="bg-white border-t border-gray-100 w-full">
+        <div className="max-w-5xl mx-auto px-10 py-6 flex items-center justify-between">
         <a href="/" className="text-[13.5px] font-bold text-gray-900">
           testa<span className="text-brand">.run</span>
         </a>
         <span className="text-xs text-gray-400">© 2026 testa.run</span>
+        </div>
       </footer>
 
     </div>
