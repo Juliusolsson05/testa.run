@@ -10,6 +10,9 @@ import {
 } from "lucide-react"
 
 import { AppSidebar } from "@/components/workspace/AppSidebar"
+import { Badge } from "@/components/ui/badge"
+import { Button } from "@/components/ui/button"
+import { Card } from "@/components/ui/card"
 import type { Run, RunStepAction, RunStepStatus } from "@/types/domain"
 import { runs } from "@/data/runs"
 import { issues } from "@/data/issues"
@@ -108,11 +111,13 @@ export default function RunsPage() {
               const { errors, warnings } = issueCountsForRun(run)
 
               return (
-                <div key={run.id} className="overflow-hidden border border-[#c7d9f0] bg-white">
+                <Card key={run.id} className="overflow-hidden rounded-none border-[#c7d9f0] bg-white p-0">
                   {/* Run header row */}
-                  <button
+                  <Button
+                    type="button"
+                    variant="ghost"
                     onClick={() => setOpenRunId(isOpen ? null : run.id)}
-                    className="flex w-full items-center gap-4 px-5 py-4 text-left transition-colors hover:bg-[#eff6ff]"
+                    className="h-auto w-full justify-start gap-4 rounded-none px-5 py-4 text-left transition-colors hover:bg-[#eff6ff]"
                   >
                     {/* Category icon */}
                     <div className={cn("flex h-8 w-8 shrink-0 items-center justify-center rounded", cc.bg)}>
@@ -139,29 +144,29 @@ export default function RunsPage() {
                     {/* Issue counts */}
                     <div className="flex shrink-0 items-center gap-2 text-[11px] font-medium">
                       {errors > 0 && (
-                        <span className="rounded bg-red-500/10 px-2 py-0.5 text-red-600">
+                        <Badge className="rounded bg-red-500/10 px-2 py-0.5 text-red-600 hover:bg-red-500/10">
                           {errors} error{errors > 1 ? "s" : ""}
-                        </span>
+                        </Badge>
                       )}
                       {warnings > 0 && (
-                        <span className="rounded bg-amber-400/10 px-2 py-0.5 text-amber-600">
+                        <Badge className="rounded bg-amber-400/10 px-2 py-0.5 text-amber-600 hover:bg-amber-400/10">
                           {warnings} warning{warnings > 1 ? "s" : ""}
-                        </span>
+                        </Badge>
                       )}
                     </div>
 
                     {/* Status badge */}
-                    <span className={cn("shrink-0 flex items-center gap-1.5 rounded px-2.5 py-1 text-[11px] font-semibold", sb.color, sb.bg)}>
+                    <Badge className={cn("shrink-0 flex items-center gap-1.5 rounded px-2.5 py-1 text-[11px] font-semibold hover:bg-transparent", sb.color, sb.bg)}>
                       <span className={cn("h-1.5 w-1.5 rounded-full", sb.dot)} />
                       {sb.label}
-                    </span>
+                    </Badge>
 
                     {/* Chevron */}
                     {isOpen
                       ? <ChevronDown className="h-4 w-4 shrink-0 text-[#4a7ab5]" />
                       : <ChevronRight className="h-4 w-4 shrink-0 text-[#4a7ab5]" />
                     }
-                  </button>
+                  </Button>
 
                   {/* Expanded steps */}
                   {isOpen && (
@@ -211,7 +216,7 @@ export default function RunsPage() {
                       ))}
                     </div>
                   )}
-                </div>
+                </Card>
               )
             })}
           </div>
