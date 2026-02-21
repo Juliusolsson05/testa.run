@@ -8,6 +8,7 @@ import {
   ReactFlow,
   applyNodeChanges,
   useNodes,
+  useOnViewportChange,
   useReactFlow,
   type Node,
   type NodeChange,
@@ -73,6 +74,12 @@ function FlowController() {
     return () => clearTimeout(timer)
   }, [activeNodeId, nodes, setCenter])
 
+  // ── Unfocus when user initiates any viewport move (pan or zoom) ──────────
+  useOnViewportChange({
+    onStart: () => {
+      if (!animatingRef.current) clearSelection()
+    },
+  })
 
   // ── Custom wheel: pinch = zoom (fast), scroll = pan (all directions) ───────
   const rf = useReactFlow()
@@ -145,7 +152,6 @@ export function FlowCanvas() {
         onNodesChange={onNodesChange}
         onNodeClick={onNodeClick}
         onPaneClick={clearSelection}
-        onMoveStart={clearSelection}
         fitView
         fitViewOptions={{ padding: 0.22 }}
         minZoom={0.2}
