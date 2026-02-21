@@ -10,7 +10,7 @@ import {
   type EdgeProps,
 } from "@xyflow/react"
 import { useIssueContext } from "@/context/issue-context"
-import { nodesById } from "@/data/flow"
+import { useWorkspaceData } from "@/context/workspace-data-context"
 
 // Control points match React Flow's getBezierPath: both CPs sit at midX (0.5 × distance)
 function bezierPoint(sx: number, sy: number, tx: number, ty: number, t: number): [number, number] {
@@ -67,6 +67,8 @@ export function SpringEdge({
   labelBgPadding,
 }: EdgeProps) {
   const { activeNodeId, selectNode } = useIssueContext()
+  const { nodes } = useWorkspaceData()
+  const nodesById = useMemo(() => Object.fromEntries(nodes.map((n) => [n.id, n])), [nodes])
 
   // Reactive viewport: x/y = canvas pan offset in px, zoom = scale
   const { x: vpX, y: vpY, zoom: vpZoom } = useViewport()

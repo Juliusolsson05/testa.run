@@ -1,6 +1,6 @@
 import Image from "next/image"
-import { nodesById, nodeMediaById } from "@/data/flow"
 import type { RunStep } from "@/types/domain"
+import { useWorkspaceData } from "@/context/workspace-data-context"
 import { actionIcons, stepStatusConfig } from "@/constants/status"
 import { cn } from "@/lib/utils"
 
@@ -17,9 +17,10 @@ const stepStatusBadgeClass = {
 } as const
 
 export function RunStepCard({ step }: { step: RunStep }) {
+  const { nodes } = useWorkspaceData()
   const s = stepStatusConfig[step.status]
-  const node = nodesById[step.nodeId]
-  const media = nodeMediaById[step.nodeId]
+  const node = nodes.find((n) => n.id === step.nodeId)
+  const media = node?.data.imageSrc ? { imageSrc: node.data.imageSrc, label: node.data.label } : undefined
   const nodeStep = node?.data.step ?? 0
   const nodeLabel = node?.data.label ?? "Unknown"
   const icon = actionIcons[step.action] ?? "·"

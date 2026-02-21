@@ -1,13 +1,14 @@
 import Image from "next/image"
-import { nodesById, nodeMediaById } from "@/data/flow"
 import type { Issue } from "@/types/domain"
+import { useWorkspaceData } from "@/context/workspace-data-context"
 import { cn } from "@/lib/utils"
 
 export function IssueCard({ issue, variant = "open" }: { issue: Issue; variant?: "open" | "resolved" }) {
-  const node = nodesById[issue.nodeId]
-  const media = nodeMediaById[issue.nodeId]
+  const { nodes } = useWorkspaceData()
+  const node = nodes.find((n) => n.id === issue.nodeId)
   const step = node?.data.step ?? 0
   const label = node?.data.label ?? "Unknown"
+  const media = node?.data.imageSrc ? { imageSrc: node.data.imageSrc, label } : undefined
   const isResolved = variant === "resolved"
 
   return (
