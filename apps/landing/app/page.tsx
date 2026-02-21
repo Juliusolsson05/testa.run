@@ -124,17 +124,16 @@ export default function Home() {
           </p>
 
           {/* URL input CTA */}
-          <div className="max-w-xl mx-auto rounded-2xl bg-gray-950 shadow-xl shadow-gray-900/20 p-4">
-            <div className="flex items-end gap-3">
-              <input
-                type="url"
-                placeholder="https://your-app.com"
-                className="flex-1 bg-transparent text-[15px] text-white placeholder:text-gray-500 focus:outline-none py-2 px-1"
-              />
-              <Button size="lg" className="h-10 px-5 rounded-full shrink-0 bg-brand hover:bg-brand/90 text-white">
-                <ArrowRight className="w-4 h-4" />
-              </Button>
-            </div>
+          <div className="max-w-xl mx-auto flex items-center gap-2 rounded-xl border border-gray-300/90 bg-white/95 p-2 shadow-[0_10px_30px_rgba(15,23,42,0.12)] backdrop-blur">
+            <input
+              type="url"
+              aria-label="Website URL"
+              placeholder="https://your-app.com"
+              className="flex-1 h-12 px-4 rounded-lg border border-gray-300 bg-white text-[14px] text-gray-950 placeholder:text-gray-600 focus:outline-none focus:ring-2 focus:ring-brand/40 focus:border-brand"
+            />
+            <Button size="lg" className="h-12 px-6 shrink-0">
+              Test my site <ArrowRight className="w-4 h-4 ml-1.5" />
+            </Button>
           </div>
           <p className="text-[12px] text-gray-400 mt-4">Free to start. No credit card required.</p>
         </div>
