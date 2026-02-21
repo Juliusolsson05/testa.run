@@ -128,7 +128,7 @@ export default function Home() {
 
       {/* ── Nav ──────────────────────────────────────────── */}
       <nav className="fixed top-0 inset-x-0 z-50 h-14 flex items-center justify-between px-8 bg-white/80 backdrop-blur-md border-b border-gray-100">
-        <a href="/" className="text-sm font-bold tracking-tight text-gray-900">
+        <a href="/" className="text-sm font-medium tracking-tight text-gray-900">
           testa<span className="text-brand">.run</span>
         </a>
         <ul className="hidden md:flex items-center gap-8 list-none">
@@ -149,7 +149,7 @@ export default function Home() {
           <Badge variant="outline" className="mb-5 text-brand border-brand/20 bg-brand/5">
             Now in early access
           </Badge>
-          <h1 className="text-5xl md:text-6xl font-extrabold tracking-tight leading-[1.1] mb-5">
+          <h1 className="text-5xl md:text-6xl font-medium tracking-tight leading-[1.1] mb-5">
             Your ultimate solution for{' '}
             <span className="text-brand">QA & Security</span>{' '}
             testing
@@ -172,7 +172,7 @@ export default function Home() {
         <div className="max-w-3xl mx-auto mt-16 grid grid-cols-4 gap-6 px-6">
           {stats.map(s => (
             <div key={s.label} className="text-center">
-              <div className="text-2xl font-bold text-gray-900">{s.value}</div>
+              <div className="text-2xl font-medium text-gray-900">{s.value}</div>
               <div className="text-[12px] text-gray-400 mt-1">{s.label}</div>
             </div>
           ))}
@@ -184,31 +184,31 @@ export default function Home() {
       {/* ── Future customer logo band ───────────────────── */}
       <section className="py-12 bg-white border-y border-gray-100">
         <div className="text-center mb-6 px-6">
-          <p className="text-[18px] text-gray-700">Will be used by:</p>
-          <p className="text-[13px] text-gray-500 mt-2">
-            Disclaimer: these companies are not using us at moment, but our product is so good that they will soon be customers.
+          <p className="text-[20px] text-gray-700 tracking-tight">Will be used by:</p>
+          <p className="text-[14px] text-gray-400 mt-2 max-w-lg mx-auto leading-relaxed">
+            Disclaimer: these companies are not using us at the moment, but our product is so good that they will soon be customers.
           </p>
         </div>
 
-        <div className="logo-marquee w-full overflow-hidden [mask-image:linear-gradient(to_right,transparent,black_8%,black_92%,transparent)]">
-          <div className="logo-marquee-track gap-10 py-3 px-4">
+        <div className="logo-marquee w-full overflow-hidden [mask-image:linear-gradient(to_right,transparent,black_6%,black_94%,transparent)]">
+          <div className="logo-marquee-track gap-14 py-3">
             {[
-              { name: 'Lovable', logo: 'https://logo.clearbit.com/lovable.dev' },
-              { name: 'Vercel', logo: 'https://logo.clearbit.com/vercel.com' },
-              { name: 'Stripe', logo: 'https://logo.clearbit.com/stripe.com' },
-              { name: 'Notion', logo: 'https://logo.clearbit.com/notion.so' },
-              { name: 'Linear', logo: 'https://logo.clearbit.com/linear.app' },
-              { name: 'Supabase', logo: 'https://logo.clearbit.com/supabase.com' },
-              { name: 'Lovable', logo: 'https://logo.clearbit.com/lovable.dev' },
-              { name: 'Vercel', logo: 'https://logo.clearbit.com/vercel.com' },
-              { name: 'Stripe', logo: 'https://logo.clearbit.com/stripe.com' },
-              { name: 'Notion', logo: 'https://logo.clearbit.com/notion.so' },
-              { name: 'Linear', logo: 'https://logo.clearbit.com/linear.app' },
-              { name: 'Supabase', logo: 'https://logo.clearbit.com/supabase.com' },
+              { name: 'Lovable', logo: '/logos/lovable.svg' },
+              { name: 'Vercel', logo: '/logos/vercel.svg' },
+              { name: 'Stripe', logo: '/logos/stripe.svg' },
+              { name: 'Notion', logo: '/logos/notion.svg' },
+              { name: 'Linear', logo: '/logos/linear.svg' },
+              { name: 'Supabase', logo: '/logos/supabase.svg' },
+              { name: 'Lovable', logo: '/logos/lovable.svg' },
+              { name: 'Vercel', logo: '/logos/vercel.svg' },
+              { name: 'Stripe', logo: '/logos/stripe.svg' },
+              { name: 'Notion', logo: '/logos/notion.svg' },
+              { name: 'Linear', logo: '/logos/linear.svg' },
+              { name: 'Supabase', logo: '/logos/supabase.svg' },
             ].map((company, i) => (
-              <div key={`${company.name}-${i}`} className="h-12 flex items-center gap-3 text-gray-700 shrink-0">
-                <img src={company.logo} alt={company.name} className="w-7 h-7 rounded-sm object-contain" />
-                <span className="text-[14px]">{company.name}</span>
+              <div key={`${company.name}-${i}`} className="flex items-center gap-2.5 shrink-0 opacity-50 grayscale">
+                <img src={company.logo} alt={company.name} className="w-6 h-6 object-contain" />
+                <span className="text-[15px] text-gray-800 tracking-tight">{company.name}</span>
               </div>
             ))}
           </div>
@@ -219,8 +219,8 @@ export default function Home() {
       <section className="py-20 bg-white">
         <div className="max-w-5xl mx-auto px-8 grid grid-cols-1 md:grid-cols-2 gap-16 items-center">
           <div>
-            <p className="text-[12px] font-semibold text-brand uppercase tracking-[0.15em] mb-3">The platform</p>
-            <h2 className="text-3xl font-extrabold tracking-tight leading-tight mb-4">
+            <p className="text-[12px] font-medium text-brand uppercase tracking-[0.15em] mb-3">The platform</p>
+            <h2 className="text-3xl font-medium tracking-tight leading-tight mb-4">
               AI-powered testing<br />designed for modern teams
             </h2>
             <p className="text-[15px] text-gray-500 leading-relaxed mb-6">
@@ -250,7 +250,7 @@ export default function Home() {
             </div>
             <div className="absolute -bottom-5 -left-5 bg-white rounded-xl border border-gray-200 shadow-lg px-5 py-3">
               <div className="text-[11px] text-gray-400 mb-1">Issues found this week</div>
-              <div className="text-2xl font-bold text-gray-900">142</div>
+              <div className="text-2xl font-medium text-gray-900">142</div>
               <div className="text-[11px] text-emerald-600 font-medium flex items-center gap-1">
                 <ArrowRight className="w-3 h-3 -rotate-45" /> 23% from last week
               </div>
@@ -265,16 +265,16 @@ export default function Home() {
       <section id="how-it-works" className="py-20 bg-white">
         <div className="max-w-5xl mx-auto px-8">
           <div className="text-center mb-14">
-            <p className="text-[12px] font-semibold text-brand uppercase tracking-[0.15em] mb-3">How it works</p>
-            <h2 className="text-3xl font-extrabold tracking-tight">
+            <p className="text-[12px] font-medium text-brand uppercase tracking-[0.15em] mb-3">How it works</p>
+            <h2 className="text-3xl font-medium tracking-tight">
               Test your app in 3 steps
             </h2>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             {steps.map(step => (
               <div key={step.num} className="relative p-7 rounded-xl border border-gray-200 bg-gray-50/50">
-                <span className="text-[42px] font-extrabold text-gray-100 absolute top-4 right-5">{step.num}</span>
-                <h3 className="text-[15px] font-bold mb-2 relative z-10">{step.title}</h3>
+                <span className="text-[42px] font-medium text-gray-100 absolute top-4 right-5">{step.num}</span>
+                <h3 className="text-[15px] font-medium mb-2 relative z-10">{step.title}</h3>
                 <p className="text-[13px] text-gray-500 leading-relaxed relative z-10">{step.desc}</p>
               </div>
             ))}
@@ -288,8 +288,8 @@ export default function Home() {
       <section id="features" className="py-20 bg-white">
         <div className="max-w-5xl mx-auto px-8">
           <div className="text-center mb-14">
-            <p className="text-[12px] font-semibold text-brand uppercase tracking-[0.15em] mb-3">Features</p>
-            <h2 className="text-3xl font-extrabold tracking-tight">
+            <p className="text-[12px] font-medium text-brand uppercase tracking-[0.15em] mb-3">Features</p>
+            <h2 className="text-3xl font-medium tracking-tight">
               Features that set us apart
             </h2>
             <p className="text-[15px] text-gray-500 mt-3 max-w-md mx-auto">
@@ -303,7 +303,7 @@ export default function Home() {
                   <div className="w-10 h-10 rounded-lg bg-brand/10 flex items-center justify-center mb-4">
                     <f.icon className="w-5 h-5 text-brand" />
                   </div>
-                  <h3 className="text-[14px] font-bold mb-2">{f.title}</h3>
+                  <h3 className="text-[14px] font-medium mb-2">{f.title}</h3>
                   <p className="text-[13px] text-gray-500 leading-relaxed">{f.desc}</p>
                 </CardContent>
               </Card>
@@ -318,8 +318,8 @@ export default function Home() {
       <section id="findings" className="py-20 bg-white">
         <div className="max-w-5xl mx-auto px-8">
           <div className="text-center mb-10">
-            <p className="text-[12px] font-semibold text-brand uppercase tracking-[0.15em] mb-3">Sample output</p>
-            <h2 className="text-3xl font-extrabold tracking-tight">
+            <p className="text-[12px] font-medium text-brand uppercase tracking-[0.15em] mb-3">Sample output</p>
+            <h2 className="text-3xl font-medium tracking-tight">
               Structured findings, with full evidence
             </h2>
             <p className="text-[15px] text-gray-500 mt-3 max-w-md mx-auto">
@@ -358,8 +358,8 @@ export default function Home() {
       <section id="pricing" className="py-20 bg-white">
         <div className="max-w-5xl mx-auto px-8">
           <div className="text-center mb-14">
-            <p className="text-[12px] font-semibold text-brand uppercase tracking-[0.15em] mb-3">Pricing</p>
-            <h2 className="text-3xl font-extrabold tracking-tight">
+            <p className="text-[12px] font-medium text-brand uppercase tracking-[0.15em] mb-3">Pricing</p>
+            <h2 className="text-3xl font-medium tracking-tight">
               Flexible plans for every team
             </h2>
             <p className="text-[15px] text-gray-500 mt-3">
@@ -378,10 +378,10 @@ export default function Home() {
                   </div>
                 )}
                 <CardContent className="p-7">
-                  <h3 className="text-[15px] font-bold mb-1">{plan.name}</h3>
+                  <h3 className="text-[15px] font-medium mb-1">{plan.name}</h3>
                   <p className="text-[12px] text-gray-500 mb-4">{plan.desc}</p>
                   <div className="flex items-baseline gap-1 mb-5">
-                    <span className="text-4xl font-extrabold">{plan.price}</span>
+                    <span className="text-4xl font-medium">{plan.price}</span>
                     {plan.period && <span className="text-[13px] text-gray-400">{plan.period}</span>}
                   </div>
                   <Button
@@ -410,7 +410,7 @@ export default function Home() {
       <section className="relative py-28 text-center">
         <CloudBackground position="bottom" />
         <div className="max-w-2xl mx-auto px-6">
-          <h2 className="text-4xl md:text-5xl font-extrabold tracking-tight leading-tight mb-4">
+          <h2 className="text-4xl md:text-5xl font-medium tracking-tight leading-tight mb-4">
             Ship with confidence —<br />try testa.run now
           </h2>
           <p className="text-[15px] text-gray-500 max-w-md mx-auto mb-8 leading-relaxed">
@@ -427,7 +427,7 @@ export default function Home() {
       <footer className="bg-white border-t border-gray-100">
         <div className="max-w-5xl mx-auto px-8 py-12 grid grid-cols-2 md:grid-cols-4 gap-8">
           <div>
-            <a href="/" className="text-sm font-bold tracking-tight text-gray-900">
+            <a href="/" className="text-sm font-medium tracking-tight text-gray-900">
               testa<span className="text-brand">.run</span>
             </a>
             <p className="text-[12px] text-gray-400 mt-2 leading-relaxed">
@@ -435,7 +435,7 @@ export default function Home() {
             </p>
           </div>
           <div>
-            <h4 className="text-[12px] font-semibold text-gray-900 uppercase tracking-[0.1em] mb-3">Product</h4>
+            <h4 className="text-[12px] font-medium text-gray-900 uppercase tracking-[0.1em] mb-3">Product</h4>
             <ul className="space-y-2">
               {['Features', 'Pricing', 'Changelog', 'Docs'].map(item => (
                 <li key={item}><a href="#" className="text-[13px] text-gray-500 hover:text-gray-900 transition-colors">{item}</a></li>
@@ -443,7 +443,7 @@ export default function Home() {
             </ul>
           </div>
           <div>
-            <h4 className="text-[12px] font-semibold text-gray-900 uppercase tracking-[0.1em] mb-3">Company</h4>
+            <h4 className="text-[12px] font-medium text-gray-900 uppercase tracking-[0.1em] mb-3">Company</h4>
             <ul className="space-y-2">
               {['About', 'Blog', 'Careers', 'Contact'].map(item => (
                 <li key={item}><a href="#" className="text-[13px] text-gray-500 hover:text-gray-900 transition-colors">{item}</a></li>
@@ -451,7 +451,7 @@ export default function Home() {
             </ul>
           </div>
           <div>
-            <h4 className="text-[12px] font-semibold text-gray-900 uppercase tracking-[0.1em] mb-3">Legal</h4>
+            <h4 className="text-[12px] font-medium text-gray-900 uppercase tracking-[0.1em] mb-3">Legal</h4>
             <ul className="space-y-2">
               {['Privacy', 'Terms', 'Security'].map(item => (
                 <li key={item}><a href="#" className="text-[13px] text-gray-500 hover:text-gray-900 transition-colors">{item}</a></li>
