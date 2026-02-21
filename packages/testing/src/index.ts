@@ -1,11 +1,17 @@
-export { runTest } from "./client.js";
+export { createTestRun } from "./client.js";
 export type {
-  TestRequest,
-  TestResult,
+  TestRunRequest,
+  TestRunHandle,
+  TestRunResult,
+  TestRunEvent,
   Finding,
   Step,
-  Severity,
+  RunError,
+  RunStatus,
+  FindingDomain,
+  FindingSeverity,
   FindingStatus,
+  StepStatus,
   EngineConfig,
   ChatMessage,
 } from "./types.js";

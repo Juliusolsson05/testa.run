@@ -1,36 +1,111 @@
-export type Severity = "error" | "warning";
+export type TestRunRequest = {
+  url: string;
+  prompt?: string;
+};
+
+export type FindingDomain = "qa" | "security";
+
+export type FindingSeverity = "error" | "warning";
 
 export type FindingStatus = "open" | "resolved";
 
-export type TestRequest = {
+export type StepStatus = "passed" | "failed" | "running" | "pending";
+
+export type RunStatus = "completed" | "failed" | "partial";
+
+export type Step = {
+  id: string;
+  label: string;
   url: string;
-  viewport?: { width: number; height: number };
-  steps?: string[];
-  auth?: { username: string; password: string };
+  status: StepStatus;
+  duration?: number;
 };
 
 export type Finding = {
   id: string;
+  domain: FindingDomain;
+  category: string;
   title: string;
   description: string;
-  severity: Severity;
+  severity: FindingSeverity;
   status: FindingStatus;
   element: string;
   evidence?: string;
 };
 
-export type Step = {
-  label: string;
-  url: string;
-  status: "passed" | "failed" | "running" | "pending";
-  duration?: number;
+export type RunError = {
+  code: string;
+  message: string;
 };
 
-export type TestResult = {
+export type TestRunResult = {
   findings: Finding[];
+  qaFindings: Finding[];
+  securityFindings: Finding[];
   steps: Step[];
   summary: string;
-  status: "completed" | "failed" | "partial";
+  status: RunStatus;
+  error?: RunError;
+};
+
+export type TestRunEvent =
+  | {
+      type: "run.started";
+      runId: string;
+      at: string;
+      request: { url: string };
+    }
+  | {
+      type: "step.started";
+      runId: string;
+      at: string;
+      step: Step;
+    }
+  | {
+      type: "step.progress";
+      runId: string;
+      at: string;
+      stepId: string;
+      message: string;
+    }
+  | {
+      type: "step.screenshot";
+      runId: string;
+      at: string;
+      stepId: string;
+      mimeType: "image/png";
+      base64: string;
+    }
+  | {
+      type: "finding.created";
+      runId: string;
+      at: string;
+      finding: Finding;
+    }
+  | {
+      type: "run.warning";
+      runId: string;
+      at: string;
+      message: string;
+    }
+  | {
+      type: "run.failed";
+      runId: string;
+      at: string;
+      error: RunError;
+    }
+  | {
+      type: "run.completed";
+      runId: string;
+      at: string;
+      result: TestRunResult;
+    };
+
+export type TestRunHandle = {
+  runId: string;
+  events: AsyncIterable<TestRunEvent>;
+  result: Promise<TestRunResult>;
+  cancel: () => void;
 };
 
 export type EngineConfig = {

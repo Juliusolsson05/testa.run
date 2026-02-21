@@ -1,4 +1,15 @@
-import type { Finding, Step, TestResult } from "./types.js";
+import type { Finding, Step, TestRunResult } from "./types.js";
+
+const EMPTY_PNG_BASE64 =
+  "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO8W8l0AAAAASUVORK5CYII=";
+
+type ParsedOutput = {
+  summary: string;
+  findings: Finding[];
+  steps: Step[];
+  screenshots: string[];
+  parseError?: string;
+};
 
 /**
  * Extract JSON from a fenced code block, or try parsing the entire string.
@@ -20,9 +31,62 @@ function extractJson(content: string): unknown {
   throw new Error("No JSON found in engine response");
 }
 
+function stripDataUrl(raw: string): string {
+  const match = /^data:image\/png;base64,(.*)$/i.exec(raw.trim());
+  return match?.[1] ?? raw.trim();
+}
+
+function isLikelyBase64(input: string): boolean {
+  return /^[A-Za-z0-9+/=\s]+$/.test(input) && input.replace(/\s+/g, "").length > 32;
+}
+
+function normalizeScreenshot(raw: unknown): string {
+  if (typeof raw !== "string") {
+    return EMPTY_PNG_BASE64;
+  }
+
+  const stripped = stripDataUrl(raw);
+  return isLikelyBase64(stripped) ? stripped.replace(/\s+/g, "") : EMPTY_PNG_BASE64;
+}
+
+function inferDomain(raw: Record<string, unknown>): "qa" | "security" {
+  if (raw["domain"] === "qa" || raw["domain"] === "security") {
+    return raw["domain"];
+  }
+
+  const candidate = [
+    raw["category"],
+    raw["title"],
+    raw["description"],
+    raw["evidence"],
+  ]
+    .filter((v): v is string => typeof v === "string")
+    .join(" ")
+    .toLowerCase();
+
+  if (
+    /csrf|xss|sqli|sql injection|auth|csp|insecure|token|session|jwt|password|secret|security/.test(
+      candidate,
+    )
+  ) {
+    return "security";
+  }
+
+  return "qa";
+}
+
 function coerceFinding(raw: Record<string, unknown>, index: number): Finding {
+  const domain = inferDomain(raw);
+
   return {
     id: typeof raw["id"] === "string" ? raw["id"] : `f-${String(index + 1)}`,
+    domain,
+    category:
+      typeof raw["category"] === "string" && raw["category"].trim().length > 0
+        ? raw["category"]
+        : domain === "security"
+          ? "security"
+          : "general",
     title: typeof raw["title"] === "string" ? raw["title"] : "Untitled finding",
     description:
       typeof raw["description"] === "string" ? raw["description"] : "",
@@ -39,8 +103,9 @@ function coerceFinding(raw: Record<string, unknown>, index: number): Finding {
   };
 }
 
-function coerceStep(raw: Record<string, unknown>): Step {
+function coerceStep(raw: Record<string, unknown>, index: number): Step {
   return {
+    id: typeof raw["id"] === "string" ? raw["id"] : `s-${String(index + 1)}`,
     label: typeof raw["label"] === "string" ? raw["label"] : "Unknown step",
     url: typeof raw["url"] === "string" ? raw["url"] : "",
     status:
@@ -54,7 +119,7 @@ function coerceStep(raw: Record<string, unknown>): Step {
   };
 }
 
-export function parseResult(content: string): TestResult {
+export function parseEngineOutput(content: string): ParsedOutput {
   try {
     const parsed = extractJson(content) as Record<string, unknown>;
 
@@ -63,28 +128,71 @@ export function parseResult(content: string): TestResult {
       : [];
     const rawSteps = Array.isArray(parsed["steps"]) ? parsed["steps"] : [];
 
-    const findings = rawFindings.map(
-      (f: Record<string, unknown>, i: number) => coerceFinding(f, i),
+    const findings = rawFindings.map((f: unknown, i: number) =>
+      coerceFinding(
+        typeof f === "object" && f !== null
+          ? (f as Record<string, unknown>)
+          : {},
+        i,
+      ),
     );
-    const steps = rawSteps.map((s: Record<string, unknown>) => coerceStep(s));
+    const steps = rawSteps.map((s: unknown, i: number) =>
+      coerceStep(
+        typeof s === "object" && s !== null
+          ? (s as Record<string, unknown>)
+          : {},
+        i,
+      ),
+    );
+    const screenshots = rawSteps.map((s: unknown) =>
+      normalizeScreenshot(
+        typeof s === "object" && s !== null
+          ? (s as Record<string, unknown>)["screenshotBase64"] ??
+              (s as Record<string, unknown>)["screenshot"]
+          : undefined,
+      ),
+    );
     const summary =
       typeof parsed["summary"] === "string"
         ? parsed["summary"]
         : `Found ${String(findings.length)} issue(s) across ${String(steps.length)} step(s).`;
 
     return {
+      summary,
       findings,
       steps,
-      summary,
-      status: "completed",
+      screenshots,
     };
-  } catch {
-    // If parsing fails entirely, return a partial result with the raw content as summary
+  } catch (error) {
     return {
       findings: [],
       steps: [],
+      screenshots: [],
       summary: `Engine returned unparseable response. Raw content: ${content.slice(0, 500)}`,
-      status: "partial",
+      parseError: error instanceof Error ? error.message : "Unknown parse error",
     };
   }
+}
+
+export function buildResult(args: {
+  findings: Finding[];
+  steps: Step[];
+  summary: string;
+  status: "completed" | "failed" | "partial";
+  error?: { code: string; message: string };
+}): TestRunResult {
+  const qaFindings = args.findings.filter((finding) => finding.domain === "qa");
+  const securityFindings = args.findings.filter(
+    (finding) => finding.domain === "security",
+  );
+
+  return {
+    findings: args.findings,
+    qaFindings,
+    securityFindings,
+    steps: args.steps,
+    summary: args.summary,
+    status: args.status,
+    ...(args.error ? { error: args.error } : {}),
+  };
 }
