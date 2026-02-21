@@ -124,7 +124,7 @@ function CloudBackground({ position }: { position: 'top' | 'bottom' }) {
 
 export default function Home() {
   return (
-    <div className="text-gray-900 font-sans antialiased overflow-x-hidden">
+    <div className="text-gray-900 font-sans antialiased overflow-x-hidden [&_*]:font-normal">
 
       {/* ── Nav ──────────────────────────────────────────── */}
       <nav className="fixed top-0 inset-x-0 z-50 h-14 flex items-center justify-between px-8 bg-white/80 backdrop-blur-md border-b border-gray-100">
@@ -178,58 +178,39 @@ export default function Home() {
           ))}
         </div>
 
-        {/* Trust logos */}
-        <div className="max-w-2xl mx-auto mt-14 flex items-center justify-center gap-10 opacity-40">
-          {['Vercel', 'Stripe', 'Notion', 'Linear', 'Supabase'].map(name => (
-            <span key={name} className="text-[13px] font-semibold text-gray-400 tracking-wide">{name}</span>
-          ))}
-        </div>
+
       </section>
 
       {/* ── Future customer logo band ───────────────────── */}
-      <section className="py-10 bg-white border-y border-gray-100">
-        <div className="max-w-5xl mx-auto px-8">
-          <div className="text-center mb-4">
-            <p className="text-[13px] font-semibold text-gray-700">
-              Will be used by:
-            </p>
-            <p className="text-[11px] text-gray-400 mt-1">
-              Disclaimer: these companies are not using us at the moment, but our product is so good they will soon be customers.
-            </p>
-          </div>
+      <section className="py-12 bg-white border-y border-gray-100">
+        <div className="text-center mb-6 px-6">
+          <p className="text-[18px] text-gray-700">Will be used by:</p>
+          <p className="text-[13px] text-gray-500 mt-2">
+            Disclaimer: these companies are not using us at moment, but our product is so good that they will soon be customers.
+          </p>
+        </div>
 
-          <div className="logo-marquee overflow-hidden [mask-image:linear-gradient(to_right,transparent,black_10%,black_90%,transparent)]">
-            <div className="logo-marquee-track gap-3 py-2">
-              {[
-                'Lovable',
-                'Vercel',
-                'Stripe',
-                'Notion',
-                'Linear',
-                'Supabase',
-                'OpenAI',
-                'Cloudflare',
-                'Shopify',
-                'Figma',
-                'Lovable',
-                'Vercel',
-                'Stripe',
-                'Notion',
-                'Linear',
-                'Supabase',
-                'OpenAI',
-                'Cloudflare',
-                'Shopify',
-                'Figma',
-              ].map((name, i) => (
-                <div
-                  key={`${name}-${i}`}
-                  className="h-10 px-5 rounded-full border border-gray-200 bg-gray-50 text-gray-600 text-[12px] font-medium flex items-center"
-                >
-                  {name}
-                </div>
-              ))}
-            </div>
+        <div className="logo-marquee w-full overflow-hidden [mask-image:linear-gradient(to_right,transparent,black_8%,black_92%,transparent)]">
+          <div className="logo-marquee-track gap-10 py-3 px-4">
+            {[
+              { name: 'Lovable', logo: 'https://logo.clearbit.com/lovable.dev' },
+              { name: 'Vercel', logo: 'https://logo.clearbit.com/vercel.com' },
+              { name: 'Stripe', logo: 'https://logo.clearbit.com/stripe.com' },
+              { name: 'Notion', logo: 'https://logo.clearbit.com/notion.so' },
+              { name: 'Linear', logo: 'https://logo.clearbit.com/linear.app' },
+              { name: 'Supabase', logo: 'https://logo.clearbit.com/supabase.com' },
+              { name: 'Lovable', logo: 'https://logo.clearbit.com/lovable.dev' },
+              { name: 'Vercel', logo: 'https://logo.clearbit.com/vercel.com' },
+              { name: 'Stripe', logo: 'https://logo.clearbit.com/stripe.com' },
+              { name: 'Notion', logo: 'https://logo.clearbit.com/notion.so' },
+              { name: 'Linear', logo: 'https://logo.clearbit.com/linear.app' },
+              { name: 'Supabase', logo: 'https://logo.clearbit.com/supabase.com' },
+            ].map((company, i) => (
+              <div key={`${company.name}-${i}`} className="h-12 flex items-center gap-3 text-gray-700 shrink-0">
+                <img src={company.logo} alt={company.name} className="w-7 h-7 rounded-sm object-contain" />
+                <span className="text-[14px]">{company.name}</span>
+              </div>
+            ))}
           </div>
         </div>
       </section>
