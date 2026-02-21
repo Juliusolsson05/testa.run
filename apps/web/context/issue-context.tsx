@@ -9,9 +9,10 @@ import {
   type ReactNode,
 } from "react"
 
-import { issues } from "@/data/issues"
+import { issues, type Issue } from "@/data/issues"
 
 type IssueContextValue = {
+  issues: Issue[]
   activeIssueId: string | null
   activeNodeId: string | null
   selectIssue: (issueId: string) => void
@@ -43,7 +44,7 @@ export function IssueProvider({ children }: { children: ReactNode }) {
   }, [])
 
   const value = useMemo(
-    () => ({ activeIssueId, activeNodeId, selectIssue, selectNode, clearSelection }),
+    () => ({ issues, activeIssueId, activeNodeId, selectIssue, selectNode, clearSelection }),
     [activeIssueId, activeNodeId, selectIssue, selectNode, clearSelection]
   )
 

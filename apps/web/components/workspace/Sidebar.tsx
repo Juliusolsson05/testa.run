@@ -1,16 +1,17 @@
 "use client"
 
+import { AlertTriangle, Clock, Sparkles, XCircle } from "lucide-react"
+
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Separator } from "@/components/ui/separator"
 import { useIssueContext } from "@/context/issue-context"
-import { issues } from "@/data/issues"
 import { initialNodes, nodeStepMap } from "@/data/flow"
 import { cn } from "@/lib/utils"
 
 export function Sidebar() {
-  const { selectIssue, activeIssueId, activeNodeId, clearSelection } = useIssueContext()
+  const { selectIssue, activeIssueId, activeNodeId, clearSelection, issues } = useIssueContext()
 
   // ── Global stats (always computed) ──────────────────────────────────────
   const openIssues = issues.filter((issue) => issue.status === "open")
@@ -34,9 +35,8 @@ export function Sidebar() {
       className="flex h-full shrink-0 flex-col gap-4 overflow-y-auto border-r border-white/10 bg-[#111318] px-5 py-5 text-white transition-[width] duration-300 ease-in-out"
       style={{ width: focusedNode ? 420 : 320 }}
     >
-      {/* Logo */}
       <div className="flex items-center gap-2 text-[17px] font-bold tracking-tight">
-        <span className="text-xl text-[#1d6ef5]">◈</span>
+        <Sparkles className="h-5 w-5 text-[#1d6ef5]" />
         <span className="text-[#e8edf5]">
           testa<span className="text-[#1d6ef5]">.run</span>
         </span>
@@ -153,7 +153,9 @@ export function Sidebar() {
                           issue.status === "resolved" && "bg-emerald-500/20 text-emerald-200"
                         )}
                       >
-                        {issue.status === "resolved" ? "✓ resolved" : issue.severity === "error" ? "✕ error" : "⚠ warning"}
+                        {issue.status === "resolved" ? "✓ resolved" : issue.severity === "error"
+                          ? <span className="inline-flex items-center gap-1"><XCircle className="h-3 w-3" /> error</span>
+                          : <span className="inline-flex items-center gap-1"><AlertTriangle className="h-3 w-3" /> warning</span>}
                       </Badge>
                       <span className="truncate font-mono">{issue.element}</span>
                     </div>
@@ -169,7 +171,7 @@ export function Sidebar() {
           <Card className="rounded-none border-white/10 bg-white/5 text-white">
             <CardContent className="flex items-center gap-3 p-3">
               <div className="flex h-6 w-6 items-center justify-center rounded-none bg-white/10 text-xs">
-                ⏱
+                <Clock className="h-3.5 w-3.5 text-white/70" />
               </div>
               <div className="min-w-0 flex-1">
                 <div className="text-[13px] font-semibold">TimeEdit</div>
@@ -299,7 +301,11 @@ export function Sidebar() {
                             : "bg-amber-400/20 text-amber-200"
                         )}
                       >
-                        {issue.severity === "error" ? "✕" : "⚠"} {issue.severity}
+                        <span className="inline-flex items-center gap-1">
+                          {issue.severity === "error"
+                            ? <><XCircle className="h-3 w-3" /> error</>
+                            : <><AlertTriangle className="h-3 w-3" /> warning</>}
+                        </span>
                       </Badge>
                     </div>
                   </button>

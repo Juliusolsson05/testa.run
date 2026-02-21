@@ -5,11 +5,13 @@ import { useMemo } from "react"
 import {
   Handle,
   Position,
+  type Node,
   type NodeProps,
 } from "@xyflow/react"
 
 import { Badge } from "@/components/ui/badge"
-import { issues } from "@/data/issues"
+import { CHROME_HEIGHT, NODE_WIDTH, NODE_WIDE, SCREENSHOT_RATIO } from "@/constants/flow"
+import { useIssueContext } from "@/context/issue-context"
 import { cn } from "@/lib/utils"
 import type { ScreenshotNodeData } from "@/types/flow"
 
@@ -19,13 +21,9 @@ const statusConfig = {
   pending: { color: "#6366f1", bg: "rgba(99,102,241,0.12)", label: "◦ Pending" },
 }
 
-const CHROME_HEIGHT = 36
-const NODE_WIDTH = 280
-const NODE_WIDE = 480
-const SCREENSHOT_RATIO = 10 / 16
-
-export function ScreenshotNode({ id, data, selected }: NodeProps) {
-  const nodeData = data as ScreenshotNodeData
+export function ScreenshotNode({ id, data, selected }: NodeProps<Node<ScreenshotNodeData>>) {
+  const { issues } = useIssueContext()
+  const nodeData = data
   const status = statusConfig[nodeData.status]
 
   const nodeIssues = useMemo(() => issues.filter((i) => i.nodeId === id), [id])

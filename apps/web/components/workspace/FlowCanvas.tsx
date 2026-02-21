@@ -18,6 +18,7 @@ import {
 
 import { initialEdges, initialNodes } from "@/data/flow"
 import { useIssueContext } from "@/context/issue-context"
+import { NODE_WIDTH, NODE_WIDE } from "@/constants/flow"
 import type { ScreenshotNodeData } from "@/types/flow"
 import { ScreenshotNode } from "@/components/workspace/nodes/ScreenshotNode"
 import { SpringEdge } from "@/components/workspace/edges/SpringEdge"
@@ -25,8 +26,6 @@ import { SpringEdge } from "@/components/workspace/edges/SpringEdge"
 const nodeTypes = { screenshot: ScreenshotNode }
 const edgeTypes = { spring: SpringEdge }
 
-const NODE_WIDTH = 280
-const NODE_WIDE = 480
 const MAX_ZOOM = 4
 
 // Reads live measured node dimensions from React Flow and re-zooms
