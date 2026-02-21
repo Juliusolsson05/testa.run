@@ -148,7 +148,7 @@ export function SpringEdge({
             Nothing inside affects this centering — label is absolutely positioned.
           */}
           <button
-            onClick={() => selectNode(navigateTo)}
+            onClick={(e) => { e.stopPropagation(); selectNode(navigateTo) }}
             className="nodrag nopan"
             style={{
               position: "absolute",
