@@ -30,7 +30,10 @@ export function Sidebar() {
   const nodeResolvedIssues = nodeIssues.filter((i) => i.status === "resolved")
 
   return (
-    <aside className="flex h-full w-[320px] shrink-0 flex-col gap-4 overflow-y-auto border-r border-white/10 bg-[#111318] px-5 py-5 text-white">
+    <aside
+      className="flex h-full shrink-0 flex-col gap-4 overflow-y-auto border-r border-white/10 bg-[#111318] px-5 py-5 text-white transition-[width] duration-300 ease-in-out"
+      style={{ width: focusedNode ? 420 : 320 }}
+    >
       {/* Logo */}
       <div className="flex items-center gap-2 text-[17px] font-bold tracking-tight">
         <span className="text-xl text-[#1d6ef5]">◈</span>
@@ -41,7 +44,7 @@ export function Sidebar() {
 
       {focusedNode ? (
         // ── FOCUSED NODE VIEW ───────────────────────────────────────────────
-        <>
+        <div key={activeNodeId} className="node-focus-in flex flex-col gap-4">
           {/* Back button + node header */}
           <button
             onClick={clearSelection}
@@ -136,6 +139,9 @@ export function Sidebar() {
                     <div className="mb-1 font-medium text-white">
                       {issue.title}
                     </div>
+                    <p className="mb-2 line-clamp-2 text-[11px] leading-relaxed text-white/40">
+                      {issue.reasoning}
+                    </p>
                     <div className="flex items-center gap-2 text-[10px] text-white/50">
                       <Badge
                         variant="outline"
@@ -156,7 +162,7 @@ export function Sidebar() {
               })}
             </div>
           )}
-        </>
+        </div>
       ) : (
         // ── GLOBAL VIEW ─────────────────────────────────────────────────────
         <>

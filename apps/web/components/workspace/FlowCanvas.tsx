@@ -9,6 +9,8 @@ import {
   applyNodeChanges,
   useNodes,
   useReactFlow,
+  useViewport,
+  useStore,
   type Node,
   type NodeChange,
   type NodeMouseHandler,
@@ -31,11 +33,12 @@ const MAX_ZOOM = 4
 // whenever the active node's height changes (e.g. dropdown opens/closes).
 // Debounced so we wait for the node to fully expand before animating.
 function FlowController() {
-  const { activeNodeId } = useIssueContext()
+  const { activeNodeId, clearSelection } = useIssueContext()
   const { setCenter } = useReactFlow()
   const nodes = useNodes<ScreenshotNodeData>()
   const lastRef = useRef<{ nodeId: string; height: number } | null>(null)
 
+  // ── Auto-zoom when focused node changes or its height shifts ────────────
   useEffect(() => {
     if (!activeNodeId) {
       lastRef.current = null
@@ -48,17 +51,14 @@ function FlowController() {
     const nodeHeight = node.measured.height
     const prev = lastRef.current
 
-    // Skip if same node and height hasn't shifted meaningfully
     if (prev?.nodeId === activeNodeId && Math.abs(prev.height - nodeHeight) < 2) return
 
-    // Debounce: wait for the node (and its dropdown) to finish rendering
-    // before committing to the zoom. The timer resets on every height change.
     const timer = setTimeout(() => {
       lastRef.current = { nodeId: activeNodeId, height: nodeHeight }
 
       const nodeWidth = node.data.isMain || node.data.isLarge ? NODE_WIDE : NODE_WIDTH
       const targetZoom = Math.min((window.innerHeight * 0.8) / nodeHeight, MAX_ZOOM)
-      const centerX = node.position.x + nodeWidth / 2
+      const centerX = node.position.x + nodeWidth / 2 + 200 / targetZoom
       const centerY = node.position.y + nodeHeight / 2
 
       setCenter(centerX, centerY, { zoom: targetZoom, duration: 600 })
@@ -66,6 +66,36 @@ function FlowController() {
 
     return () => clearTimeout(timer)
   }, [activeNodeId, nodes, setCenter])
+
+  // ── Exit focus when user pans the node mostly off-screen ─────────────────
+  const { x: vpX, y: vpY, zoom: vpZoom } = useViewport()
+  const containerWidth = useStore((s) => s.width)
+  const containerHeight = useStore((s) => s.height)
+
+  useEffect(() => {
+    // Only fire after the initial zoom has settled (lastRef is set)
+    if (!activeNodeId || !lastRef.current) return
+
+    const node = nodes.find((n) => n.id === activeNodeId)
+    if (!node?.measured?.height) return
+
+    const nodeWidth = node.data.isMain || node.data.isLarge ? NODE_WIDE : NODE_WIDTH
+    const nodeHeight = node.measured.height
+
+    // Node bounding box in screen (canvas-relative) pixels
+    const screenLeft   = node.position.x * vpZoom + vpX
+    const screenTop    = node.position.y * vpZoom + vpY
+    const screenRight  = screenLeft + nodeWidth  * vpZoom
+    const screenBottom = screenTop  + nodeHeight * vpZoom
+
+    // Overlap with the canvas rect
+    const overlapX = Math.max(0, Math.min(screenRight, containerWidth)  - Math.max(screenLeft, 0))
+    const overlapY = Math.max(0, Math.min(screenBottom, containerHeight) - Math.max(screenTop,  0))
+    const visibleFraction = (overlapX * overlapY) / (nodeWidth * vpZoom * nodeHeight * vpZoom)
+
+    // Exit focus when less than 30 % of the node is still visible
+    if (visibleFraction < 0.3) clearSelection()
+  }, [activeNodeId, nodes, vpX, vpY, vpZoom, containerWidth, containerHeight, clearSelection])
 
   return null
 }
