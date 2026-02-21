@@ -49,58 +49,44 @@ const pricing = [
   { name: 'Enterprise', price: 'Custom', period: '', desc: 'For organizations with compliance needs.', features: ['Everything in Pro', 'Unlimited journeys', 'SSO & audit logs', 'Custom integrations', 'Dedicated support', 'SLA guarantee'], cta: 'Contact us', highlighted: false },
 ]
 
+function Cloud({ className, style }: { className?: string; style?: React.CSSProperties }) {
+  return (
+    <div className={`absolute ${className ?? ''}`} style={style}>
+      {/* A single cloud made of overlapping circles */}
+      <div className="relative w-full h-full">
+        <div className="absolute rounded-full bg-blue-200/50" style={{ width: '50%', height: '60%', bottom: '10%', left: '25%' }} />
+        <div className="absolute rounded-full bg-blue-200/40" style={{ width: '35%', height: '50%', bottom: '25%', left: '10%' }} />
+        <div className="absolute rounded-full bg-sky-200/50" style={{ width: '40%', height: '55%', bottom: '20%', right: '10%' }} />
+        <div className="absolute rounded-full bg-blue-100/60" style={{ width: '30%', height: '40%', bottom: '40%', left: '30%' }} />
+        <div className="absolute rounded-full bg-sky-100/50" style={{ width: '25%', height: '35%', bottom: '35%', right: '25%' }} />
+        {/* Wide base */}
+        <div className="absolute rounded-full bg-blue-100/50" style={{ width: '80%', height: '35%', bottom: 0, left: '10%' }} />
+      </div>
+    </div>
+  )
+}
+
 function CloudBackground({ position }: { position: 'top' | 'bottom' }) {
   const isTop = position === 'top'
   return (
     <div className="absolute inset-0 -z-10 overflow-hidden">
-      {/* SVG filter for realistic cloud texture */}
-      <svg className="absolute" width="0" height="0">
-        <filter id={`cloud-filter-${position}`}>
-          <feTurbulence type="fractalNoise" baseFrequency="0.012" numOctaves="4" seed={isTop ? 2 : 7} result="noise" />
-          <feDisplacementMap in="SourceGraphic" in2="noise" scale="120" />
-        </filter>
-      </svg>
-
-      {/* Cloud layers */}
-      <div
-        className="absolute rounded-full"
-        style={{
-          width: 900,
-          height: 500,
-          top: isTop ? -220 : undefined,
-          bottom: isTop ? undefined : -220,
-          left: '50%',
-          transform: 'translateX(-50%)',
-          background: 'radial-gradient(ellipse at center, rgba(147,197,253,0.5) 0%, rgba(191,219,254,0.3) 40%, transparent 70%)',
-          filter: `url(#cloud-filter-${position})`,
-        }}
-      />
-      <div
-        className="absolute rounded-full"
-        style={{
-          width: 700,
-          height: 400,
-          top: isTop ? -100 : undefined,
-          bottom: isTop ? undefined : -100,
-          left: isTop ? -80 : undefined,
-          right: isTop ? undefined : -80,
-          background: 'radial-gradient(ellipse at center, rgba(96,165,250,0.35) 0%, rgba(147,197,253,0.2) 50%, transparent 75%)',
-          filter: `url(#cloud-filter-${position})`,
-        }}
-      />
-      <div
-        className="absolute rounded-full"
-        style={{
-          width: 600,
-          height: 350,
-          top: isTop ? -60 : undefined,
-          bottom: isTop ? undefined : -60,
-          right: isTop ? -60 : undefined,
-          left: isTop ? undefined : -60,
-          background: 'radial-gradient(ellipse at center, rgba(59,130,246,0.2) 0%, rgba(147,197,253,0.15) 50%, transparent 75%)',
-          filter: `url(#cloud-filter-${position})`,
-        }}
-      />
+      {isTop ? (
+        <>
+          <Cloud className="blur-sm" style={{ width: 500, height: 250, top: -40, left: -60 }} />
+          <Cloud className="blur-[2px]" style={{ width: 600, height: 280, top: -60, right: -80 }} />
+          <Cloud className="blur-sm" style={{ width: 350, height: 180, top: 20, left: '35%' }} />
+          <Cloud className="blur-[3px] opacity-60" style={{ width: 250, height: 130, top: 80, left: '15%' }} />
+          <Cloud className="blur-[3px] opacity-50" style={{ width: 300, height: 150, top: 60, right: '10%' }} />
+        </>
+      ) : (
+        <>
+          <Cloud className="blur-sm" style={{ width: 500, height: 250, bottom: -40, right: -60 }} />
+          <Cloud className="blur-[2px]" style={{ width: 600, height: 280, bottom: -60, left: -80 }} />
+          <Cloud className="blur-sm" style={{ width: 350, height: 180, bottom: 20, left: '40%' }} />
+          <Cloud className="blur-[3px] opacity-60" style={{ width: 250, height: 130, bottom: 80, right: '20%' }} />
+          <Cloud className="blur-[3px] opacity-50" style={{ width: 300, height: 150, bottom: 60, left: '15%' }} />
+        </>
+      )}
 
       {/* Fade to white */}
       <div
