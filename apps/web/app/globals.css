@@ -122,6 +122,10 @@
 }
 
 @layer utilities {
+  .react-flow__edgelabel-renderer {
+    z-index: 9999 !important;
+  }
+
   .flow-handle {
     width: 12px !important;
     height: 12px !important;
