@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import localFont from "next/font/local";
 import { Public_Sans } from "next/font/google";
 import "./globals.css";
+import { validateBootEnv } from "@/lib/env";
 
 const geistSans = localFont({
   src: "./fonts/GeistVF.woff",
@@ -16,6 +17,8 @@ const publicSans = Public_Sans({
   variable: "--font-public-sans",
   display: "swap",
 });
+
+validateBootEnv();
 
 export const metadata: Metadata = {
   title: "testa.run",

@@ -54,8 +54,11 @@ pnpm -C apps/web prisma:migrate:dev --name init
 ```
 
 - Prisma schema: `apps/web/prisma/schema.prisma`
+- Initial migration: `apps/web/prisma/migrations/20260221220000_init/migration.sql`
 - Prisma client singleton: `apps/web/lib/db.ts`
 - Supabase clients: `apps/web/lib/supabase.ts`
+- Supabase auth helper (Bearer token): `apps/web/lib/supabase-auth.ts`
+- DB health endpoint: `GET /api/health/db`
 
 ## Conventions
 
