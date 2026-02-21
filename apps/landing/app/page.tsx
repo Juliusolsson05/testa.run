@@ -3,7 +3,7 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Separator } from '@/components/ui/separator'
 import { Card, CardContent } from '@/components/ui/card'
-import { JourneyFlow, RadarScan, BrowserInspector, NetworkMap } from './components/AnimatedConcepts'
+import { BrowserInspector } from './components/AnimatedConcepts'
 
 const findings = [
   { sev: 'Critical', variant: 'destructive' as const,  title: 'Login form returns 500 on submit',               desc: 'POST /api/auth/login → 500 Internal Server Error',         tag: 'step 4'   },
@@ -85,15 +85,10 @@ export default function Home() {
 
       <Separator className="max-w-5xl mx-auto" />
 
-      {/* ── Animated SVG concepts ────────────────────────── */}
+      {/* ── Animated SVG concept ─────────────────────────── */}
       <section className="py-20 bg-white">
-        <div className="max-w-5xl mx-auto px-10">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-12 items-end justify-items-center">
-            <JourneyFlow />
-            <RadarScan />
-            <BrowserInspector />
-            <NetworkMap />
-          </div>
+        <div className="max-w-5xl mx-auto px-10 flex justify-center">
+          <BrowserInspector />
         </div>
       </section>
 
