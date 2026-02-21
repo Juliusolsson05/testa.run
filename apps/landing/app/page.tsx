@@ -49,25 +49,32 @@ const pricing = [
   { name: 'Enterprise', price: 'Custom', period: '', desc: 'For organizations with compliance needs.', features: ['Everything in Pro', 'Unlimited journeys', 'SSO & audit logs', 'Custom integrations', 'Dedicated support', 'SLA guarantee'], cta: 'Contact us', highlighted: false },
 ]
 
-function CloudShape({ className }: { className?: string }) {
+function CloudShape({ className, id }: { className?: string; id: string }) {
   return (
     <svg viewBox="0 0 420 220" className={className} aria-hidden>
       <defs>
-        <linearGradient id="cloudFill" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stopColor="#bfdbfe" stopOpacity="0.9" />
-          <stop offset="100%" stopColor="#dbeafe" stopOpacity="0.65" />
+        <linearGradient id={`${id}-fill`} x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stopColor="#dbeafe" stopOpacity="0.95" />
+          <stop offset="55%" stopColor="#bfdbfe" stopOpacity="0.65" />
+          <stop offset="100%" stopColor="#93c5fd" stopOpacity="0.35" />
         </linearGradient>
+        <filter id={`${id}-soft`} x="-20%" y="-20%" width="140%" height="140%">
+          <feGaussianBlur stdDeviation="6" />
+        </filter>
       </defs>
+
+      {/* soft glow layer for depth */}
       <path
         d="M58 162c-23 0-41-18-41-40s18-40 41-40c8 0 15 2 21 6 7-26 31-45 59-45 21 0 40 11 50 28 7-5 16-8 25-8 25 0 45 20 45 45v2h5c23 0 42 19 42 42s-19 42-42 42H96c-21 0-38-17-38-38 0-2 0-4 0-6z"
-        fill="url(#cloudFill)"
+        fill="#93c5fd"
+        fillOpacity="0.28"
+        filter={`url(#${id}-soft)`}
       />
+
+      {/* main cloud */}
       <path
         d="M58 162c-23 0-41-18-41-40s18-40 41-40c8 0 15 2 21 6 7-26 31-45 59-45 21 0 40 11 50 28 7-5 16-8 25-8 25 0 45 20 45 45v2h5c23 0 42 19 42 42s-19 42-42 42H96c-21 0-38-17-38-38 0-2 0-4 0-6z"
-        fill="none"
-        stroke="#93c5fd"
-        strokeOpacity="0.35"
-        strokeWidth="2"
+        fill={`url(#${id}-fill)`}
       />
     </svg>
   )
@@ -77,27 +84,34 @@ function CloudBackground({ position }: { position: 'top' | 'bottom' }) {
   const isTop = position === 'top'
   return (
     <div className="absolute inset-0 -z-10 overflow-hidden pointer-events-none">
+      {/* subtle ambient wash behind shapes */}
+      <div className="absolute inset-0 bg-[radial-gradient(1200px_380px_at_50%_0%,rgba(191,219,254,0.45),transparent_72%)]" />
+
       {isTop ? (
         <>
-          <CloudShape className="absolute w-[560px] left-[-110px] top-[-70px] opacity-65" />
-          <CloudShape className="absolute w-[520px] right-[-120px] top-[-40px] opacity-55" />
-          <CloudShape className="absolute w-[420px] left-[34%] top-[10px] opacity-45" />
+          <CloudShape id="c1-top" className="absolute w-[640px] left-[-150px] top-[-88px] opacity-58 blur-[1.5px]" />
+          <CloudShape id="c2-top" className="absolute w-[560px] right-[-120px] top-[-56px] opacity-52 blur-[2px]" />
+          <CloudShape id="c3-top" className="absolute w-[470px] left-[34%] top-[2px] opacity-46 blur-[2.5px]" />
+          <CloudShape id="c4-top" className="absolute w-[300px] left-[8%] top-[30px] opacity-36 blur-[3px]" />
+          <CloudShape id="c5-top" className="absolute w-[320px] right-[8%] top-[28px] opacity-34 blur-[3px]" />
         </>
       ) : (
         <>
-          <CloudShape className="absolute w-[560px] right-[-110px] bottom-[-70px] opacity-65" />
-          <CloudShape className="absolute w-[520px] left-[-120px] bottom-[-40px] opacity-55" />
-          <CloudShape className="absolute w-[420px] left-[36%] bottom-[10px] opacity-45" />
+          <CloudShape id="c1-bot" className="absolute w-[640px] right-[-150px] bottom-[-88px] opacity-58 blur-[1.5px]" />
+          <CloudShape id="c2-bot" className="absolute w-[560px] left-[-120px] bottom-[-56px] opacity-52 blur-[2px]" />
+          <CloudShape id="c3-bot" className="absolute w-[470px] left-[34%] bottom-[2px] opacity-46 blur-[2.5px]" />
+          <CloudShape id="c4-bot" className="absolute w-[300px] left-[8%] bottom-[28px] opacity-34 blur-[3px]" />
+          <CloudShape id="c5-bot" className="absolute w-[320px] right-[8%] bottom-[30px] opacity-36 blur-[3px]" />
         </>
       )}
 
       <div
-        className="absolute left-0 right-0 h-40"
+        className="absolute left-0 right-0 h-44"
         style={{
           [isTop ? 'bottom' : 'top']: 0,
           background: isTop
-            ? 'linear-gradient(to bottom, transparent, white 85%)'
-            : 'linear-gradient(to top, transparent, white 85%)',
+            ? 'linear-gradient(to bottom, transparent, white 82%)'
+            : 'linear-gradient(to top, transparent, white 82%)',
         }}
       />
     </div>
