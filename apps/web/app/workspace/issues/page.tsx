@@ -3,7 +3,7 @@
 import { useState } from "react"
 import { AlertTriangle, Filter, RefreshCw, XCircle } from "lucide-react"
 
-import { FloatingNav } from "@/components/workspace/FloatingNav"
+import { AppSidebar } from "@/components/workspace/AppSidebar"
 import { issues } from "@/data/issues"
 import { nodeStepMap } from "@/data/flow"
 import { cn } from "@/lib/utils"
@@ -43,11 +43,13 @@ export default function IssuesPage() {
   ).sort(([a], [b]) => Number(a) - Number(b))
 
   return (
-    <div className="min-h-dvh bg-[#eff6ff] font-sans">
-      <FloatingNav />
+    <div className="flex h-dvh bg-[#eff6ff] font-sans">
+      <AppSidebar />
+
+      <div className="flex min-w-0 flex-1 flex-col overflow-y-auto">
 
       {/* ── Stats bar ─────────────────────────────────────────────────────── */}
-      <div className="border-b border-[#c7d9f0] bg-white pt-16">
+      <div className="border-b border-[#c7d9f0] bg-white">
         <div className="flex items-stretch divide-x divide-[#c7d9f0]">
           {([
             { label: "OPEN ISSUES", value: totalOpen,     color: "text-[#1a2a33]" },
@@ -93,7 +95,7 @@ export default function IssuesPage() {
       </div>
 
       {/* ── Issue list ────────────────────────────────────────────────────── */}
-      <div className="px-8 py-6">
+      <div className="flex-1 px-8 py-6">
         {groups.length === 0 && (
           <div className="py-20 text-center text-[13px] text-[#4a7ab5]">
             No issues match this filter.
@@ -183,6 +185,8 @@ export default function IssuesPage() {
             </div>
           )
         })}
+      </div>
+
       </div>
     </div>
   )
