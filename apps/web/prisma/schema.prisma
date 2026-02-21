@@ -229,6 +229,14 @@ model TestRun {
   finishedAt  DateTime?
   durationMs  Int?
 
+  /// Denormalized target URL (copied from project at run start for historical accuracy)
+  targetUrl   String?
+
+  /// Summary counters to power lists fast (denormalized, maintained on write)
+  openErrors   Int @default(0)
+  openWarnings Int @default(0)
+  totalSteps   Int @default(0)
+
   /// Freeform metadata from agent (version, config, user-agent, viewport, etc.)
   metadata    Json?
 
