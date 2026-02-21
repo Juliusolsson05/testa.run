@@ -17,6 +17,23 @@ import { SpringEdge } from './edges/SpringEdge'
 const nodeTypes = { screenshot: ScreenshotNode }
 const edgeTypes = { spring: SpringEdge }
 
+type ErrorCard = {
+  id: string
+  title: string
+  step: number
+  stepLabel: string
+  severity: 'error' | 'warning'
+  status: 'open' | 'resolved'
+}
+
+const errors: ErrorCard[] = [
+  { id: 'err1', title: 'Login timeout > 3s',      step: 2, stepLabel: 'Login',     severity: 'error',   status: 'open' },
+  { id: 'err2', title: 'Dashboard render lag',     step: 3, stepLabel: 'Dashboard', severity: 'error',   status: 'open' },
+  { id: 'err3', title: 'Low contrast on CTA',      step: 1, stepLabel: 'Landing',   severity: 'warning', status: 'open' },
+  { id: 'err4', title: 'Missing alt text on hero', step: 1, stepLabel: 'Landing',   severity: 'warning', status: 'resolved' },
+  { id: 'err5', title: 'Form label not bound',     step: 2, stepLabel: 'Login',     severity: 'warning', status: 'resolved' },
+]
+
 const initialNodes: Node<ScreenshotNodeData>[] = [
   {
     id: '1',
@@ -96,23 +113,55 @@ export default function App() {
     [],
   )
 
+  const openErrors    = errors.filter(e => e.status === 'open')
+  const resolvedErrors = errors.filter(e => e.status === 'resolved')
+
   return (
     <div className="workspace">
+
       {/* Sidebar */}
       <aside className="workspace-sidebar">
+
+        {/* Logo */}
         <div className="logo">
           <span className="logo-icon">◈</span>
           <span className="logo-text">testa<span className="logo-dot">.run</span></span>
         </div>
 
+        {/* Site under test */}
+        <div className="site-card">
+          <img
+            className="site-favicon"
+            src="https://www.google.com/s2/favicons?sz=32&domain=timeedit.com"
+            alt=""
+          />
+          <div className="site-info">
+            <div className="site-name">TimeEdit</div>
+            <div className="site-url">timeedit.com</div>
+          </div>
+          <div className="site-status-dot" />
+        </div>
+
+        {/* Run info */}
         <div className="run-info">
-          <span className="run-label">Run</span>
-          <span className="run-id">#a3f7c1</span>
-          <span className="run-time">2m 14s ago</span>
+          <div className="run-row">
+            <span className="run-label">Run</span>
+            <span className="run-id">#a3f7c1</span>
+          </div>
+          <div className="run-row">
+            <span className="run-label">Started</span>
+            <span className="run-time">2m 14s ago</span>
+          </div>
+          <div className="run-row">
+            <span className="run-label">Steps</span>
+            <span className="run-steps">3 / 3</span>
+          </div>
         </div>
 
         <div className="sidebar-divider" />
 
+        {/* Progress track */}
+        <div className="section-label">Flow</div>
         <div className="progress-track">
           <div className="progress-step done">
             <span>1</span>
@@ -130,12 +179,51 @@ export default function App() {
           </div>
         </div>
 
+        <div className="sidebar-divider" />
+
+        {/* Kanban errors */}
+        <div className="section-label">
+          Issues
+          <span className="issue-count">{openErrors.length}</span>
+        </div>
+
+        <div className="kanban">
+          <div className="kanban-col">
+            <div className="kanban-col-header open">Open</div>
+            {openErrors.map(e => (
+              <div key={e.id} className={`kanban-card severity-${e.severity}`}>
+                <div className="kanban-card-title">{e.title}</div>
+                <div className="kanban-card-meta">
+                  <span className="kanban-step">Step {e.step} · {e.stepLabel}</span>
+                  <span className={`kanban-badge ${e.severity}`}>
+                    {e.severity === 'error' ? '✕' : '⚠'} {e.severity}
+                  </span>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          <div className="kanban-col">
+            <div className="kanban-col-header resolved">Resolved</div>
+            {resolvedErrors.map(e => (
+              <div key={e.id} className="kanban-card resolved">
+                <div className="kanban-card-title">{e.title}</div>
+                <div className="kanban-card-meta">
+                  <span className="kanban-step">Step {e.step} · {e.stepLabel}</span>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+
         <div className="sidebar-spacer" />
 
+        {/* Agent pill */}
         <div className="agent-pill">
           <span className="agent-dot" />
           Agent running
         </div>
+
       </aside>
 
       {/* Canvas */}
@@ -164,6 +252,7 @@ export default function App() {
           />
         </ReactFlow>
       </div>
+
     </div>
   )
 }

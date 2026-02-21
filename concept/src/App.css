@@ -27,14 +27,15 @@ body {
 
 /* ─── Sidebar ───────────────────────────────────────────────── */
 .workspace-sidebar {
-  width: 220px;
+  width: 300px;
   flex-shrink: 0;
   display: flex;
   flex-direction: column;
   background: #ffffff;
   border-right: 1px solid var(--blue-light);
-  padding: 24px 18px 20px;
+  padding: 22px 18px 20px;
   z-index: 10;
+  overflow-y: auto;
 }
 
 .logo {
@@ -50,19 +51,60 @@ body {
 .logo-text  { color: #1a2a33; }
 .logo-dot   { color: var(--blue); }
 
+/* Site card */
+.site-card {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  background: var(--blue-faint);
+  border: 1px solid var(--blue-light);
+  border-radius: 10px;
+  margin-bottom: 12px;
+}
+
+.site-favicon {
+  width: 24px;
+  height: 24px;
+  border-radius: 5px;
+  flex-shrink: 0;
+}
+
+.site-info { flex: 1; min-width: 0; }
+.site-name { font-size: 13px; font-weight: 600; color: #1a2a33; }
+.site-url  { font-size: 11px; color: var(--blue-mid); font-family: monospace; }
+
+.site-status-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #22c55e;
+  box-shadow: 0 0 6px rgba(34,197,94,0.5);
+  flex-shrink: 0;
+}
+
+/* Run info */
 .run-info {
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: 5px;
   font-size: 12px;
-  padding: 8px 10px;
+  padding: 10px 12px;
   background: var(--blue-faint);
   border: 1px solid var(--blue-light);
-  border-radius: 8px;
+  border-radius: 10px;
 }
-.run-label { color: var(--blue-mid); font-size: 10px; text-transform: uppercase; letter-spacing: 0.5px; }
-.run-id    { color: var(--blue-dark); font-family: monospace; font-weight: 700; font-size: 13px; }
-.run-time  { color: var(--blue-mid); font-size: 11px; }
+
+.run-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.run-label { color: var(--blue-mid); font-size: 11px; }
+.run-id    { color: var(--blue-dark); font-family: monospace; font-weight: 700; font-size: 12px; }
+.run-time  { color: #4b5563; font-size: 11px; }
+.run-steps { color: var(--blue-dark); font-weight: 600; font-size: 12px; }
 
 .sidebar-divider {
   height: 1px;
@@ -340,3 +382,95 @@ body {
 
 /* Edge label */
 .react-flow__edge-textbg { rx: 6 !important; }
+
+/* ─── Section label ─────────────────────────────────────────── */
+.section-label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  color: var(--blue-mid);
+  margin-bottom: 10px;
+}
+
+.issue-count {
+  background: var(--blue);
+  color: #fff;
+  font-size: 10px;
+  font-weight: 700;
+  border-radius: 20px;
+  padding: 1px 6px;
+  letter-spacing: 0;
+  text-transform: none;
+}
+
+/* ─── Kanban ─────────────────────────────────────────────────── */
+.kanban {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  margin-bottom: 4px;
+}
+
+.kanban-col-header {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 6px;
+  padding: 3px 6px;
+  border-radius: 5px;
+  text-align: center;
+}
+
+.kanban-col-header.open     { color: var(--blue-dark); background: var(--blue-light); }
+.kanban-col-header.resolved { color: #16a34a; background: rgba(34,197,94,0.1); }
+
+.kanban-card {
+  background: #fff;
+  border: 1px solid var(--blue-light);
+  border-radius: 8px;
+  padding: 7px 8px;
+  margin-bottom: 5px;
+  border-left: 3px solid var(--blue-light);
+}
+
+.kanban-card.severity-error   { border-left-color: #ef4444; }
+.kanban-card.severity-warning { border-left-color: #f59e0b; }
+.kanban-card.resolved         { border-left-color: #22c55e; opacity: 0.65; }
+
+.kanban-card-title {
+  font-size: 11px;
+  font-weight: 500;
+  color: #1a2a33;
+  line-height: 1.35;
+  margin-bottom: 4px;
+}
+
+.kanban-card-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.kanban-step {
+  font-size: 10px;
+  color: var(--blue-mid);
+  font-family: monospace;
+}
+
+.kanban-badge {
+  font-size: 9px;
+  font-weight: 600;
+  padding: 1px 5px;
+  border-radius: 4px;
+  width: fit-content;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+
+.kanban-badge.error   { background: rgba(239,68,68,0.1);   color: #dc2626; }
+.kanban-badge.warning { background: rgba(245,158,11,0.1); color: #d97706; }
