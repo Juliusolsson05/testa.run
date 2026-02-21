@@ -4,12 +4,6 @@ import { Separator } from '@/components/ui/separator'
 import { Card, CardContent } from '@/components/ui/card'
 import Image from 'next/image'
 import {
-  Search,
-  Shield,
-  Camera,
-  Zap,
-  Globe,
-  BarChart3,
   ArrowRight,
   Check,
 } from 'lucide-react'
@@ -25,22 +19,6 @@ const steps = [
   { num: '01', title: 'Point at your app', desc: 'Give us a URL and describe the user journey you want tested — sign up, checkout, onboarding, anything.' },
   { num: '02', title: 'Agent runs your journey', desc: 'Our AI agent navigates your app like a real user, executing every step while probing for security weaknesses.' },
   { num: '03', title: 'Get structured findings', desc: 'Receive a severity-ranked report with screenshots, network traces, and reproduction steps for every issue found.' },
-]
-
-const features = [
-  { icon: Search, title: 'End-to-end journey testing', desc: 'The agent executes real user flows — login, search, checkout — and validates every step automatically.' },
-  { icon: Shield, title: 'Security vulnerability scanning', desc: 'Detects auth bypass, rate limit gaps, exposed endpoints, and data leaks in the same test run.' },
-  { icon: Camera, title: 'Screenshot evidence', desc: 'Every action is captured with full-page screenshots so you can see exactly what the agent saw.' },
-  { icon: Zap, title: 'Lightning fast execution', desc: 'Complete test suites run in minutes, not hours. Get results before your deploy finishes.' },
-  { icon: Globe, title: 'API & network monitoring', desc: 'Catches 4xx/5xx errors, slow responses, and failed requests across every endpoint your app touches.' },
-  { icon: BarChart3, title: 'Severity-ranked reports', desc: 'Findings are categorized from Critical to Low with full traces, so you fix what matters first.' },
-]
-
-const findings = [
-  { sev: 'Critical', variant: 'destructive' as const, title: 'Login form returns 500 on submit', desc: 'POST /api/auth/login → 500 Internal Server Error', tag: 'step 4' },
-  { sev: 'High', variant: 'default' as const, title: 'Account enumeration via distinct error codes', desc: '404 USER_NOT_FOUND vs 403 ACCOUNT_NOT_ACTIVE', tag: 'security' },
-  { sev: 'High', variant: 'default' as const, title: 'No rate limit on authentication endpoint', desc: '5 req/s accepted — no throttling or lockout triggered', tag: 'security' },
-  { sev: 'Medium', variant: 'secondary' as const, title: 'Premium content accessible without valid session', desc: 'GET /api/listings returns 50 items with no auth token', tag: 'step 6' },
 ]
 
 const pricing = [
@@ -134,11 +112,9 @@ export default function Home() {
           testa<span className="text-brand">.run</span>
         </a>
         <ul className="hidden md:flex items-center gap-8 list-none">
-          <li><a href="#features" className="text-[13px] text-gray-500 hover:text-gray-900 transition-colors">Features</a></li>
-          <li><a href="#how-it-works" className="text-[13px] text-gray-500 hover:text-gray-900 transition-colors">How it works</a></li>
+                    <li><a href="#how-it-works" className="text-[13px] text-gray-500 hover:text-gray-900 transition-colors">How it works</a></li>
           <li><a href="#pricing" className="text-[13px] text-gray-500 hover:text-gray-900 transition-colors">Pricing</a></li>
-          <li><a href="#findings" className="text-[13px] text-gray-500 hover:text-gray-900 transition-colors">Output</a></li>
-        </ul>
+                  </ul>
         <Button size="sm" asChild>
           <a href="#pricing">Get started</a>
         </Button>
@@ -277,76 +253,6 @@ export default function Home() {
               </div>
             ))}
           </div>
-        </div>
-      </section>
-
-      <Separator className="max-w-5xl mx-auto" />
-
-      {/* ── Features ─────────────────────────────────────── */}
-      <section id="features" className="py-20 bg-white">
-        <div className="max-w-5xl mx-auto px-8">
-          <div className="text-center mb-14">
-            <p className="text-[12px] font-medium text-brand uppercase tracking-[0.15em] mb-3">Features</p>
-            <h2 className="text-3xl font-medium tracking-tight">
-              Features that set us apart
-            </h2>
-            <p className="text-[15px] text-gray-500 mt-3 max-w-md mx-auto">
-              Everything you need to ship confidently — functional QA and security testing in one platform.
-            </p>
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {features.map(f => (
-              <Card key={f.title} className="border-gray-200 shadow-none hover:shadow-md hover:border-gray-300 transition-all">
-                <CardContent className="p-6">
-                  <div className="w-10 h-10 rounded-lg bg-brand/10 flex items-center justify-center mb-4">
-                    <f.icon className="w-5 h-5 text-brand" />
-                  </div>
-                  <h3 className="text-[14px] font-medium mb-2">{f.title}</h3>
-                  <p className="text-[13px] text-gray-500 leading-relaxed">{f.desc}</p>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      <Separator className="max-w-5xl mx-auto" />
-
-      {/* ── Findings ─────────────────────────────────────── */}
-      <section id="findings" className="py-20 bg-white">
-        <div className="max-w-5xl mx-auto px-8">
-          <div className="text-center mb-10">
-            <p className="text-[12px] font-medium text-brand uppercase tracking-[0.15em] mb-3">Sample output</p>
-            <h2 className="text-3xl font-medium tracking-tight">
-              Structured findings, with full evidence
-            </h2>
-            <p className="text-[15px] text-gray-500 mt-3 max-w-md mx-auto">
-              Every result includes severity, the step that triggered it, and the exact trace.
-            </p>
-          </div>
-          <Card className="max-w-3xl mx-auto">
-            {findings.map((f, i) => (
-              <div key={f.title}>
-                <div className="grid grid-cols-[100px_1fr_auto] gap-4 items-start px-5 py-4 hover:bg-gray-50 transition-colors">
-                  <Badge
-                    variant={f.variant}
-                    className={
-                      f.sev === 'High'   ? 'bg-amber-50 text-amber-700 border-amber-200 hover:bg-amber-50' :
-                      f.sev === 'Medium' ? 'bg-blue-50 text-blue-700 border-blue-200 hover:bg-blue-50'     : ''
-                    }
-                  >
-                    {f.sev}
-                  </Badge>
-                  <div>
-                    <p className="text-[13.5px] font-medium text-gray-900 mb-0.5">{f.title}</p>
-                    <p className="text-[11.5px] text-gray-400 font-mono">{f.desc}</p>
-                  </div>
-                  <span className="text-[11px] text-gray-300 font-mono pt-1">{f.tag}</span>
-                </div>
-                {i < findings.length - 1 && <Separator />}
-              </div>
-            ))}
-          </Card>
         </div>
       </section>
 
