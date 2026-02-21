@@ -124,14 +124,14 @@ export default function Home() {
           </p>
 
           {/* URL input CTA */}
-          <div className="max-w-xl mx-auto rounded-2xl bg-[#f5f3ee] shadow-lg shadow-black/5 p-4">
+          <div className="max-w-xl mx-auto rounded-2xl bg-gray-950 shadow-xl shadow-gray-900/20 p-4">
             <div className="flex items-end gap-3">
               <input
                 type="url"
                 placeholder="https://your-app.com"
-                className="flex-1 bg-transparent text-[15px] text-gray-900 placeholder:text-gray-500 focus:outline-none py-2 px-1"
+                className="flex-1 bg-transparent text-[15px] text-white placeholder:text-gray-500 focus:outline-none py-2 px-1"
               />
-              <Button size="lg" className="h-10 px-5 rounded-full shrink-0">
+              <Button size="lg" className="h-10 px-5 rounded-full shrink-0 bg-brand hover:bg-brand/90 text-white">
                 <ArrowRight className="w-4 h-4" />
               </Button>
             </div>
@@ -291,14 +291,14 @@ export default function Home() {
           <p className="text-[15px] text-gray-500 max-w-md mx-auto mb-8 leading-relaxed">
             Paste a URL and find out in minutes. No setup, no scripts, no waiting.
           </p>
-          <div className="max-w-xl mx-auto rounded-2xl bg-[#f5f3ee] shadow-lg shadow-black/5 p-4">
+          <div className="max-w-xl mx-auto rounded-2xl bg-gray-950 shadow-xl shadow-gray-900/20 p-4">
             <div className="flex items-end gap-3">
               <input
                 type="url"
                 placeholder="https://your-app.com"
-                className="flex-1 bg-transparent text-[15px] text-gray-900 placeholder:text-gray-500 focus:outline-none py-2 px-1"
+                className="flex-1 bg-transparent text-[15px] text-white placeholder:text-gray-500 focus:outline-none py-2 px-1"
               />
-              <Button size="lg" className="h-10 px-5 rounded-full shrink-0">
+              <Button size="lg" className="h-10 px-5 rounded-full shrink-0 bg-brand hover:bg-brand/90 text-white">
                 <ArrowRight className="w-4 h-4" />
               </Button>
             </div>
