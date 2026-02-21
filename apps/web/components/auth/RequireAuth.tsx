@@ -3,11 +3,20 @@
 import { useEffect } from "react"
 import { usePathname, useRouter } from "next/navigation"
 import { useAuth } from "@/components/auth/AuthProvider"
+import { useAppSelector } from "@/store/hooks"
+
+function onboardingPath(stage: string) {
+  if (stage === "create-org") return "/onboarding/org"
+  if (stage === "create-project") return "/onboarding/project"
+  if (stage === "select-plan" || stage === "checkout") return "/onboarding/plan"
+  return null
+}
 
 export function RequireAuth({ children }: { children: React.ReactNode }) {
   const router = useRouter()
   const pathname = usePathname()
   const { loading, accessToken } = useAuth()
+  const stage = useAppSelector((s) => s.onboarding.stage)
 
   useEffect(() => {
     if (loading) return
@@ -18,12 +27,18 @@ export function RequireAuth({ children }: { children: React.ReactNode }) {
       return
     }
 
-    void fetch("/api/auth/sync-user", {
-      method: "POST",
-      headers: { Authorization: `Bearer ${accessToken}` },
-      cache: "no-store",
-    })
-  }, [accessToken, loading, pathname, router])
+    const redirect = onboardingPath(stage)
+    const isOnboardingRoute = pathname.startsWith("/onboarding")
+
+    if (redirect && !isOnboardingRoute) {
+      router.replace(redirect)
+      return
+    }
+
+    if (stage === "done" && isOnboardingRoute) {
+      router.replace("/")
+    }
+  }, [accessToken, loading, pathname, router, stage])
 
   if (loading) {
     return (
@@ -33,9 +48,7 @@ export function RequireAuth({ children }: { children: React.ReactNode }) {
     )
   }
 
-  if (!accessToken) {
-    return null
-  }
+  if (!accessToken) return null
 
   return <>{children}</>
 }
