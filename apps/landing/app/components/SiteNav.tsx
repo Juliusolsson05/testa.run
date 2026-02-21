@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button'
 export function SiteNav() {
   return (
     <nav className="fixed top-0 inset-x-0 z-50 h-14 flex items-center justify-between px-6 md:px-8 bg-white/85 backdrop-blur-md border-b border-gray-100">
-      <Link href="/" className="text-sm tracking-tight text-gray-900">
+      <Link href="/" className="text-lg tracking-tight text-gray-900">
         testa<span className="text-brand">.run</span>
       </Link>
       <ul className="hidden md:flex items-center gap-8 list-none">
@@ -26,7 +26,7 @@ export function SiteFooter() {
     <footer className="border-t border-gray-100 bg-white">
       <div className="max-w-5xl mx-auto px-8 py-10 flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
         <div>
-          <Link href="/" className="text-sm tracking-tight text-gray-900">
+          <Link href="/" className="text-lg tracking-tight text-gray-900">
             testa<span className="text-brand">.run</span>
           </Link>
           <p className="text-[13px] text-gray-400 mt-1">Autonomous QA & security testing.</p>

@@ -1,6 +1,6 @@
 "use client"
 
-import { AlertTriangle, Clock, Sparkles, XCircle } from "lucide-react"
+import { AlertTriangle, Clock, XCircle } from "lucide-react"
 
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -34,8 +34,7 @@ export function Sidebar() {
       className="flex h-full shrink-0 flex-col gap-4 overflow-y-auto border-r border-white/10 bg-[#111318] px-5 py-5 text-white transition-[width] duration-300 ease-in-out"
       style={{ width: focusedNode ? 420 : 320 }}
     >
-      <div className="flex items-center gap-2 text-[17px] font-bold tracking-tight">
-        <Sparkles className="h-5 w-5 text-[#1d6ef5]" />
+      <div className="text-[22px] font-normal tracking-tight">
         <span className="text-[#e8edf5]">
           testa<span className="text-[#1d6ef5]">.run</span>
         </span>
