@@ -12,11 +12,12 @@ export function FloatingNav() {
     { label: "Home", href: "/" },
     { label: "Issues", href: "/workspace/issues" },
     { label: "Runs", href: "/workspace/runs" },
+    { label: "Security", href: "/workspace/security" },
   ]
 
   return (
     <nav className="pointer-events-none absolute inset-x-0 top-4 z-50 flex justify-center">
-      <div className="pointer-events-auto flex w-[520px] items-center gap-1 rounded-lg border border-gray-200 bg-white/85 px-4 py-2 shadow-sm backdrop-blur-md">
+      <div className="pointer-events-auto flex w-[520px] items-center gap-1 rounded-none border border-[#c7d9f0] bg-white/85 px-4 py-2 backdrop-blur-md">
         <Link href="/" className="mr-3">
           <Wordmark variant="light" />
         </Link>

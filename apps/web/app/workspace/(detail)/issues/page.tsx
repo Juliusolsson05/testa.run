@@ -5,6 +5,7 @@ import Link from "next/link"
 import { AlertTriangle, Filter, RefreshCw, XCircle } from "lucide-react"
 
 import { AppSidebar } from "@/components/workspace/AppSidebar"
+import { Button } from "@/components/ui/button"
 import { issues } from "@/data/issues"
 import { nodesById } from "@/data/flow"
 import { cn } from "@/lib/utils"
@@ -49,14 +50,14 @@ export default function IssuesPage() {
   })
 
   return (
-    <div className="flex h-dvh bg-[#eff6ff] font-sans">
+    <div className="flex h-dvh bg-app-bg font-sans">
       <AppSidebar />
 
       <div className="flex min-w-0 flex-1 flex-col overflow-y-auto">
 
       {/* ── Stats bar ─────────────────────────────────────────────────────── */}
-      <div className="border-b border-[#c7d9f0] bg-white">
-        <div className="flex items-stretch divide-x divide-[#c7d9f0]">
+      <div className="border-b border-ui-border bg-white">
+        <div className="flex items-stretch divide-x divide-ui-border">
           {([
             { label: "OPEN ISSUES", value: totalOpen,     color: "text-[#1a2a33]" },
             { label: "ERRORS",      value: totalErrors,   color: "text-red-500"    },
@@ -76,28 +77,37 @@ export default function IssuesPage() {
       </div>
 
       {/* ── Filter bar ────────────────────────────────────────────────────── */}
-      <div className="flex items-center gap-3 border-b border-[#c7d9f0] bg-white px-8 py-3">
-        <Filter className="h-3.5 w-3.5 text-[#4a7ab5]" />
-        <span className="text-[12px] text-[#4a7ab5]">Filter:</span>
+      <div className="flex items-center gap-3 border-b border-ui-border bg-white px-8 py-3">
+        <Filter className="h-3.5 w-3.5 text-ui-muted" />
+        <span className="text-[12px] text-ui-muted">Filter:</span>
         <div className="flex items-center gap-1">
           {FILTERS.map((f) => (
-            <button
+            <Button
               key={f.id}
+              type="button"
+              size="xs"
+              variant={filter === f.id ? "default" : "ghost"}
               onClick={() => setFilter(f.id)}
               className={cn(
-                "rounded px-3 py-1 text-[12px] font-semibold transition-colors",
+                "rounded px-3 py-1 text-[12px] font-semibold",
                 filter === f.id
-                  ? "bg-[#1d6ef5] text-white"
-                  : "text-[#4a7ab5] hover:bg-[#eff6ff] hover:text-[#1d6ef5]"
+                  ? "bg-[#1d6ef5] text-white hover:bg-[#1559d4]"
+                  : "text-ui-muted hover:bg-app-bg hover:text-[#1d6ef5]"
               )}
             >
               {f.label}
-            </button>
+            </Button>
           ))}
         </div>
-        <button className="ml-auto text-[#4a7ab5] transition-colors hover:text-[#1d6ef5]">
+        <Button
+          type="button"
+          size="icon-xs"
+          variant="ghost"
+          className="ml-auto text-ui-muted hover:text-[#1d6ef5]"
+          aria-label="Refresh issues"
+        >
           <RefreshCw className="h-3.5 w-3.5" />
-        </button>
+        </Button>
       </div>
 
       {/* ── Issue list ────────────────────────────────────────────────────── */}

@@ -15,6 +15,12 @@ import { useIssueContext } from "@/context/issue-context"
 import { cn } from "@/lib/utils"
 import type { ScreenshotNodeData } from "@/types/flow"
 
+const nodeStatusBadgeClass = {
+  passed: "border-emerald-500/25 bg-emerald-500/10 text-emerald-600",
+  running: "border-amber-400/25 bg-amber-400/10 text-amber-600",
+  pending: "border-indigo-500/25 bg-indigo-500/10 text-indigo-600",
+} as const
+
 export function ScreenshotNode({ id, data }: NodeProps<Node<ScreenshotNodeData>>) {
   const { issuesByNodeId, activeNodeId } = useIssueContext()
   const isActive = activeNodeId === id
@@ -52,7 +58,7 @@ export function ScreenshotNode({ id, data }: NodeProps<Node<ScreenshotNodeData>>
 
       {/* Chrome bar */}
       <div className="flex items-center gap-2 border-b-[3px] border-[#4a7ab5] bg-[#c7d9f0] px-3 py-2">
-        <span className="shrink-0 truncate rounded border border-[#7aaad4] bg-white/50 px-2 py-0.5 text-[13px] font-mono text-[#2d5282]" style={{ maxWidth: "45%" }}>
+        <span className="max-w-[45%] shrink-0 truncate rounded border border-[#7aaad4] bg-white/50 px-2 py-0.5 text-[13px] font-mono text-[#2d5282]">
           {displayUrl}
         </span>
         <div className="flex flex-1 items-center justify-around gap-2">
@@ -97,8 +103,7 @@ export function ScreenshotNode({ id, data }: NodeProps<Node<ScreenshotNodeData>>
         </div>
         <Badge
           variant="outline"
-          className="rounded-none border px-3 py-1 text-[13px] font-medium"
-          style={{ color: status.color, background: status.bg, borderColor: `${status.color}40` }}
+          className={cn("rounded-none border px-3 py-1 text-[13px] font-medium", nodeStatusBadgeClass[nodeData.status])}
         >
           {status.label}
           {nodeData.duration && (

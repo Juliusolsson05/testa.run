@@ -52,12 +52,15 @@ export function Sidebar() {
         // ── ISSUE DETAIL VIEW ───────────────────────────────────────────────
         <div key={activeIssueId} className="node-focus-in flex w-[440px] flex-col gap-4">
           {/* Back */}
-          <button
+          <Button
+            type="button"
+            variant="ghost"
+            size="xs"
             onClick={() => selectNode(activeIssue.nodeId)}
-            className="flex items-center gap-1.5 text-[11px] text-white/50 hover:text-white/80 transition-colors w-fit"
+            className="h-auto w-fit px-0 py-0 text-[11px] text-white/50 hover:bg-transparent hover:text-white/80"
           >
             ← Node issues
-          </button>
+          </Button>
 
           {/* Header */}
           <div className="flex flex-col gap-2">
@@ -125,12 +128,15 @@ export function Sidebar() {
         // ── FOCUSED NODE VIEW ───────────────────────────────────────────────
         <div key={activeNodeId} className="node-focus-in flex flex-col gap-4">
           {/* Back button + node header */}
-          <button
+          <Button
+            type="button"
+            variant="ghost"
+            size="xs"
             onClick={clearSelection}
-            className="flex items-center gap-1.5 text-[11px] text-white/50 hover:text-white/80 transition-colors w-fit"
+            className="h-auto w-fit px-0 py-0 text-[11px] text-white/50 hover:bg-transparent hover:text-white/80"
           >
             ← All issues
-          </button>
+          </Button>
 
           <Card className="rounded-none border-white/10 bg-white/5 text-white">
             <CardContent className="flex flex-col gap-1 p-3">
@@ -392,12 +398,15 @@ export function Sidebar() {
                 )
               })}
               {openIssues.length > ISSUE_LIMIT && (
-                <button
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="xs"
                   onClick={() => setShowAllOpen((v) => !v)}
-                  className="w-full py-1 text-[10px] text-white/30 hover:text-white/60 transition-colors"
+                  className="h-auto w-full py-1 text-[10px] text-white/30 hover:bg-transparent hover:text-white/60"
                 >
                   {showAllOpen ? "Show less" : `Show ${openIssues.length - ISSUE_LIMIT} more`}
-                </button>
+                </Button>
               )}
             </div>
 
@@ -428,12 +437,15 @@ export function Sidebar() {
                 )
               })}
               {resolvedIssues.length > ISSUE_LIMIT && (
-                <button
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="xs"
                   onClick={() => setShowAllResolved((v) => !v)}
-                  className="w-full py-1 text-[10px] text-white/30 hover:text-white/60 transition-colors"
+                  className="h-auto w-full py-1 text-[10px] text-white/30 hover:bg-transparent hover:text-white/60"
                 >
                   {showAllResolved ? "Show less" : `Show ${resolvedIssues.length - ISSUE_LIMIT} more`}
-                </button>
+                </Button>
               )}
             </div>
           </div>

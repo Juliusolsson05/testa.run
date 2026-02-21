@@ -12,6 +12,8 @@ export type NodeId = string
 export type IssueSeverity = "error" | "warning"
 export type IssueStatus = "open" | "resolved"
 
+export type IssueCategory = "security" | "other"
+
 export type Issue = {
   id: IssueId
   runId: RunId
@@ -22,6 +24,7 @@ export type Issue = {
   severity: IssueSeverity
   status: IssueStatus
   element: string
+  category: IssueCategory
 }
 
 // ── Runs ────────────────────────────────────────────────────────────────────
@@ -61,6 +64,7 @@ export type Run = {
   duration: string
   status: RunStatus
   steps: RunStep[]
+  securitySynopsis?: string
 }
 
 // ── Run summaries (home list / tables) ──────────────────────────────────────

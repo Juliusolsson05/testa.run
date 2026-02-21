@@ -302,6 +302,13 @@ export const runs: Run[] = [
     duration: "8.7s",
     status: "running",
     steps: securitySteps,
+    securitySynopsis: `The security audit identified 3 critical errors and 2 warnings across the landing page, login flow, and authenticated dashboard. The overall risk posture is Critical — multiple findings can be chained to achieve account takeover without user interaction beyond a single page visit.
+
+The most severe finding is JWT storage in localStorage (dashboard). Any cross-site scripting vulnerability on the domain — including the missing Content-Security-Policy flagged on the landing page — can silently exfiltrate the auth token. With a 30-day token lifetime, an attacker retains persistent access long after the original exploit.
+
+The absent CSRF token on the login form compounds the risk. An attacker can silently submit cross-origin POST requests to any state-changing endpoint that shares this gap. Combined with the session cookie's missing Secure flag and the short HSTS max-age (300s), a network-level attacker performing SSL stripping has a realistic path to session hijacking on any unprotected network.
+
+Recommended priority order: (1) Add a restrictive Content-Security-Policy header to block script injection at the perimeter. (2) Migrate JWT storage from localStorage to an HttpOnly, Secure, SameSite=Strict cookie. (3) Implement CSRF tokens on all state-changing forms. (4) Set the Secure flag on the session cookie and extend HSTS max-age to 31536000 with includeSubDomains.`,
   },
   {
     id: "run-btn-1",

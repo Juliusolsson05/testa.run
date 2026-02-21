@@ -44,20 +44,32 @@ const projects = [
 ]
 
 const statusConfig = {
-  passed:  { label: "Passed",  color: "#22c55e", bg: "rgba(34,197,94,0.1)"  },
-  running: { label: "Running", color: "#f59e0b", bg: "rgba(245,158,11,0.1)" },
-  failed:  { label: "Failed",  color: "#ef4444", bg: "rgba(239,68,68,0.1)"  },
+  passed:  {
+    label: "Passed",
+    dot: "bg-emerald-500 shadow-[0_0_6px_#22c55e]",
+    badge: "bg-emerald-500/10 text-emerald-600",
+  },
+  running: {
+    label: "Running",
+    dot: "bg-amber-400 shadow-[0_0_6px_#f59e0b]",
+    badge: "bg-amber-400/10 text-amber-600",
+  },
+  failed:  {
+    label: "Failed",
+    dot: "bg-red-500 shadow-[0_0_6px_#ef4444]",
+    badge: "bg-red-500/10 text-red-600",
+  },
 }
 
 export default function HomePage() {
   return (
-    <div className="flex h-dvh bg-[#eff6ff] font-sans">
+    <div className="flex h-dvh bg-app-bg font-sans">
       <AppSidebar />
 
       <div className="flex min-w-0 flex-1 flex-col overflow-y-auto">
         <div className="px-8 py-8">
           <h1 className="mb-1 text-[22px] font-bold tracking-tight text-[#1a2a33]">Projects</h1>
-          <p className="mb-8 text-[13px] text-[#4a7ab5]">Your monitored sites and apps</p>
+          <p className="mb-8 text-[13px] text-ui-muted">Your monitored sites and apps</p>
 
           <div className="flex flex-col gap-3">
             {projects.map((project) => {
@@ -70,8 +82,7 @@ export default function HomePage() {
                 >
                   {/* Status dot */}
                   <span
-                    className="h-2.5 w-2.5 shrink-0 rounded-full"
-                    style={{ background: s.color, boxShadow: `0 0 6px ${s.color}` }}
+                    className={`h-2.5 w-2.5 shrink-0 rounded-full ${s.dot}`}
                   />
 
                   {/* Name + meta */}
@@ -114,8 +125,7 @@ export default function HomePage() {
 
                   {/* Status badge */}
                   <span
-                    className="shrink-0 rounded px-2.5 py-1 text-[11px] font-semibold"
-                    style={{ color: s.color, background: s.bg }}
+                    className={`shrink-0 rounded px-2.5 py-1 text-[11px] font-semibold ${s.badge}`}
                   >
                     {s.label}
                   </span>

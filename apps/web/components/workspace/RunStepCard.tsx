@@ -2,6 +2,19 @@ import Image from "next/image"
 import { nodesById, nodeMediaById } from "@/data/flow"
 import type { RunStep } from "@/types/domain"
 import { actionIcons, stepStatusConfig } from "@/constants/status"
+import { cn } from "@/lib/utils"
+
+const stepStatusCircleClass = {
+  passed: "bg-emerald-500/10 text-emerald-600 border-emerald-500/25",
+  warning: "bg-amber-400/10 text-amber-600 border-amber-400/25",
+  failed: "bg-red-500/10 text-red-600 border-red-500/25",
+} as const
+
+const stepStatusBadgeClass = {
+  passed: "bg-emerald-500/10 text-emerald-600",
+  warning: "bg-amber-400/10 text-amber-600",
+  failed: "bg-red-500/10 text-red-600",
+} as const
 
 export function RunStepCard({ step }: { step: RunStep }) {
   const s = stepStatusConfig[step.status]
@@ -15,8 +28,10 @@ export function RunStepCard({ step }: { step: RunStep }) {
     <div className="relative flex gap-4">
       {/* Circle */}
       <div
-        className="relative z-10 flex h-10 w-10 shrink-0 items-center justify-center rounded-full border-2 border-white text-[13px] font-bold shadow-[0_1px_4px_rgba(0,0,0,0.1)]"
-        style={{ background: s.bg, color: s.color, borderColor: s.color + "40" }}
+        className={cn(
+          "relative z-10 flex h-10 w-10 shrink-0 items-center justify-center rounded-full border-2 text-[13px] font-bold shadow-[0_1px_4px_rgba(0,0,0,0.1)]",
+          stepStatusCircleClass[step.status]
+        )}
       >
         {icon}
       </div>
@@ -38,7 +53,7 @@ export function RunStepCard({ step }: { step: RunStep }) {
               </div>
             </div>
             <div className="flex shrink-0 flex-col items-end gap-1">
-              <span className="rounded px-2 py-0.5 text-[10px] font-bold uppercase" style={{ color: s.color, background: s.bg }}>
+              <span className={cn("rounded px-2 py-0.5 text-[10px] font-bold uppercase", stepStatusBadgeClass[step.status])}>
                 {s.label}
               </span>
               <span className="font-mono text-[10px] text-[#4a7ab5]">{step.duration}</span>
@@ -51,7 +66,7 @@ export function RunStepCard({ step }: { step: RunStep }) {
         </div>
 
         {media?.imageSrc && (
-          <div className="flex shrink-0 items-center justify-center border-l border-[#eff6ff] p-3" style={{ maxWidth: 160 }}>
+          <div className="flex max-w-[160px] shrink-0 items-center justify-center border-l border-[#eff6ff] p-3">
             <Image src={media.imageSrc} alt={media.label} width={320} height={200} className="h-auto w-full" />
           </div>
         )}
