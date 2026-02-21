@@ -11,12 +11,12 @@
     "check-types": "next typegen && tsc --noEmit"
   },
   "dependencies": {
-    "@repo/ui": "workspace:*",
     "@react-spring/web": "^10.0.3",
     "@tailwindcss/postcss": "^4.2.0",
     "@xyflow/react": "^12.8.5",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
+    "lucide-react": "^0.543.0",
     "next": "16.1.5",
     "radix-ui": "^1.4.3",
     "react": "^19.2.0",

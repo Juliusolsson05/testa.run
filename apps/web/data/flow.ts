@@ -20,7 +20,7 @@ export const initialNodes: Node<ScreenshotNodeData>[] = [
       step: 1,
       duration: "1.2s",
       isMain: true,
-      imageSrc: "/screenshots/landing.svg",
+      imageSrc: "/screenshots/landing.png",
     },
   },
   {
@@ -33,7 +33,7 @@ export const initialNodes: Node<ScreenshotNodeData>[] = [
       status: "passed",
       step: 2,
       duration: "0.8s",
-      imageSrc: "/screenshots/login.svg",
+      imageSrc: "/screenshots/login.png",
     },
   },
   {
@@ -46,7 +46,7 @@ export const initialNodes: Node<ScreenshotNodeData>[] = [
       status: "running",
       step: 3,
       isLarge: true,
-      imageSrc: "/screenshots/dashboard.svg",
+      imageSrc: "/screenshots/dashboard.png",
     },
   },
 ]

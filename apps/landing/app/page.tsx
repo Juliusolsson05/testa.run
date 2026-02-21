@@ -8,6 +8,7 @@ import {
   ArrowRight,
   Check,
 } from 'lucide-react'
+import { BlueCursor } from './components/BlueCursor'
 
 const steps = [
   { num: '01', title: 'Enter your URL', desc: 'Paste any web app URL and describe what a user would do — sign up, buy something, reset a password.' },
@@ -90,6 +91,7 @@ function CloudBackground({ position }: { position: 'top' | 'bottom' }) {
 export default function Home() {
   return (
     <div className="relative text-gray-900 font-sans antialiased overflow-x-hidden [&_*]:font-normal">
+      <BlueCursor />
       <div className="pointer-events-none fixed inset-0 z-[1] opacity-[0.14]" style={{ backgroundImage: 'radial-gradient(circle, #64748b 0.9px, transparent 0.9px)', backgroundSize: '20px 20px' }} />
       <div className="relative z-[2]">
 
