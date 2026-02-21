@@ -141,6 +141,8 @@ export function FlowCanvas() {
         fitViewOptions={{ padding: 0.22 }}
         minZoom={0.2}
         maxZoom={MAX_ZOOM}
+        panOnScroll
+        panOnScrollSpeed={0.8}
         proOptions={{ hideAttribution: true }}
       >
         <Background
