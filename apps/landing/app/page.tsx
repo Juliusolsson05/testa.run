@@ -143,7 +143,7 @@ export default function Home() {
       </nav>
 
       {/* ── Hero ─────────────────────────────────────────── */}
-      <section className="relative pt-36 pb-24 text-center">
+      <section className="relative pt-44 pb-28 text-center">
         <CloudBackground position="top" />
         <div className="max-w-3xl mx-auto px-6">
           <Badge variant="outline" className="mb-5 text-brand border-brand/20 bg-brand/5">
