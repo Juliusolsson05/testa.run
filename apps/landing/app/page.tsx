@@ -1,9 +1,9 @@
-import Image from 'next/image'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Separator } from '@/components/ui/separator'
 import { Card, CardContent } from '@/components/ui/card'
 import { BrowserInspector } from './components/AnimatedConcepts'
+import { HeroBrowser } from './components/HeroBrowser'
 
 const findings = [
   { sev: 'Critical', variant: 'destructive' as const,  title: 'Login form returns 500 on submit',               desc: 'POST /api/auth/login → 500 Internal Server Error',         tag: 'step 4'   },
@@ -72,14 +72,8 @@ export default function Home() {
             </div>
           </div>
         </div>
-        <div className="w-1/2 relative overflow-hidden">
-          <Image
-            src="https://images.unsplash.com/photo-1551434678-e076c223a692?auto=format&fit=crop&w=1400&q=85"
-            alt="Developer workspace"
-            fill
-            className="object-cover"
-            priority
-          />
+        <div className="w-1/2 h-full border-l border-gray-100">
+          <HeroBrowser />
         </div>
       </section>
 
