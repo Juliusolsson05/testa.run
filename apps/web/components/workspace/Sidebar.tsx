@@ -361,12 +361,10 @@ export function Sidebar() {
                 const nd = nodesById[issue.nodeId]; const meta = { step: nd?.data.step ?? 0, label: nd?.data.label ?? "Unknown" }
                 const isActive = activeIssueId === issue.id
                 return (
-                  <Button
+                  <button
                     key={issue.id}
-                    type="button"
-                    variant="ghost"
                     className={cn(
-                      "mb-2 h-auto w-full rounded-none border border-white/10 bg-white/5 px-2 py-2 text-left text-[11px] text-white/80",
+                      "mb-2 w-full rounded-none border border-white/10 bg-white/5 px-2 py-2 text-left text-[11px] text-white/80",
                       "transition hover:-translate-y-0.5 hover:bg-white/10",
                       issue.severity === "error" && "border-l-4 border-l-red-500",
                       issue.severity === "warning" && "border-l-4 border-l-amber-400",
@@ -398,7 +396,7 @@ export function Sidebar() {
                         </span>
                       </Badge>
                     </div>
-                  </Button>
+                  </button>
                 )
               })}
               {openIssues.length > ISSUE_LIMIT && (
@@ -422,12 +420,10 @@ export function Sidebar() {
                 const nd = nodesById[issue.nodeId]; const meta = { step: nd?.data.step ?? 0, label: nd?.data.label ?? "Unknown" }
                 const isActive = activeIssueId === issue.id
                 return (
-                  <Button
+                  <button
                     key={issue.id}
-                    type="button"
-                    variant="ghost"
                     className={cn(
-                      "mb-2 h-auto w-full flex-col items-start justify-start gap-0 rounded-none border border-white/10 bg-white/5 px-2 py-2 text-left text-[11px] text-white/60",
+                      "mb-2 w-full rounded-none border border-white/10 bg-white/5 px-2 py-2 text-left text-[11px] text-white/60",
                       "opacity-70 transition hover:-translate-y-0.5 hover:bg-white/10",
                       isActive && "bg-emerald-500/10"
                     )}
@@ -439,7 +435,7 @@ export function Sidebar() {
                     <div className="text-[10px] text-white/40">
                       Step {meta.step} · {meta.label}
                     </div>
-                  </Button>
+                  </button>
                 )
               })}
               {resolvedIssues.length > ISSUE_LIMIT && (
