@@ -8,14 +8,14 @@ export function HeroBrowser() {
           <span className="w-3 h-3 rounded-full bg-[#28c840] border border-black/10" />
         </div>
         <div className="flex-1 h-6 rounded-md bg-white border border-zinc-200 flex items-center justify-center text-[11px] text-zinc-500 font-mono">
-          https://demo-shop.co/products/arc-pro
+          https://app.under-test.example/product
         </div>
       </div>
 
       <div className="h-[calc(100%-44px)] grid grid-cols-[1fr_270px]">
         <div className="bg-white border-r border-zinc-200 overflow-hidden">
           <div className="h-10 border-b border-zinc-100 px-5 flex items-center justify-between text-[12px]">
-            <span className="font-semibold tracking-tight">demo-shop</span>
+            <span className="font-semibold tracking-tight">Site under test</span>
             <div className="flex gap-4 text-zinc-500">
               <span>Products</span>
               <span>Collections</span>
