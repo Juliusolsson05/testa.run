@@ -4,11 +4,10 @@ import { useEffect, useMemo, useState } from "react"
 import Link from "next/link"
 import { AppSidebar } from "@/components/workspace/AppSidebar"
 import { Badge } from "@/components/ui/badge"
-import { runs as demoRuns } from "@/data/runs"
-import { issues as demoIssues } from "@/data/issues"
+import { RequireAuth } from "@/components/auth/RequireAuth"
+import { useAuth } from "@/components/auth/AuthProvider"
 import type { Run, RunStatus } from "@/types/domain"
 import { cn } from "@/lib/utils"
-import { getBrowserSupabase } from "@/lib/supabase-browser"
 
 const statusConfig = {
   running: { label: "Running", dot: "bg-amber-400 shadow-[0_0_6px_#f59e0b]", badge: "bg-amber-400/10 text-amber-600" },
@@ -83,112 +82,75 @@ function mapApiRunToUi(run: ApiRun): Run {
   }
 }
 
-export default function HomePage() {
+function RunsHome() {
+  const { accessToken } = useAuth()
   const [filter, setFilter] = useState<FilterType>("all")
   const [runs, setRuns] = useState<Run[]>([])
-  const [usingDemoData, setUsingDemoData] = useState(false)
   const [issueCounts, setIssueCounts] = useState<Record<string, { errors: number; warnings: number }>>({})
+  const [loadingRuns, setLoadingRuns] = useState(true)
+  const [hasProject, setHasProject] = useState(true)
 
   useEffect(() => {
     let isMounted = true
 
     async function loadRuns() {
-      const applyDemoFallback = () => {
-        if (!isMounted) return
-        setRuns(demoRuns)
-        setIssueCounts(
-          Object.fromEntries(
-            demoRuns.map((run) => {
-              const runIssues = demoIssues.filter((i) => i.runId === run.id && i.status === "open")
-              return [
-                run.id,
-                {
-                  errors: runIssues.filter((i) => i.severity === "error").length,
-                  warnings: runIssues.filter((i) => i.severity === "warning").length,
-                },
-              ]
-            })
-          )
-        )
-        setUsingDemoData(true)
+      if (!accessToken) return
+
+      const authHeaders = {
+        Authorization: `Bearer ${accessToken}`,
       }
 
-      try {
-        const supabase = getBrowserSupabase()
-        const sessionRes = await supabase.auth.getSession()
-        const accessToken = sessionRes.data.session?.access_token
+      const meRes = await fetch("/api/auth/me", {
+        headers: authHeaders,
+        cache: "no-store",
+      })
+      if (!meRes.ok) throw new Error("Failed to load user context")
 
-        if (!accessToken) {
-          applyDemoFallback()
-          return
-        }
+      const me: ApiMeResponse = await meRes.json()
+      const projectId = me.orgs?.[0]?.projects?.[0]?.id
 
-        const authHeaders = {
-          Authorization: `Bearer ${accessToken}`,
-        }
-
-        const syncRes = await fetch("/api/auth/sync-user", {
-          method: "POST",
-          headers: authHeaders,
-          cache: "no-store",
-        })
-        if (!syncRes.ok) {
-          applyDemoFallback()
-          return
-        }
-
-        const meRes = await fetch("/api/auth/me", {
-          headers: authHeaders,
-          cache: "no-store",
-        })
-        if (!meRes.ok) {
-          applyDemoFallback()
-          return
-        }
-
-        const me: ApiMeResponse = await meRes.json()
-        const projectId = me.orgs?.[0]?.projects?.[0]?.id
-        if (!projectId) {
-          if (!isMounted) return
-          setRuns([])
-          setIssueCounts({})
-          setUsingDemoData(false)
-          return
-        }
-
-        const runsRes = await fetch(`/api/projects/${projectId}/runs`, {
-          headers: authHeaders,
-          cache: "no-store",
-        })
-        if (!runsRes.ok) {
-          applyDemoFallback()
-          return
-        }
-
-        const payload: ApiRunsResponse = await runsRes.json()
+      if (!projectId) {
         if (!isMounted) return
-
-        setRuns(payload.runs.map(mapApiRunToUi))
-        setIssueCounts(
-          Object.fromEntries(
-            payload.runs.map((run) => [
-              run.id,
-              { errors: run.openIssues.errors ?? 0, warnings: run.openIssues.warnings ?? 0 },
-            ])
-          )
-        )
-        setUsingDemoData(false)
-      } catch {
-        applyDemoFallback()
+        setRuns([])
+        setIssueCounts({})
+        setHasProject(false)
+        setLoadingRuns(false)
+        return
       }
+
+      const runsRes = await fetch(`/api/projects/${projectId}/runs`, {
+        headers: authHeaders,
+        cache: "no-store",
+      })
+      if (!runsRes.ok) throw new Error("Failed to load runs")
+
+      const payload: ApiRunsResponse = await runsRes.json()
+      if (!isMounted) return
+
+      setRuns(payload.runs.map(mapApiRunToUi))
+      setIssueCounts(
+        Object.fromEntries(
+          payload.runs.map((run) => [
+            run.id,
+            { errors: run.openIssues.errors ?? 0, warnings: run.openIssues.warnings ?? 0 },
+          ])
+        )
+      )
+      setHasProject(true)
+      setLoadingRuns(false)
     }
 
-    void loadRuns()
+    void loadRuns().catch(() => {
+      if (!isMounted) return
+      setRuns([])
+      setIssueCounts({})
+      setLoadingRuns(false)
+    })
 
     return () => {
       isMounted = false
     }
-  }, [])
+  }, [accessToken])
 
   const totalRunning = runs.filter((r) => r.status === "running").length
   const totalPassed = runs.filter((r) => r.status === "passed").length
@@ -246,72 +208,84 @@ export default function HomePage() {
               </button>
             ))}
           </div>
-          {usingDemoData && (
-            <span className="ml-auto text-[11px] font-medium text-amber-600">Demo data (no active auth session)</span>
-          )}
         </div>
 
         <div className="flex-1 px-8 py-6">
           <div className="mb-4 flex items-baseline justify-between">
             <h1 className="text-[22px] font-bold tracking-tight text-[#1a2a33]">Test runs</h1>
-            <span className="text-[12px] text-ui-muted">
-              Target: <span className="font-semibold text-[#1a2a33]">timeedit.com</span>
-            </span>
           </div>
 
-          <div className="flex flex-col gap-3">
-            {filtered.map((run) => {
-              const s = statusConfig[run.status]
-              const { errors, warnings } = issueCounts[run.id] ?? { errors: 0, warnings: 0 }
-              return (
-                <Link
-                  key={run.id}
-                  href="/workspace"
-                  className="group flex items-center gap-5 border border-ui-border bg-white px-5 py-4 transition-shadow hover:shadow-[0_4px_16px_rgba(29,110,245,0.12)]"
-                >
-                  <span className={cn("h-2.5 w-2.5 shrink-0 rounded-full", s.dot)} />
+          {loadingRuns ? (
+            <div className="text-sm text-ui-muted">Loading runs…</div>
+          ) : !hasProject ? (
+            <div className="rounded border border-ui-border bg-white p-4 text-sm text-ui-muted">
+              You are signed in but do not have a project yet.
+            </div>
+          ) : filtered.length === 0 ? (
+            <div className="rounded border border-ui-border bg-white p-4 text-sm text-ui-muted">No runs yet.</div>
+          ) : (
+            <div className="flex flex-col gap-3">
+              {filtered.map((run) => {
+                const s = statusConfig[run.status]
+                const { errors, warnings } = issueCounts[run.id] ?? { errors: 0, warnings: 0 }
+                return (
+                  <Link
+                    key={run.id}
+                    href="/workspace"
+                    className="group flex items-center gap-5 border border-ui-border bg-white px-5 py-4 transition-shadow hover:shadow-[0_4px_16px_rgba(29,110,245,0.12)]"
+                  >
+                    <span className={cn("h-2.5 w-2.5 shrink-0 rounded-full", s.dot)} />
 
-                  <div className="min-w-0 flex-1">
-                    <div className="flex items-baseline gap-2">
-                      <span className="text-[14px] font-semibold text-[#1a2a33] transition-colors group-hover:text-[#1d6ef5]">{run.name}</span>
-                      <span className="font-mono text-[11px] text-ui-muted">{run.label}</span>
+                    <div className="min-w-0 flex-1">
+                      <div className="flex items-baseline gap-2">
+                        <span className="text-[14px] font-semibold text-[#1a2a33] transition-colors group-hover:text-[#1d6ef5]">{run.name}</span>
+                        <span className="font-mono text-[11px] text-ui-muted">{run.label}</span>
+                      </div>
+                      <div className="mt-0.5 flex items-center gap-3 font-mono text-[11px] text-ui-muted">
+                        <span>{run.url}</span>
+                        <span className="text-ui-border">·</span>
+                        <span>{run.date}</span>
+                        <span className="text-ui-border">·</span>
+                        <span>{run.duration}</span>
+                        <span className="text-ui-border">·</span>
+                        <span>{run.steps.length} steps</span>
+                      </div>
                     </div>
-                    <div className="mt-0.5 flex items-center gap-3 font-mono text-[11px] text-ui-muted">
-                      <span>{run.url}</span>
-                      <span className="text-ui-border">·</span>
-                      <span>{run.date}</span>
-                      <span className="text-ui-border">·</span>
-                      <span>{run.duration}</span>
-                      <span className="text-ui-border">·</span>
-                      <span>{run.steps.length} steps</span>
+
+                    <div className="flex shrink-0 items-center gap-2 text-[11px] font-medium">
+                      {errors > 0 && (
+                        <Badge className="rounded bg-red-500/10 px-2 py-0.5 text-red-600 hover:bg-red-500/10">
+                          {errors} error{errors > 1 ? "s" : ""}
+                        </Badge>
+                      )}
+                      {warnings > 0 && (
+                        <Badge className="rounded bg-amber-400/10 px-2 py-0.5 text-amber-600 hover:bg-amber-400/10">
+                          {warnings} warning{warnings > 1 ? "s" : ""}
+                        </Badge>
+                      )}
+                      {errors === 0 && warnings === 0 && (
+                        <Badge className="rounded bg-emerald-500/10 px-2 py-0.5 text-emerald-600 hover:bg-emerald-500/10">Clean</Badge>
+                      )}
                     </div>
-                  </div>
 
-                  <div className="flex shrink-0 items-center gap-2 text-[11px] font-medium">
-                    {errors > 0 && (
-                      <Badge className="rounded bg-red-500/10 px-2 py-0.5 text-red-600 hover:bg-red-500/10">
-                        {errors} error{errors > 1 ? "s" : ""}
-                      </Badge>
-                    )}
-                    {warnings > 0 && (
-                      <Badge className="rounded bg-amber-400/10 px-2 py-0.5 text-amber-600 hover:bg-amber-400/10">
-                        {warnings} warning{warnings > 1 ? "s" : ""}
-                      </Badge>
-                    )}
-                    {errors === 0 && warnings === 0 && (
-                      <Badge className="rounded bg-emerald-500/10 px-2 py-0.5 text-emerald-600 hover:bg-emerald-500/10">Clean</Badge>
-                    )}
-                  </div>
+                    <span className={cn("shrink-0 rounded px-2.5 py-1 text-[11px] font-semibold", s.badge)}>{s.label}</span>
 
-                  <span className={cn("shrink-0 rounded px-2.5 py-1 text-[11px] font-semibold", s.badge)}>{s.label}</span>
-
-                  <span className="text-ui-muted opacity-0 transition-opacity group-hover:opacity-100">→</span>
-                </Link>
-              )
-            })}
-          </div>
+                    <span className="text-ui-muted opacity-0 transition-opacity group-hover:opacity-100">→</span>
+                  </Link>
+                )
+              })}
+            </div>
+          )}
         </div>
       </div>
     </div>
+  )
+}
+
+export default function HomePage() {
+  return (
+    <RequireAuth>
+      <RunsHome />
+    </RequireAuth>
   )
 }

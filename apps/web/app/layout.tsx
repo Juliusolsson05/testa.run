@@ -3,6 +3,7 @@ import localFont from "next/font/local";
 import { Public_Sans } from "next/font/google";
 import "./globals.css";
 import { validateBootEnv } from "@/lib/env";
+import { Providers } from "@/components/Providers";
 
 const geistSans = localFont({
   src: "./fonts/GeistVF.woff",
@@ -33,7 +34,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={`${geistSans.variable} ${geistMono.variable} ${publicSans.variable}`}>
-        {children}
+        <Providers>{children}</Providers>
       </body>
     </html>
   );
