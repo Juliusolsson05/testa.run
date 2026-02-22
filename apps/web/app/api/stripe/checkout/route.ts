@@ -11,10 +11,14 @@ export async function POST(req: Request) {
   const body = await req.json().catch(() => null)
   if (!body) return NextResponse.json({ error: 'Invalid request.' }, { status: 400 })
 
-  const priceId = String(body.priceId || '').trim()
   const orgId = String(body.orgId || '').trim()
-  if (!priceId || !orgId) {
-    return NextResponse.json({ error: 'priceId and orgId are required.' }, { status: 400 })
+  const priceId = process.env.STRIPE_PRO_PRICE_ID
+
+  if (!orgId) {
+    return NextResponse.json({ error: 'orgId is required.' }, { status: 400 })
+  }
+  if (!priceId) {
+    return NextResponse.json({ error: 'STRIPE_PRO_PRICE_ID is not configured.' }, { status: 500 })
   }
 
   // Verify user is member of org
