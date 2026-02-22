@@ -66,8 +66,9 @@ export function RequireAuth({ children }: { children: React.ReactNode }) {
     }
 
     const checkViewport = () => {
-      // Use physical screen CSS width so browser zoom/pinch doesn't trigger mobile guard.
-      const physicalWidth = Math.min(window.screen.width, window.screen.height)
+      // Use physical screen width so browser zoom/pinch doesn't trigger mobile guard.
+      // (Using min(width,height) incorrectly blocks many laptops in landscape.)
+      const physicalWidth = window.screen.width
       setDesktopAllowed(physicalWidth >= DESKTOP_MIN_VIEWPORT_WIDTH)
     }
 
