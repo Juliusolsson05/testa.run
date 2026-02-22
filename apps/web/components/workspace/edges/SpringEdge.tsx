@@ -186,7 +186,7 @@ export function SpringEdge({
             {/* Label floats below the circle; absolutely positioned so it can't shift the circle */}
             {label && (
               <div
-                className="pointer-events-none absolute left-1/2 top-[calc(100%+7px)] -translate-x-1/2 rounded border border-[rgba(29,110,245,0.22)] bg-white/95 px-2 py-0.5 font-mono text-[11px] text-[#1D4ED8] shadow-[0_1px_4px_rgba(29,110,245,0.1)] max-w-[260px] truncate"
+                className="pointer-events-none absolute left-1/2 top-[calc(100%+7px)] -translate-x-1/2 rounded border border-[rgba(29,110,245,0.22)] bg-white/95 px-2 py-1 font-mono text-[11px] leading-tight text-[#1D4ED8] shadow-[0_1px_4px_rgba(29,110,245,0.1)] max-w-[320px] whitespace-normal break-words"
               >
                 {String(label)}
               </div>
@@ -206,9 +206,13 @@ export function SpringEdge({
               ...(labelBgStyle as React.CSSProperties),
               padding: `${bgPadY}px ${bgPadX}px`,
               borderRadius: 6,
+              maxWidth: 360,
+              textAlign: 'center',
+              whiteSpace: 'normal',
+              lineHeight: 1.2,
             }}
           >
-            <span className="block max-w-[260px] truncate" style={labelStyle as React.CSSProperties}>{label as string}</span>
+            <span className="block max-w-[360px] whitespace-normal break-words leading-tight" style={labelStyle as React.CSSProperties}>{label as string}</span>
           </div>
         </EdgeLabelRenderer>
       )}
