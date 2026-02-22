@@ -76,16 +76,81 @@ function autoLayoutNodes(nodes: Node<ScreenshotNodeData>[], edges: { source: str
 
   const xGap = 560
   const yGap = 360
+  const minEdgeClearance = Math.round(yGap * 0.72)
+
+  const baseYById = new Map<string, number>()
+  const placedYById = new Map<string, number>()
+
+  for (const [lvl, lane] of lanes) {
+    lane.forEach((id, i) => {
+      const y = 120 + i * yGap
+      baseYById.set(id, y)
+      placedYById.set(id, y)
+    })
+  }
+
+  const longEdges = edges
+    .map((edge) => {
+      const sourceLevel = level.get(edge.source)
+      const targetLevel = level.get(edge.target)
+      if (sourceLevel == null || targetLevel == null) return null
+      if (targetLevel - sourceLevel <= 1) return null
+      return { source: edge.source, target: edge.target, sourceLevel, targetLevel }
+    })
+    .filter((edge): edge is { source: string; target: string; sourceLevel: number; targetLevel: number } => Boolean(edge))
+
+  const orderedLevels = [...lanes.keys()].sort((a, b) => a - b)
+
+  // Two passes to stabilize long-edge avoidance after nodes have been shifted.
+  for (let pass = 0; pass < 2; pass++) {
+    for (const lvl of orderedLevels) {
+      const lane = lanes.get(lvl) ?? []
+      let prevY: number | null = null
+
+      for (const id of lane) {
+        let y = placedYById.get(id) ?? baseYById.get(id) ?? 120
+
+        for (let guard = 0; guard < 12; guard++) {
+          let bumped = false
+
+          // Keep enough vertical spacing from nodes in same level.
+          if (prevY != null && y < prevY + yGap) {
+            y = prevY + yGap
+            bumped = true
+          }
+
+          // If this level sits between a long edge's source/target levels,
+          // avoid placing the node on top of that skip-edge corridor.
+          for (const edge of longEdges) {
+            if (lvl <= edge.sourceLevel || lvl >= edge.targetLevel) continue
+
+            const ys = placedYById.get(edge.source) ?? baseYById.get(edge.source) ?? 120
+            const yt = placedYById.get(edge.target) ?? baseYById.get(edge.target) ?? 120
+            const t = (lvl - edge.sourceLevel) / (edge.targetLevel - edge.sourceLevel)
+            const edgeY = ys + (yt - ys) * t
+
+            if (Math.abs(y - edgeY) < minEdgeClearance) {
+              y = edgeY + minEdgeClearance
+              bumped = true
+            }
+          }
+
+          if (!bumped) break
+        }
+
+        placedYById.set(id, y)
+        prevY = y
+      }
+    }
+  }
 
   return nodes.map((node) => {
     const l = level.get(node.id) ?? 0
-    const lane = lanes.get(l) ?? []
-    const i = lane.indexOf(node.id)
     return {
       ...node,
       position: {
         x: 180 + l * xGap,
-        y: 120 + Math.max(0, i) * yGap,
+        y: placedYById.get(node.id) ?? 120,
       },
     }
   })
