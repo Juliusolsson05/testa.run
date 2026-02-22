@@ -15,7 +15,7 @@ function SignUpForm() {
     : null
   const next = params.get("next") || (normalizedTargetUrl
     ? `/onboarding/org?next=${encodeURIComponent(`/onboarding/project?targetUrl=${encodeURIComponent(normalizedTargetUrl)}`)}`
-    : "/")
+    : "/onboarding/org")
   const { accessToken, loading } = useAuth()
 
   const [email, setEmail] = useState("")
