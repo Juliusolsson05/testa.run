@@ -270,11 +270,13 @@ export async function applyAgentEvents(runId: string, events: AgentEvent[]) {
             where: { runId, status: 'open' },
             _count: true,
           })
+          type OpenCount = (typeof openCounts)[number]
+
           await db.testRun.update({
             where: { id: runId },
             data: {
-              openErrors: openCounts.find((c) => c.severity === 'error')?._count ?? 0,
-              openWarnings: openCounts.find((c) => c.severity === 'warning')?._count ?? 0,
+              openErrors: openCounts.find((c: OpenCount) => c.severity === 'error')?._count ?? 0,
+              openWarnings: openCounts.find((c: OpenCount) => c.severity === 'warning')?._count ?? 0,
             },
           })
 
