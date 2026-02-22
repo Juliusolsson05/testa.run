@@ -66,18 +66,17 @@ export function RequireAuth({ children }: { children: React.ReactNode }) {
     }
 
     const checkViewport = () => {
-      const width = window.visualViewport?.width ?? window.innerWidth
-      setDesktopAllowed(width >= DESKTOP_MIN_VIEWPORT_WIDTH)
+      // Use physical screen CSS width so browser zoom/pinch doesn't trigger mobile guard.
+      const physicalWidth = Math.min(window.screen.width, window.screen.height)
+      setDesktopAllowed(physicalWidth >= DESKTOP_MIN_VIEWPORT_WIDTH)
     }
 
     checkViewport()
 
     window.addEventListener("resize", checkViewport)
-    window.visualViewport?.addEventListener("resize", checkViewport)
 
     return () => {
       window.removeEventListener("resize", checkViewport)
-      window.visualViewport?.removeEventListener("resize", checkViewport)
     }
   }, [accessToken, loading, pathname])
 
@@ -103,7 +102,7 @@ export function RequireAuth({ children }: { children: React.ReactNode }) {
 
           <h1 className="text-3xl font-semibold tracking-tight text-[#1a2a33]">Best viewed on a bigger screen</h1>
           <p className="mt-2 text-sm text-ui-muted">
-            testa.run workspace is optimized for desktop/laptop right now. Zoom out or use a larger screen.
+            testa.run workspace is optimized for desktop/laptop right now. Use a larger screen to continue.
           </p>
 
           <Link
