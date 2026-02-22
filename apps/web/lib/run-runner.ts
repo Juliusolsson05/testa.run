@@ -213,10 +213,10 @@ export function startRunExecution(input: {
         }
 
         if (evt.type === 'run.completed') {
-          await finalizeOnce(
-            evt.result.run.status === 'failed' ? 'failed' : evt.result.run.status === 'warning' ? 'warning' : 'passed',
-            evt.result.run.securitySynopsis
-          )
+          // Important policy: completed executions should not be marked failed by model findings.
+          // Reserve `failed` for runtime/infra failures (timeouts, crashes, cancellations, parser failures).
+          const completedStatus = evt.result.run.status === 'passed' ? 'passed' : 'warning'
+          await finalizeOnce(completedStatus, evt.result.run.securitySynopsis)
           continue
         }
 
