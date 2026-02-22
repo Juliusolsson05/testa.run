@@ -1,6 +1,7 @@
 import type { Prisma } from '@prisma/client'
 import { db } from '@/lib/db'
 import type { RunEventEnvelope } from '@/types/events'
+import { deepProxyScreenshotUrls } from '@/lib/screenshots'
 
 type RunEventListener = (event: RunEventEnvelope) => void
 
@@ -47,7 +48,7 @@ export async function appendRunEvent(runId: string, type: string, payload: Recor
       seq: created.seq,
       at: created.createdAt.toISOString(),
       type: created.type,
-      payload: created.payload as Record<string, unknown>,
+      payload: deepProxyScreenshotUrls(created.payload as Record<string, unknown>),
     } satisfies RunEventEnvelope
   })
 
@@ -69,7 +70,7 @@ export async function listRunEvents(runId: string, afterSeq = 0, limit = 200) {
     seq: e.seq,
     at: e.createdAt.toISOString(),
     type: e.type,
-    payload: e.payload as Record<string, unknown>,
+    payload: deepProxyScreenshotUrls(e.payload as Record<string, unknown>),
   }))
 }
 
