@@ -14,7 +14,7 @@ function SignInForm() {
     ? (/^https?:\/\//i.test(incomingTargetUrl) ? incomingTargetUrl : `https://${incomingTargetUrl}`)
     : null
   const next = params.get("next") || (normalizedTargetUrl
-    ? `/onboarding/project?targetUrl=${encodeURIComponent(normalizedTargetUrl)}`
+    ? `/onboarding/org?next=${encodeURIComponent(`/onboarding/project?targetUrl=${encodeURIComponent(normalizedTargetUrl)}`)}`
     : "/")
   const { accessToken, loading } = useAuth()
 

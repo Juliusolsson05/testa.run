@@ -16,6 +16,7 @@ export function appSignUpWithTarget(targetUrl?: string) {
   if (!trimmed) return appHref('/sign-up')
 
   const normalizedTarget = /^https?:\/\//i.test(trimmed) ? trimmed : `https://${trimmed}`
-  const next = `/onboarding/project?targetUrl=${encodeURIComponent(normalizedTarget)}`
+  const projectNext = `/onboarding/project?targetUrl=${encodeURIComponent(normalizedTarget)}`
+  const next = `/onboarding/org?next=${encodeURIComponent(projectNext)}`
   return `${appHref('/sign-up')}?next=${encodeURIComponent(next)}&targetUrl=${encodeURIComponent(normalizedTarget)}`
 }
