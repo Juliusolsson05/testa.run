@@ -1,6 +1,6 @@
 "use client"
 
-import { useCallback, useMemo, useState } from "react"
+import { useCallback, useEffect, useMemo, useState } from "react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { Play, X } from "lucide-react"
@@ -38,9 +38,16 @@ type ApiRun = {
   stepsCount: number
 }
 
-function formatDuration(durationMs: number | null) {
-  if (!durationMs || durationMs <= 0) return "—"
-  const sec = Math.floor(durationMs / 1000)
+function formatDuration(durationMs: number | null, startedAt?: string, isRunning?: boolean, nowMs?: number) {
+  let effectiveDuration = durationMs ?? 0
+
+  if (isRunning && startedAt && nowMs) {
+    const elapsed = Math.max(0, nowMs - new Date(startedAt).getTime())
+    effectiveDuration = Math.max(effectiveDuration, elapsed)
+  }
+
+  if (!effectiveDuration || effectiveDuration <= 0) return "—"
+  const sec = Math.floor(effectiveDuration / 1000)
   const m = Math.floor(sec / 60)
   const s = sec % 60
   return `${m}m ${s}s`
@@ -57,7 +64,7 @@ function formatDate(iso: string) {
   })
 }
 
-function mapApiRunToUi(run: ApiRun): Run {
+function mapApiRunToUi(run: ApiRun, nowMs: number): Run {
   return {
     id: run.id,
     label: run.label ?? "#—",
@@ -66,7 +73,7 @@ function mapApiRunToUi(run: ApiRun): Run {
     url: run.url,
     date: formatDate(run.startedAt),
     ago: "",
-    duration: formatDuration(run.durationMs),
+    duration: formatDuration(run.durationMs, run.startedAt, run.status === "running", nowMs),
     status: run.status,
     steps: Array.from({ length: run.stepsCount }, (_, i) => ({
       id: `${run.id}-step-${i + 1}`,
@@ -89,8 +96,14 @@ function RunsHome() {
   const [showConfirm, setShowConfirm] = useState(false)
   const [starting, setStarting] = useState(false)
   const { loading: loadingRuns, project, runs: projectRuns } = useProjectRuns(undefined, 30)
+  const [nowMs, setNowMs] = useState(() => Date.now())
 
-  const runs = useMemo(() => projectRuns.map((run) => mapApiRunToUi(run as ApiRun)), [projectRuns])
+  useEffect(() => {
+    const timer = setInterval(() => setNowMs(Date.now()), 1000)
+    return () => clearInterval(timer)
+  }, [])
+
+  const runs = useMemo(() => projectRuns.map((run) => mapApiRunToUi(run as ApiRun, nowMs)), [nowMs, projectRuns])
   const issueCounts = useMemo(
     () =>
       Object.fromEntries(
