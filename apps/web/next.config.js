@@ -1,9 +1,12 @@
 import path from 'node:path'
 
+const monorepoRoot = path.join(process.cwd(), '../..')
+
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  outputFileTracingRoot: monorepoRoot,
   turbopack: {
-    root: path.join(process.cwd(), '../..'),
+    root: monorepoRoot,
   },
   images: {
     remotePatterns: [
