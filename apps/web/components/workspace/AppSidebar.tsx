@@ -4,7 +4,6 @@ import Link from "next/link"
 import { usePathname, useRouter, useSearchParams } from "next/navigation"
 import {
   AlertTriangle,
-  ChevronDown,
   CirclePlay,
   Clock,
   LogOut,
@@ -47,7 +46,7 @@ export function AppSidebar() {
 
   const selectedRunId = params.get("runId") ?? (pathname.startsWith("/workspace/") ? pathname.split("/")[2] : undefined)
   const isHome = pathname === "/"
-  const { loading, project, runs, activeRun, selectedRun, runningRun } = useProjectRuns(
+  const { loading, runs, activeRun, selectedRun, runningRun } = useProjectRuns(
     selectedRunId,
     isHome ? 30 : 5,
     { poll: !isHome }
@@ -71,23 +70,24 @@ export function AppSidebar() {
       </div>
 
       <div className="mx-3 mb-4">
-        <Button type="button" variant="ghost" className="h-auto w-full justify-between rounded border border-white/10 bg-white/5 px-3 py-2.5 text-left hover:bg-white/10">
+        <div className="h-auto w-full rounded border border-white/10 bg-white/5 px-3 py-2.5 text-left">
           <div className="min-w-0">
-            <div className="text-[11px] font-bold uppercase tracking-[0.6px] text-white/40">Project</div>
-            {loading && !project ? (
+            <div className="text-[11px] font-bold uppercase tracking-[0.6px] text-white/40">Run</div>
+            {loading && !contextRun ? (
               <>
                 <SidebarSkeleton className="h-4 w-28" />
                 <SidebarSkeleton className="mt-1 h-3 w-36" />
               </>
-            ) : (
+            ) : contextRun ? (
               <>
-                <div className="truncate text-[13px] font-semibold text-[#e8edf5]">{project?.name || "No project"}</div>
-                <div className="truncate font-mono text-[10px] text-white/40">{project?.targetUrl || "—"}</div>
+                <div className="truncate text-[13px] font-semibold text-[#e8edf5]">{contextRun.name}</div>
+                <div className="truncate font-mono text-[10px] text-white/40">{contextRun.label ?? contextRun.id.slice(0, 8)}</div>
               </>
+            ) : (
+              <div className="text-[11px] text-white/40">No run selected</div>
             )}
           </div>
-          <ChevronDown className="h-3.5 w-3.5 shrink-0 text-white/40" />
-        </Button>
+        </div>
       </div>
 
       <div className="mx-3 mb-4 border-t border-white/8" />
