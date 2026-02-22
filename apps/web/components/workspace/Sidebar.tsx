@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useMemo, useState } from "react"
 import { AlertTriangle, Clock, XCircle } from "lucide-react"
 
 import { Wordmark } from "@/components/ui/TestaRunLogo"
@@ -10,6 +10,7 @@ import { Card, CardContent } from "@/components/ui/card"
 import { Separator } from "@/components/ui/separator"
 import { useIssueContext } from "@/context/issue-context"
 import { useWorkspaceData } from "@/context/workspace-data-context"
+import { useAuth } from "@/components/auth/AuthProvider"
 import { cn } from "@/lib/utils"
 
 function SidebarSkeleton({ className = "" }: { className?: string }) {
@@ -19,21 +20,38 @@ function SidebarSkeleton({ className = "" }: { className?: string }) {
 export function Sidebar({ loading = false }: { loading?: boolean }) {
   const {
     selectIssue, selectNode, activeIssueId, activeNodeId, clearSelection,
-    issues, issuesByNodeId, openIssues, resolvedIssues,
+    issues,
   } = useIssueContext()
   const { run, nodes } = useWorkspaceData()
+  const { accessToken } = useAuth()
   const nodesById = Object.fromEntries(nodes.map((n) => [n.id, n])) as Record<string, (typeof nodes)[number]>
+  const [issueStatusOverrides, setIssueStatusOverrides] = useState<Record<string, "open" | "resolved">>({})
+  const [updatingIssueId, setUpdatingIssueId] = useState<string | null>(null)
+
+  const effectiveIssues = useMemo(
+    () => issues.map((issue) => ({ ...issue, status: issueStatusOverrides[issue.id] ?? issue.status })),
+    [issues, issueStatusOverrides]
+  )
+
+  const effectiveIssuesByNodeId = useMemo(() => {
+    const byNode: Record<string, typeof effectiveIssues> = {}
+    for (const issue of effectiveIssues) (byNode[issue.nodeId] ||= []).push(issue)
+    return byNode
+  }, [effectiveIssues])
+
+  const openIssues = useMemo(() => effectiveIssues.filter((i) => i.status === "open"), [effectiveIssues])
+  const resolvedIssues = useMemo(() => effectiveIssues.filter((i) => i.status === "resolved"), [effectiveIssues])
 
   // ── Global stats ────────────────────────────────────────────────────────
   const errorCount = openIssues.filter((issue) => issue.severity === "error").length
   const warningCount = openIssues.filter((issue) => issue.severity === "warning").length
-  const sitesChecked = new Set(issues.map((issue) => issue.nodeId)).size
+  const sitesChecked = new Set(effectiveIssues.map((issue) => issue.nodeId)).size
 
   // ── Focused node ─────────────────────────────────────────────────────────
   const focusedNode = activeNodeId
     ? nodes.find((n) => n.id === activeNodeId) ?? null
     : null
-  const nodeIssues = activeNodeId ? (issuesByNodeId[activeNodeId] ?? []) : []
+  const nodeIssues = activeNodeId ? (effectiveIssuesByNodeId[activeNodeId] ?? []) : []
   const nodeOpenIssues = nodeIssues.filter((i) => i.status === "open")
   const nodeResolvedIssues = nodeIssues.filter((i) => i.status === "resolved")
 
@@ -43,9 +61,36 @@ export function Sidebar({ loading = false }: { loading?: boolean }) {
   const ISSUE_LIMIT = 3
 
   // ── Active issue ─────────────────────────────────────────────────────────
-  const activeIssue = activeIssueId ? issues.find((i) => i.id === activeIssueId) ?? null : null
+  const activeIssue = activeIssueId ? effectiveIssues.find((i) => i.id === activeIssueId) ?? null : null
 
   const sidebarWidth = activeIssue ? 480 : focusedNode ? 420 : 320
+
+  async function updateIssueStatus(issueId: string, nextStatus: "open" | "resolved") {
+    if (!accessToken) return
+    setUpdatingIssueId(issueId)
+    setIssueStatusOverrides((prev) => ({ ...prev, [issueId]: nextStatus }))
+
+    try {
+      const res = await fetch(`/api/issues/${issueId}`, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${accessToken}`,
+        },
+        body: JSON.stringify({ status: nextStatus }),
+      })
+
+      if (!res.ok) throw new Error("Failed to update issue status")
+    } catch {
+      setIssueStatusOverrides((prev) => {
+        const next = { ...prev }
+        delete next[issueId]
+        return next
+      })
+    } finally {
+      setUpdatingIssueId(null)
+    }
+  }
 
   return (
     <aside
@@ -164,6 +209,32 @@ export function Sidebar({ loading = false }: { loading?: boolean }) {
             <p className="text-[13px] leading-relaxed text-white/80">
               {activeIssue.description}
             </p>
+          </div>
+
+          <div className="flex items-center gap-2">
+            <Button
+              type="button"
+              size="xs"
+              variant="ghost"
+              disabled={activeIssue.status === "open" || updatingIssueId === activeIssue.id}
+              onClick={() => void updateIssueStatus(activeIssue.id, "open")}
+              className="h-auto rounded-none border border-white/15 px-2 py-1 text-[10px] text-white/70 hover:bg-white/10"
+            >
+              Mark open
+            </Button>
+            <Button
+              type="button"
+              size="xs"
+              variant="ghost"
+              disabled={activeIssue.status === "resolved" || updatingIssueId === activeIssue.id}
+              onClick={() => void updateIssueStatus(activeIssue.id, "resolved")}
+              className="h-auto rounded-none border border-white/15 px-2 py-1 text-[10px] text-white/70 hover:bg-white/10"
+            >
+              Mark resolved
+            </Button>
+            {updatingIssueId === activeIssue.id && (
+              <span className="text-[10px] text-white/45">Updating…</span>
+            )}
           </div>
 
           <Separator className="bg-white/10" />
