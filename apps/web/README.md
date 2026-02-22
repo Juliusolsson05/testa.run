@@ -20,6 +20,23 @@ pnpm -C apps/web dev
 
 Open [http://localhost:3001](http://localhost:3001).
 
+## Stripe environments
+
+Use Stripe test keys locally/staging and live keys in production.
+The app infers mode from `STRIPE_SECRET_KEY` (`sk_test_` vs `sk_live_`) and validates publishable key mode match.
+
+Recommended envs:
+
+- `STRIPE_SECRET_KEY`
+- `NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY`
+- `STRIPE_WEBHOOK_SECRET`
+- `STRIPE_PRO_MONTHLY_PRICE_ID_TEST`
+- `STRIPE_PRO_MONTHLY_PRICE_ID_LIVE`
+
+Optional fallback:
+
+- `STRIPE_PRO_MONTHLY_PRICE_ID`
+
 ## Pages
 
 | Route | Description |

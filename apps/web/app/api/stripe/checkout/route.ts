@@ -3,6 +3,7 @@ import { getStripe } from '@/lib/stripe'
 import { requireAppUser } from '@/lib/auth'
 import { db } from '@/lib/db'
 import { requireEnv } from '@/lib/env'
+import { getProMonthlyPriceId } from '@/lib/stripe-config'
 
 export async function POST(req: Request) {
   const user = await requireAppUser()
@@ -12,13 +13,16 @@ export async function POST(req: Request) {
   if (!body) return NextResponse.json({ error: 'Invalid request.' }, { status: 400 })
 
   const orgId = String(body.orgId || '').trim()
-  const priceId = process.env.STRIPE_PRO_PRICE_ID
 
   if (!orgId) {
     return NextResponse.json({ error: 'orgId is required.' }, { status: 400 })
   }
-  if (!priceId) {
-    return NextResponse.json({ error: 'STRIPE_PRO_PRICE_ID is not configured.' }, { status: 500 })
+
+  let priceId: string
+  try {
+    priceId = getProMonthlyPriceId()
+  } catch (err) {
+    return NextResponse.json({ error: err instanceof Error ? err.message : 'Stripe price config is invalid.' }, { status: 500 })
   }
 
   // Verify user is member of org
