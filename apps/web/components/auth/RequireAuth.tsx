@@ -3,6 +3,7 @@
 import { useEffect } from "react"
 import { usePathname, useRouter } from "next/navigation"
 import { useAuth } from "@/components/auth/AuthProvider"
+import { InlineLoading } from "@/components/loading/InlineLoading"
 import { useAppSelector } from "@/store/hooks"
 
 function onboardingPath(stage: string) {
@@ -42,8 +43,8 @@ export function RequireAuth({ children }: { children: React.ReactNode }) {
 
   if (loading) {
     return (
-      <div className="flex h-dvh items-center justify-center bg-app-bg text-ui-muted">
-        Checking session…
+      <div className="flex h-dvh items-center justify-center bg-app-bg">
+        <InlineLoading label="Checking session…" cubeSize={64} className="min-h-[60vh]" />
       </div>
     )
   }

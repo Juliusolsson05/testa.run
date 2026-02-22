@@ -6,6 +6,7 @@ import { useSearchParams } from "next/navigation"
 import { Filter, KanbanSquare, LayoutList } from "lucide-react"
 import { AppSidebar } from "@/components/workspace/AppSidebar"
 import { useAuth } from "@/components/auth/AuthProvider"
+import { InlineLoading } from "@/components/loading/InlineLoading"
 import { useProjectRuns } from "@/components/workspace/useProjectRuns"
 import { cn } from "@/lib/utils"
 
@@ -133,6 +134,7 @@ export default function IssuesPage() {
   const [viewMode, setViewMode] = useState<ViewMode>("kanban")
   const [scope, setScope] = useState<ScopeType>(runIdParam ?? "all")
   const [issues, setIssues] = useState<RunIssue[]>([])
+  const [loadingIssues, setLoadingIssues] = useState(true)
   const [draggingIssueId, setDraggingIssueId] = useState<string | null>(null)
 
   useEffect(() => {
@@ -143,14 +145,19 @@ export default function IssuesPage() {
   useEffect(() => {
     async function load() {
       if (!accessToken || !project?.id) return
+      setLoadingIssues(true)
       const query = scope === "all" ? "" : `?runId=${encodeURIComponent(scope)}`
       const res = await fetch(`/api/projects/${project.id}/issues${query}`, {
         headers: { Authorization: `Bearer ${accessToken}` },
         cache: "no-store",
       })
-      if (!res.ok) return
+      if (!res.ok) {
+        setLoadingIssues(false)
+        return
+      }
       const data = await res.json()
       setIssues(data.issues)
+      setLoadingIssues(false)
     }
 
     void load()
@@ -288,7 +295,9 @@ export default function IssuesPage() {
         </div>
 
         <div className="flex-1 px-8 py-6">
-          {filtered.length === 0 ? (
+          {loadingIssues ? (
+            <InlineLoading label="Loading issues…" cubeSize={56} className="min-h-[360px]" />
+          ) : filtered.length === 0 ? (
             <div className="text-sm text-ui-muted">No issues for this scope/filter.</div>
           ) : viewMode === "list" ? (
             <div className="space-y-2">

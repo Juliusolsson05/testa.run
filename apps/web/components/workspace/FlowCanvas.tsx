@@ -21,6 +21,7 @@ import { NODE_WIDTH, NODE_WIDE } from "@/constants/flow"
 import type { ScreenshotNodeData } from "@/types/flow"
 import { ScreenshotNode } from "@/components/workspace/nodes/ScreenshotNode"
 import { SpringEdge } from "@/components/workspace/edges/SpringEdge"
+import { InlineLoading } from "@/components/loading/InlineLoading"
 
 const nodeTypes = { screenshot: ScreenshotNode }
 const edgeTypes = { spring: SpringEdge }
@@ -223,11 +224,12 @@ export function FlowCanvas() {
     <div className="relative flex h-full flex-1 flex-col overflow-hidden bg-white">
       {nodes.length === 0 && (
         <div className="pointer-events-none absolute inset-0 z-30 grid place-items-center">
-          <div className="w-[360px] rounded-lg border border-ui-border bg-white/95 p-5 text-center shadow-xl backdrop-blur">
-            <div className="mx-auto mb-3 h-6 w-6 animate-spin rounded-full border-2 border-[#1d6ef5] border-t-transparent" />
-            <div className="text-sm font-semibold text-[#1a2a33]">
-              {run.status === 'running' ? 'Building workflow graph…' : 'Preparing workspace…'}
-            </div>
+          <div className="w-[420px] rounded-lg border border-ui-border bg-white/95 p-6 text-center shadow-xl backdrop-blur">
+            <InlineLoading
+              label={run.status === 'running' ? 'Building workflow graph…' : 'Preparing workspace…'}
+              cubeSize={58}
+              className="min-h-[220px]"
+            />
             <p className="mt-1 text-xs text-ui-muted">
               We are ingesting streamed events and will render nodes as soon as they are available.
             </p>
