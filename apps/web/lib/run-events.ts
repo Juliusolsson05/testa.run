@@ -38,7 +38,7 @@ export async function appendRunEvent(runId: string, type: string, payload: Recor
         runId,
         seq: run.eventSeq,
         type,
-        payload: payload as Prisma.InputJsonValue,
+        payload: payload as never,
       },
     })
 
