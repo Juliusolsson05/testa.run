@@ -42,10 +42,16 @@ export function AppSidebar() {
   const { user, signOut } = useAuth()
 
   const selectedRunId = params.get("runId") ?? (pathname.startsWith("/workspace/") ? pathname.split("/")[2] : undefined)
-  const { project, runs, activeRun } = useProjectRuns(selectedRunId, 5)
+  const isHome = pathname === "/"
+  const { project, runs, activeRun, selectedRun, runningRun } = useProjectRuns(
+    selectedRunId,
+    isHome ? 30 : 5,
+    { poll: !isHome }
+  )
 
   const initials = (user?.email?.slice(0, 2) || "TR").toUpperCase()
-  const runQuery = activeRun ? `?runId=${activeRun.id}` : ""
+  const contextRun = selectedRun ?? runningRun
+  const runQuery = contextRun ? `?runId=${contextRun.id}` : ""
 
   const nav = [
     { label: "Runs", href: "/", icon: CirclePlay },
@@ -90,7 +96,9 @@ export function AppSidebar() {
       <div className="mx-3 my-4 border-t border-white/8" />
 
       <div className="px-3">
-        <div className="mb-2 px-2 text-[10px] font-bold uppercase tracking-[0.6px] text-white/30">Active Run</div>
+        <div className="mb-2 px-2 text-[10px] font-bold uppercase tracking-[0.6px] text-white/30">
+          {runningRun ? "Active Run" : selectedRun ? "Selected Run" : "Run Context"}
+        </div>
         <div className="rounded border border-white/10 bg-white/5 px-3 py-2.5">
           {activeRun ? (
             <>
@@ -107,7 +115,7 @@ export function AppSidebar() {
               </div>
             </>
           ) : (
-            <div className="text-[10px] text-white/40">No run selected</div>
+            <div className="text-[10px] text-white/40">No run currently running</div>
           )}
         </div>
       </div>

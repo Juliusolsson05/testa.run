@@ -143,7 +143,8 @@ const runsSlice = createSlice({
   extraReducers: (builder) => {
     builder
       .addCase(fetchProjectRuns.pending, (state) => {
-        state.loading = true
+        // Avoid full-page loading flicker during background refresh polling.
+        state.loading = state.runs.length === 0
       })
       .addCase(fetchProjectRuns.fulfilled, (state, action) => {
         state.loading = false

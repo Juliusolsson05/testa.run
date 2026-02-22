@@ -456,8 +456,25 @@ export function Sidebar() {
 
       {/* Footer — always visible */}
       <div className="mt-auto flex items-center gap-2 rounded-none border border-white/10 bg-white/5 px-3 py-2 text-[12px] text-white/60">
-        <span className="h-2 w-2 rounded-full bg-[#1d6ef5] shadow-[0_0_6px_#1d6ef5]" />
-        Agent running
+        <span
+          className={cn(
+            "h-2 w-2 rounded-full",
+            run.status === "running"
+              ? "bg-[#1d6ef5] shadow-[0_0_6px_#1d6ef5]"
+              : run.status === "passed"
+                ? "bg-emerald-500"
+                : run.status === "warning"
+                  ? "bg-amber-400"
+                  : "bg-red-500"
+          )}
+        />
+        {run.status === "running"
+          ? "Agent running"
+          : run.status === "passed"
+            ? "Run completed"
+            : run.status === "warning"
+              ? "Run completed with warnings"
+              : "Run failed"}
       </div>
     </aside>
   )
