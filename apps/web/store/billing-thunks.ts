@@ -17,7 +17,7 @@ export const createCheckoutSession = createAsyncThunk<string, { orgId: string },
         "Content-Type": "application/json",
         Authorization: `Bearer ${token}`,
       },
-      body: JSON.stringify({ orgId, priceId }),
+      body: JSON.stringify({ orgId }),
     })
 
     if (!res.ok) {
