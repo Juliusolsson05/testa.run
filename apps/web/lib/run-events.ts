@@ -26,7 +26,7 @@ export function subscribeRunEvents(runId: string, listener: RunEventListener) {
 }
 
 export async function appendRunEvent(runId: string, type: string, payload: Record<string, unknown>) {
-  const event = await db.$transaction(async (tx) => {
+  const event = await db.$transaction(async (tx: Prisma.TransactionClient) => {
     const run = await tx.testRun.update({
       where: { id: runId },
       data: { eventSeq: { increment: 1 } },
