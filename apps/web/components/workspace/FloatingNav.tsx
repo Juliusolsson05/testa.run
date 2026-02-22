@@ -11,7 +11,7 @@ export function FloatingNav() {
   const links = [
     { label: "Home", href: "/" },
     { label: "Issues", href: "/workspace/issues" },
-    { label: "Runs", href: "/workspace/runs" },
+    { label: "Runs", href: "/" },
     { label: "Security", href: "/workspace/security" },
   ]
 
