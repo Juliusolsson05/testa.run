@@ -1,90 +1,26 @@
 "use client"
 
-import { useEffect, useMemo, useState } from "react"
-import { useAuth } from "@/components/auth/AuthProvider"
-
-type ProjectRef = {
-  id: string
-  name: string
-  slug: string
-  targetUrl: string
-}
-
-type ApiMeResponse = {
-  orgs: Array<{ projects: ProjectRef[] }>
-}
-
-type ProjectRun = {
-  id: string
-  label: string | null
-  name: string
-  category: "security" | "buttons" | "ux"
-  url: string
-  startedAt: string
-  durationMs: number | null
-  status: "running" | "passed" | "warning" | "failed"
-  openIssues: { errors: number; warnings: number }
-  stepsCount: number
-}
-
-type ApiRunsResponse = {
-  runs: ProjectRun[]
-}
+import { useEffect, useMemo } from "react"
+import { fetchProjectRuns, type ProjectRun } from "@/store/runs-slice"
+import { useAppDispatch, useAppSelector } from "@/store/hooks"
 
 export function useProjectRuns(selectedRunId?: string, take = 20) {
-  const { accessToken } = useAuth()
-  const [loading, setLoading] = useState(true)
-  const [project, setProject] = useState<ProjectRef | null>(null)
-  const [runs, setRuns] = useState<ProjectRun[]>([])
+  const dispatch = useAppDispatch()
+  const loading = useAppSelector((s) => s.runs.loading)
+  const project = useAppSelector((s) => s.runs.project)
+  const runs = useAppSelector((s) => s.runs.runs)
+  const accessToken = useAppSelector((s) => s.auth.accessToken)
 
   useEffect(() => {
-    let mounted = true
+    if (!accessToken) return
+    void dispatch(fetchProjectRuns({ take, force: true }))
 
-    async function load() {
-      if (!accessToken) return
-      setLoading(true)
+    const timer = setInterval(() => {
+      void dispatch(fetchProjectRuns({ take }))
+    }, 4000)
 
-      const headers = { Authorization: `Bearer ${accessToken}` }
-
-      const meRes = await fetch("/api/auth/me", { headers, cache: "no-store" })
-      if (!meRes.ok) throw new Error("Failed to load user context")
-
-      const me = (await meRes.json()) as ApiMeResponse
-      const nextProject = me.orgs?.[0]?.projects?.[0]
-
-      if (!mounted) return
-      if (!nextProject) {
-        setProject(null)
-        setRuns([])
-        setLoading(false)
-        return
-      }
-
-      setProject(nextProject)
-
-      const runsRes = await fetch(`/api/projects/${nextProject.id}/runs?take=${take}`, {
-        headers,
-        cache: "no-store",
-      })
-      if (!runsRes.ok) throw new Error("Failed to load runs")
-
-      const payload = (await runsRes.json()) as ApiRunsResponse
-      if (!mounted) return
-
-      setRuns(payload.runs)
-      setLoading(false)
-    }
-
-    void load().catch(() => {
-      if (!mounted) return
-      setLoading(false)
-      setRuns([])
-    })
-
-    return () => {
-      mounted = false
-    }
-  }, [accessToken, take])
+    return () => clearInterval(timer)
+  }, [accessToken, dispatch, take])
 
   const activeRun = useMemo(() => {
     if (selectedRunId) {
