@@ -1,6 +1,7 @@
 import Link from "next/link"
 import { Monitor, ArrowRight } from "lucide-react"
 import { OnboardingBackground } from "@/components/onboarding/OnboardingBackground"
+import { landingHref } from "@/lib/urls"
 
 export default function UnsupportedPage() {
   return (
@@ -23,7 +24,7 @@ export default function UnsupportedPage() {
         </div>
 
         <Link
-          href="https://testa.run"
+          href={landingHref('/')}
           className="mt-6 inline-flex w-full items-center justify-center gap-2 rounded bg-[#1d6ef5] px-3 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-[#1559d4]"
         >
           Go to landing page
