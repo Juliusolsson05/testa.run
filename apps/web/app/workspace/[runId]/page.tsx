@@ -6,6 +6,9 @@ import type { Edge, Node } from "@xyflow/react"
 import { WorkspacePage } from "@/components/workspace/WorkspacePage"
 import { useAuth } from "@/components/auth/AuthProvider"
 import { InlineLoading } from "@/components/loading/InlineLoading"
+import { useAppDispatch, useAppSelector } from "@/store/hooks"
+import { applyRunEvent } from "@/store/runs-slice"
+import { ingestRunEventMeta, setRunStreamStatus } from "@/store/run-live-slice"
 import type { Issue, NodeStatus } from "@/types/domain"
 import type { ScreenshotNodeData } from "@/types/flow"
 import type { WorkspaceRun } from "@/context/workspace-data-context"
@@ -138,10 +141,11 @@ export default function WorkspaceRunRoute() {
   const params = useParams<{ runId: string }>()
   const search = useSearchParams()
   const { accessToken } = useAuth()
+  const dispatch = useAppDispatch()
 
   const [payload, setPayload] = useState<WorkspaceApiPayload | null>(null)
   const [error, setError] = useState<string | null>(null)
-  const [streamState, setStreamState] = useState<"idle" | "live" | "polling">("idle")
+  const streamState = useAppSelector((s) => s.runLive.byRunId[params.runId]?.status ?? "idle")
   const lastSeq = useRef(0)
 
   useEffect(() => {
@@ -172,7 +176,7 @@ export default function WorkspaceRunRoute() {
     let pollingTimer: ReturnType<typeof setInterval> | null = null
 
     const startPolling = () => {
-      setStreamState("polling")
+      dispatch(setRunStreamStatus({ runId: params.runId, status: "polling" }))
       pollingTimer = setInterval(async () => {
         const res = await fetch(`/api/runs/${params.runId}/events?afterSeq=${lastSeq.current}&limit=200`, {
           headers: { Authorization: `Bearer ${accessToken}` },
@@ -183,6 +187,8 @@ export default function WorkspaceRunRoute() {
         const events = (data.events ?? []) as RunEventEnvelope[]
         for (const event of events) {
           lastSeq.current = Math.max(lastSeq.current, event.seq)
+          dispatch(ingestRunEventMeta({ runId: event.runId, seq: event.seq, at: event.at }))
+          dispatch(applyRunEvent(event))
           setPayload((cur) => (cur ? applyEvent(cur, event) : cur))
         }
       }, 2500)
@@ -197,18 +203,23 @@ export default function WorkspaceRunRoute() {
         })
 
         if (!res.ok) throw new Error("SSE stream failed")
-        setStreamState("live")
+        dispatch(setRunStreamStatus({ runId: params.runId, status: "live" }))
 
         await parseSseResponse(
           res,
           (event) => {
             lastSeq.current = Math.max(lastSeq.current, event.seq)
+            dispatch(ingestRunEventMeta({ runId: event.runId, seq: event.seq, at: event.at }))
+            dispatch(applyRunEvent(event))
             setPayload((cur) => (cur ? applyEvent(cur, event) : cur))
           },
           abort.signal
         )
       } catch {
-        if (!abort.signal.aborted) startPolling()
+        if (!abort.signal.aborted) {
+          dispatch(setRunStreamStatus({ runId: params.runId, status: "reconnecting" }))
+          startPolling()
+        }
       }
     }
 
@@ -223,8 +234,9 @@ export default function WorkspaceRunRoute() {
         // ignore cleanup abort noise
       }
       if (pollingTimer) clearInterval(pollingTimer)
+      dispatch(setRunStreamStatus({ runId: params.runId, status: "idle" }))
     }
-  }, [accessToken, params.runId])
+  }, [accessToken, dispatch, params.runId])
 
   if (error) {
     return <div className="flex h-dvh items-center justify-center bg-app-bg text-ui-muted">{error}</div>
@@ -248,7 +260,7 @@ export default function WorkspaceRunRoute() {
   return (
     <>
       <div className="fixed left-[252px] top-3 z-[2000] rounded bg-black/70 px-2 py-1 text-[11px] text-white">
-        {streamState === "live" ? "Live" : streamState === "polling" ? "Polling" : "Idle"}
+        {streamState === "live" ? "Live" : streamState === "polling" ? "Polling" : streamState === "reconnecting" ? "Reconnecting" : "Idle"}
       </div>
       <WorkspacePage
         run={payload.run}

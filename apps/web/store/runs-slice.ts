@@ -29,6 +29,14 @@ type RunsState = {
   lastFetchedAt: number | null
 }
 
+type RunEventEnvelope = {
+  runId: string
+  seq: number
+  at: string
+  type: string
+  payload: Record<string, unknown>
+}
+
 const initialState: RunsState = {
   loading: false,
   project: null,
@@ -105,6 +113,32 @@ const runsSlice = createSlice({
       state.runs = action.payload
       state.lastFetchedAt = Date.now()
     },
+    applyRunEvent(state, action: PayloadAction<RunEventEnvelope>) {
+      const evt = action.payload
+      const idx = state.runs.findIndex((r) => r.id === evt.runId)
+      if (idx < 0) return
+      const run = state.runs[idx]
+      if (!run) return
+
+      if (evt.type === "run.updated" || evt.type === "run.completed" || evt.type === "run.failed") {
+        const runPayload = (evt.payload.run ?? {}) as Partial<ProjectRun>
+        if (runPayload.status) run.status = runPayload.status
+        if (typeof runPayload.durationMs === "number") run.durationMs = runPayload.durationMs
+      }
+
+      if (evt.type === "step.upserted") {
+        const step = (evt.payload.step ?? {}) as { index?: number }
+        if (typeof step.index === "number") {
+          run.stepsCount = Math.max(run.stepsCount, step.index)
+        }
+      }
+
+      if (evt.type === "issue.created") {
+        const issue = (evt.payload.issue ?? {}) as { severity?: "error" | "warning" }
+        if (issue.severity === "error") run.openIssues.errors += 1
+        if (issue.severity === "warning") run.openIssues.warnings += 1
+      }
+    },
   },
   extraReducers: (builder) => {
     builder
@@ -122,5 +156,5 @@ const runsSlice = createSlice({
   },
 })
 
-export const { setProject, setRuns } = runsSlice.actions
+export const { setProject, setRuns, applyRunEvent } = runsSlice.actions
 export default runsSlice.reducer
