@@ -1,5 +1,5 @@
 import { redirect } from 'next/navigation'
-import { appHref } from '@/lib/urls'
+import { appSignUpWithTarget } from '@/lib/urls'
 
 export default async function SignupPage({
   searchParams,
@@ -8,9 +8,15 @@ export default async function SignupPage({
 }) {
   const params = await searchParams
   const next = Array.isArray(params.next) ? params.next[0] : params.next
+  const targetUrl = Array.isArray(params.targetUrl) ? params.targetUrl[0] : params.targetUrl
+
+  if (targetUrl) {
+    redirect(appSignUpWithTarget(targetUrl))
+  }
+
   const target = next
-    ? `${appHref('/sign-up')}?next=${encodeURIComponent(next)}`
-    : appHref('/sign-up')
+    ? `${appSignUpWithTarget()}?next=${encodeURIComponent(next)}`
+    : appSignUpWithTarget()
 
   redirect(target)
 }

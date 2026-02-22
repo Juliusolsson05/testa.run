@@ -115,17 +115,19 @@ export default function Home() {
           </p>
 
           {/* URL input CTA */}
-          <div className="max-w-2xl mx-auto rounded-2xl bg-gray-900 px-6 py-5 flex items-center gap-3">
+          <form action="/start" method="get" className="max-w-2xl mx-auto rounded-2xl bg-gray-900 px-6 py-5 flex items-center gap-3">
             <input
+              name="url"
               type="url"
               aria-label="Website URL"
               placeholder="https://your-app.com"
               className="flex-1 bg-transparent text-[15px] text-white placeholder:text-white/50 focus:outline-none"
+              required
             />
-            <Button size="icon" className="h-9 w-9 rounded-full bg-brand hover:bg-brand/90 text-white shrink-0">
+            <Button type="submit" size="icon" className="h-9 w-9 rounded-full bg-brand hover:bg-brand/90 text-white shrink-0">
               <ArrowRight className="w-4 h-4" />
             </Button>
-          </div>
+          </form>
           <p className="text-[12px] text-gray-400 mt-4">Free to start. No credit card required.</p>
         </div>
       </section>
@@ -284,17 +286,19 @@ export default function Home() {
           <p className="text-[15px] text-gray-500 max-w-md mx-auto mb-8 leading-relaxed">
             Paste a URL and find out in minutes. No setup, no scripts, no waiting.
           </p>
-          <div className="max-w-2xl mx-auto rounded-2xl bg-gray-900 px-6 py-5 flex items-center gap-3">
+          <form action="/start" method="get" className="max-w-2xl mx-auto rounded-2xl bg-gray-900 px-6 py-5 flex items-center gap-3">
             <input
+              name="url"
               type="url"
               aria-label="Website URL"
               placeholder="https://your-app.com"
               className="flex-1 bg-transparent text-[15px] text-white placeholder:text-white/50 focus:outline-none"
+              required
             />
-            <Button size="icon" className="h-9 w-9 rounded-full bg-brand hover:bg-brand/90 text-white shrink-0">
+            <Button type="submit" size="icon" className="h-9 w-9 rounded-full bg-brand hover:bg-brand/90 text-white shrink-0">
               <ArrowRight className="w-4 h-4" />
             </Button>
-          </div>
+          </form>
         </div>
       </section>
 

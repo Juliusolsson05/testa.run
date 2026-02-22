@@ -1,7 +1,7 @@
 "use client"
 
 import { useEffect, useMemo, useState } from "react"
-import { useRouter } from "next/navigation"
+import { useRouter, useSearchParams } from "next/navigation"
 import { useAuth } from "@/components/auth/AuthProvider"
 import { useAppSelector } from "@/store/hooks"
 import { OnboardingBackground } from "@/components/onboarding/OnboardingBackground"
@@ -17,6 +17,7 @@ function slugify(input: string) {
 
 export default function OnboardingProjectPage() {
   const router = useRouter()
+  const params = useSearchParams()
   const { accessToken } = useAuth()
   const activeOrgId = useAppSelector((s) => s.workspace.activeOrgId)
 
@@ -31,6 +32,15 @@ export default function OnboardingProjectPage() {
   useEffect(() => {
     if (activeOrgId) setOrgId(activeOrgId)
   }, [activeOrgId])
+
+  useEffect(() => {
+    const incomingTargetUrl = params.get("targetUrl")
+    if (!incomingTargetUrl) return
+    const normalized = /^https?:\/\//i.test(incomingTargetUrl)
+      ? incomingTargetUrl
+      : `https://${incomingTargetUrl}`
+    setTargetUrl(normalized)
+  }, [params])
 
   const derivedSlug = useMemo(() => slugify(name), [name])
   const effectiveSlug = slugEdited ? slug : derivedSlug

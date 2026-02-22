@@ -9,7 +9,13 @@ import { useAuth } from "@/components/auth/AuthProvider"
 export default function SignInPage() {
   const router = useRouter()
   const params = useSearchParams()
-  const next = params.get("next") || "/"
+  const incomingTargetUrl = params.get("targetUrl")
+  const normalizedTargetUrl = incomingTargetUrl
+    ? (/^https?:\/\//i.test(incomingTargetUrl) ? incomingTargetUrl : `https://${incomingTargetUrl}`)
+    : null
+  const next = params.get("next") || (normalizedTargetUrl
+    ? `/onboarding/project?targetUrl=${encodeURIComponent(normalizedTargetUrl)}`
+    : "/")
   const { accessToken, loading } = useAuth()
 
   const [email, setEmail] = useState("")
@@ -74,7 +80,7 @@ export default function SignInPage() {
 
         <p className="mt-4 text-sm text-ui-muted">
           No account?{" "}
-          <Link href={`/sign-up?next=${encodeURIComponent(next)}`} className="font-medium text-[#1d6ef5]">
+          <Link href={`/sign-up?next=${encodeURIComponent(next)}${normalizedTargetUrl ? `&targetUrl=${encodeURIComponent(normalizedTargetUrl)}` : ""}`} className="font-medium text-[#1d6ef5]">
             Create one
           </Link>
         </p>
