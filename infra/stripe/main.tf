@@ -41,22 +41,6 @@ resource "stripe_product" "pro" {
 # Prices
 # ────────────────────────────────────────────────────────────
 
-resource "stripe_price" "starter_monthly" {
-  product     = stripe_product.starter.id
-  currency    = "usd"
-  unit_amount = 0
-
-  recurring {
-    interval       = "month"
-    interval_count = 1
-  }
-
-  metadata = {
-    plan  = "starter"
-    cycle = "monthly"
-  }
-}
-
 resource "stripe_price" "pro_monthly" {
   product     = stripe_product.pro.id
   currency    = "usd"

@@ -13,7 +13,6 @@ import {
   type Node,
   type NodeChange,
   type NodeMouseHandler,
-  type NodeProps,
 } from "@xyflow/react"
 
 import { useIssueContext } from "@/context/issue-context"
@@ -24,25 +23,7 @@ import { ScreenshotNode } from "@/components/workspace/nodes/ScreenshotNode"
 import { SpringEdge } from "@/components/workspace/edges/SpringEdge"
 import { InlineLoading } from "@/components/loading/InlineLoading"
 
-type LoadingNodeData = {
-  label: string
-  description: string
-}
-
-function LoadingCanvasNode({ data }: NodeProps<Node<LoadingNodeData>>) {
-  return (
-    <div className="w-[420px] rounded-lg border border-ui-border bg-white/95 p-6 text-center shadow-xl backdrop-blur">
-      <InlineLoading
-        label={data.label}
-        cubeSize={58}
-        className="min-h-[220px]"
-      />
-      <p className="mt-1 text-xs text-ui-muted">{data.description}</p>
-    </div>
-  )
-}
-
-const nodeTypes = { screenshot: ScreenshotNode, loading: LoadingCanvasNode }
+const nodeTypes = { screenshot: ScreenshotNode }
 const edgeTypes = { spring: SpringEdge }
 
 function autoLayoutNodes(nodes: Node<ScreenshotNodeData>[], edges: { source: string; target: string }[]) {
@@ -220,6 +201,10 @@ export function FlowCanvas() {
   )
   const [nodes, setNodes] = useState<Node[]>(layoutedNodes)
   const { selectNode, clearSelection } = useIssueContext()
+  const [viewport, setViewport] = useState({ x: 0, y: 0, zoom: 1 })
+  const containerRef = useRef<HTMLDivElement | null>(null)
+  const [loadingAnchor, setLoadingAnchor] = useState({ x: 180, y: 120 })
+  const hasSeededLoadingAnchor = useRef(false)
 
   useEffect(() => {
     setNodes(layoutedNodes)
@@ -240,29 +225,34 @@ export function FlowCanvas() {
     [selectNode]
   )
 
-  const displayedNodes: Node[] =
-    nodes.length > 0
-      ? nodes
-      : [
-          {
-            id: "loading-placeholder",
-            type: "loading",
-            position: { x: 180, y: 120 },
-            draggable: false,
-            selectable: false,
-            connectable: false,
-            data: {
-              label: run.status === "running" ? "Building workflow graph…" : "Preparing workspace…",
-              description: "We are ingesting streamed events and will render nodes as soon as they are available.",
-            },
-          } as Node<LoadingNodeData>,
-        ]
+  useEffect(() => {
+    if (nodes.length > 0) {
+      hasSeededLoadingAnchor.current = false
+      return
+    }
+    if (hasSeededLoadingAnchor.current) return
+
+    const el = containerRef.current
+    if (!el) return
+
+    const rect = el.getBoundingClientRect()
+    const worldX = (rect.width / 2 - viewport.x) / viewport.zoom
+    const worldY = (rect.height / 2 - viewport.y) / viewport.zoom
+
+    setLoadingAnchor({ x: worldX, y: worldY })
+    hasSeededLoadingAnchor.current = true
+  }, [nodes.length, viewport.x, viewport.y, viewport.zoom])
+
+  const loadingLeft = loadingAnchor.x * viewport.zoom + viewport.x
+  const loadingTop = loadingAnchor.y * viewport.zoom + viewport.y
 
   return (
-    <div className="relative flex h-full flex-1 flex-col overflow-hidden bg-white">
+    <div ref={containerRef} className="relative flex h-full flex-1 flex-col overflow-hidden bg-white">
       <ReactFlow
         className="h-full w-full"
-        nodes={displayedNodes}
+        onInit={(instance) => setViewport(instance.getViewport())}
+        onMove={(_event, nextViewport) => setViewport(nextViewport)}
+        nodes={nodes}
         edges={edges}
         nodeTypes={nodeTypes}
         edgeTypes={edgeTypes}
@@ -286,6 +276,26 @@ export function FlowCanvas() {
         <Controls className="flow-controls" showInteractive={false} />
         <FlowController />
       </ReactFlow>
+
+      {nodes.length === 0 && (
+        <div className="pointer-events-none absolute inset-0 z-30">
+          <div
+            className="absolute"
+            style={{ left: loadingLeft, top: loadingTop, transform: "translate(-50%, -50%)" }}
+          >
+            <div className="w-[420px] rounded-lg border border-ui-border bg-white/95 p-6 text-center shadow-xl backdrop-blur">
+              <InlineLoading
+                label={run.status === "running" ? "Building workflow graph…" : "Preparing workspace…"}
+                cubeSize={58}
+                className="min-h-[220px]"
+              />
+              <p className="mt-1 text-xs text-ui-muted">
+                We are ingesting streamed events and will render nodes as soon as they are available.
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

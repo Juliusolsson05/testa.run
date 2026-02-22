@@ -10,11 +10,6 @@ output "pro_product_id" {
   description = "Stripe product ID for Pro plan"
 }
 
-output "starter_monthly_price_id" {
-  value       = stripe_price.starter_monthly.id
-  description = "Stripe price ID for Starter monthly ($0)"
-}
-
 output "pro_monthly_price_id" {
   value       = stripe_price.pro_monthly.id
   description = "Stripe price ID for Pro monthly ($29)"
