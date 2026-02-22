@@ -11,9 +11,12 @@ import { cn } from "@/lib/utils"
 
 type FilterType = "all" | "error" | "warning" | "resolved"
 type ViewMode = "list" | "kanban"
+type ScopeType = "all" | string
 
 type RunIssue = {
   id: string
+  runId: string
+  runName: string
   nodeKey: string
   nodeLabel: string
   stepIndex: number | null
@@ -23,30 +26,46 @@ type RunIssue = {
   element: string
 }
 
-function IssueListRow({ issue, href }: { issue: RunIssue; href: string }) {
+function IssueListRow({
+  issue,
+  href,
+  draggable,
+  onDragStart,
+}: {
+  issue: RunIssue
+  href: string
+  draggable?: boolean
+  onDragStart?: (id: string) => void
+}) {
   return (
-    <Link
-      href={href}
-      className="flex items-center gap-4 border border-ui-border bg-white px-4 py-3 hover:bg-[#eff6ff]"
+    <div
+      draggable={draggable}
+      onDragStart={() => onDragStart?.(issue.id)}
+      className={cn(draggable ? "cursor-grab active:cursor-grabbing" : "")}
     >
-      <span
-        className={cn(
-          "h-2 w-2 rounded-full",
-          issue.status === "resolved"
-            ? "bg-emerald-500"
-            : issue.severity === "error"
-              ? "bg-red-500"
-              : "bg-amber-400"
-        )}
-      />
-      <div className="flex-1">
-        <div className="text-sm font-semibold text-[#1a2a33]">{issue.title}</div>
-        <div className="text-xs text-ui-muted">
-          Step {issue.stepIndex ?? "—"} · {issue.nodeLabel} · {issue.element}
+      <Link
+        href={href}
+        className="flex items-center gap-4 border border-ui-border bg-white px-4 py-3 hover:bg-[#eff6ff]"
+      >
+        <span
+          className={cn(
+            "h-2 w-2 rounded-full",
+            issue.status === "resolved"
+              ? "bg-emerald-500"
+              : issue.severity === "error"
+                ? "bg-red-500"
+                : "bg-amber-400"
+          )}
+        />
+        <div className="flex-1">
+          <div className="text-sm font-semibold text-[#1a2a33]">{issue.title}</div>
+          <div className="text-xs text-ui-muted">
+            {issue.runName} · Step {issue.stepIndex ?? "—"} · {issue.nodeLabel} · {issue.element}
+          </div>
         </div>
-      </div>
-      <span className="text-xs text-ui-muted">→</span>
-    </Link>
+        <span className="text-xs text-ui-muted">→</span>
+      </Link>
+    </div>
   )
 }
 
@@ -54,10 +73,18 @@ function KanbanColumn({
   label,
   items,
   hrefFor,
+  status,
+  onDropTo,
+  onDragStart,
+  dropActive,
 }: {
   label: string
   items: RunIssue[]
   hrefFor: (issue: RunIssue) => string
+  status: "open" | "resolved"
+  onDropTo: (status: "open" | "resolved") => void
+  onDragStart: (id: string) => void
+  dropActive: boolean
 }) {
   return (
     <div className="flex min-w-0 flex-1 flex-col gap-2">
@@ -68,17 +95,30 @@ function KanbanColumn({
         </span>
       </div>
 
-      {items.length === 0 ? (
-        <div className="border border-dashed border-ui-border px-4 py-6 text-center text-[12px] text-ui-muted">
-          None
-        </div>
-      ) : (
-        <div className="space-y-2">
-          {items.map((issue) => (
-            <IssueListRow key={issue.id} issue={issue} href={hrefFor(issue)} />
-          ))}
-        </div>
-      )}
+      <div
+        onDragOver={(e) => e.preventDefault()}
+        onDrop={() => onDropTo(status)}
+        className={cn(
+          "min-h-24 rounded border border-dashed border-ui-border p-2",
+          dropActive && "border-[#1d6ef5] bg-[#eff6ff]"
+        )}
+      >
+        {items.length === 0 ? (
+          <div className="px-4 py-6 text-center text-[12px] text-ui-muted">Drop issue here</div>
+        ) : (
+          <div className="space-y-2">
+            {items.map((issue) => (
+              <IssueListRow
+                key={issue.id}
+                issue={issue}
+                href={hrefFor(issue)}
+                draggable
+                onDragStart={onDragStart}
+              />
+            ))}
+          </div>
+        )}
+      </div>
     </div>
   )
 }
@@ -87,16 +127,24 @@ export default function IssuesPage() {
   const params = useSearchParams()
   const runIdParam = params.get("runId") || undefined
   const { accessToken } = useAuth()
-  const { activeRun } = useProjectRuns(runIdParam, 10)
+  const { project, runs } = useProjectRuns(undefined, 20)
 
   const [filter, setFilter] = useState<FilterType>("all")
   const [viewMode, setViewMode] = useState<ViewMode>("kanban")
+  const [scope, setScope] = useState<ScopeType>(runIdParam ?? "all")
   const [issues, setIssues] = useState<RunIssue[]>([])
+  const [draggingIssueId, setDraggingIssueId] = useState<string | null>(null)
+
+  useEffect(() => {
+    if (!runIdParam) return
+    setScope(runIdParam)
+  }, [runIdParam])
 
   useEffect(() => {
     async function load() {
-      if (!accessToken || !activeRun?.id) return
-      const res = await fetch(`/api/runs/${activeRun.id}/issues`, {
+      if (!accessToken || !project?.id) return
+      const query = scope === "all" ? "" : `?runId=${encodeURIComponent(scope)}`
+      const res = await fetch(`/api/projects/${project.id}/issues${query}`, {
         headers: { Authorization: `Bearer ${accessToken}` },
         cache: "no-store",
       })
@@ -106,7 +154,29 @@ export default function IssuesPage() {
     }
 
     void load()
-  }, [accessToken, activeRun?.id])
+  }, [accessToken, project?.id, scope])
+
+  async function updateIssueStatus(issueId: string, nextStatus: "open" | "resolved") {
+    if (!accessToken) return
+
+    const previous = issues
+    setIssues((prev) => prev.map((i) => (i.id === issueId ? { ...i, status: nextStatus } : i)))
+
+    try {
+      const res = await fetch(`/api/issues/${issueId}`, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${accessToken}`,
+        },
+        body: JSON.stringify({ status: nextStatus }),
+      })
+
+      if (!res.ok) throw new Error("Failed to update status")
+    } catch {
+      setIssues(previous)
+    }
+  }
 
   const filtered = useMemo(() => {
     return issues.filter((i) => {
@@ -133,8 +203,15 @@ export default function IssuesPage() {
   const totalWarnings = issues.filter((i) => i.status === "open" && i.severity === "warning").length
   const totalResolved = issues.filter((i) => i.status === "resolved").length
 
-  const issueHref = (issue: RunIssue) =>
-    activeRun ? `/workspace/${activeRun.id}?issueId=${issue.id}` : "#"
+  const issueHref = (issue: RunIssue) => `/workspace/${issue.runId}?issueId=${issue.id}`
+
+  const onDropTo = (status: "open" | "resolved") => {
+    if (!draggingIssueId) return
+    const current = issues.find((i) => i.id === draggingIssueId)
+    setDraggingIssueId(null)
+    if (!current || current.status === status) return
+    void updateIssueStatus(current.id, status)
+  }
 
   return (
     <div className="flex h-dvh bg-app-bg font-sans">
@@ -171,6 +248,19 @@ export default function IssuesPage() {
             </button>
           ))}
 
+          <select
+            className="ml-2 rounded border border-ui-border bg-white px-2 py-1 text-[12px] text-[#1a2a33]"
+            value={scope}
+            onChange={(e) => setScope(e.target.value)}
+          >
+            <option value="all">All jobs</option>
+            {runs.map((run) => (
+              <option key={run.id} value={run.id}>
+                {run.name}
+              </option>
+            ))}
+          </select>
+
           <div className="ml-2 flex items-center gap-1 rounded border border-ui-border bg-white p-1">
             <button
               onClick={() => setViewMode("kanban")}
@@ -193,13 +283,13 @@ export default function IssuesPage() {
           </div>
 
           <span className="ml-auto text-[11px] text-ui-muted">
-            {activeRun ? activeRun.name : "No run selected"}
+            {scope === "all" ? "Showing all jobs" : runs.find((r) => r.id === scope)?.name ?? "Selected job"}
           </span>
         </div>
 
         <div className="flex-1 px-8 py-6">
           {filtered.length === 0 ? (
-            <div className="text-sm text-ui-muted">No issues for this run/filter.</div>
+            <div className="text-sm text-ui-muted">No issues for this scope/filter.</div>
           ) : viewMode === "list" ? (
             <div className="space-y-2">
               {filtered.map((issue) => (
@@ -208,9 +298,33 @@ export default function IssuesPage() {
             </div>
           ) : (
             <div className="grid gap-4 lg:grid-cols-3">
-              <KanbanColumn label="Open errors" items={openErrors} hrefFor={issueHref} />
-              <KanbanColumn label="Open warnings" items={openWarnings} hrefFor={issueHref} />
-              <KanbanColumn label="Resolved" items={resolved} hrefFor={issueHref} />
+              <KanbanColumn
+                label="Open errors"
+                items={openErrors}
+                hrefFor={issueHref}
+                status="open"
+                onDropTo={onDropTo}
+                onDragStart={setDraggingIssueId}
+                dropActive={draggingIssueId !== null}
+              />
+              <KanbanColumn
+                label="Open warnings"
+                items={openWarnings}
+                hrefFor={issueHref}
+                status="open"
+                onDropTo={onDropTo}
+                onDragStart={setDraggingIssueId}
+                dropActive={draggingIssueId !== null}
+              />
+              <KanbanColumn
+                label="Resolved"
+                items={resolved}
+                hrefFor={issueHref}
+                status="resolved"
+                onDropTo={onDropTo}
+                onDragStart={setDraggingIssueId}
+                dropActive={draggingIssueId !== null}
+              />
             </div>
           )}
         </div>
