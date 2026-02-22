@@ -19,7 +19,7 @@ import type { ScreenshotNodeData } from "@/types/flow"
 
 const nodeStatusBadgeClass = {
   passed: "border-emerald-500/25 bg-emerald-500/10 text-emerald-600",
-  running: "border-amber-400/25 bg-amber-400/10 text-amber-600",
+  running: "border-[#1d6ef5]/25 bg-[#1d6ef5]/10 text-[#1d6ef5]",
   pending: "border-indigo-500/25 bg-indigo-500/10 text-indigo-600",
 } as const
 

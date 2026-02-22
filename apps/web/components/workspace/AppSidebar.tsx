@@ -19,7 +19,7 @@ import { useAuth } from "@/components/auth/AuthProvider"
 import { useProjectRuns } from "@/components/workspace/useProjectRuns"
 
 const runStatusDot = {
-  running: "bg-amber-400 shadow-[0_0_5px_rgba(245,158,11,0.6)]",
+  running: "bg-[#1d6ef5] shadow-[0_0_5px_rgba(29,110,245,0.6)]",
   warning: "bg-amber-400",
   passed: "bg-emerald-500",
   failed: "bg-red-500",

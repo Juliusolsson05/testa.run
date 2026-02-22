@@ -15,8 +15,8 @@ import { cn } from "@/lib/utils"
 const statusConfig = {
   running: {
     label: "Running",
-    dot: "bg-amber-400 shadow-[0_0_6px_#f59e0b]",
-    badge: "bg-amber-400/10 text-amber-600",
+    dot: "bg-[#1d6ef5] shadow-[0_0_6px_rgba(29,110,245,0.7)]",
+    badge: "bg-[#1d6ef5]/10 text-[#1d6ef5]",
   },
   passed: { label: "Passed", dot: "bg-emerald-500 shadow-[0_0_6px_#22c55e]", badge: "bg-emerald-500/10 text-emerald-600" },
   warning: { label: "Warning", dot: "bg-amber-400 shadow-[0_0_6px_#f59e0b]", badge: "bg-amber-400/10 text-amber-600" },
@@ -215,7 +215,7 @@ function RunsHome() {
           <div className="flex items-stretch divide-x divide-ui-border">
             {([
               { label: "TOTAL RUNS", value: runs.length, color: "text-[#1a2a33]" },
-              { label: "RUNNING", value: totalRunning, color: "text-amber-500" },
+              { label: "RUNNING", value: totalRunning, color: "text-[#1d6ef5]" },
               { label: "FAILED", value: totalFailed, color: "text-red-500" },
               { label: "OPEN ISSUES", value: openIssues, color: "text-red-500" },
             ] as const).map((stat) => (
@@ -311,8 +311,8 @@ function RunsHome() {
                   >
                     {run.status === "running" && (
                       <>
-                        <span className="absolute left-0 top-0 h-full w-1 bg-amber-400/90" />
-                        <span className="pointer-events-none absolute inset-y-0 left-0 w-[42%] animate-[pulse_1.6s_ease-in-out_infinite] bg-gradient-to-r from-amber-300/20 via-amber-200/40 to-transparent" />
+                        <span className="absolute left-0 top-0 h-full w-1 bg-[#1d6ef5]/90" />
+                        <span className="pointer-events-none absolute inset-y-0 left-0 w-[42%] animate-[pulse_1.6s_ease-in-out_infinite] bg-gradient-to-r from-[#1d6ef5]/20 via-[#60a5fa]/35 to-transparent" />
                       </>
                     )}
                     <span className={cn("h-2.5 w-2.5 shrink-0 rounded-full", s.dot)} />
@@ -350,7 +350,7 @@ function RunsHome() {
                     </div>
 
                     <span className={cn("shrink-0 rounded px-2.5 py-1 text-[11px] font-semibold", s.badge)}>
-                      {run.status === "running" && <span className="mr-1 inline-block h-2.5 w-2.5 animate-spin rounded-full border border-amber-500 border-t-transparent align-[-1px]" />}
+                      {run.status === "running" && <span className="mr-1 inline-block h-2.5 w-2.5 animate-spin rounded-full border border-[#1d6ef5] border-t-transparent align-[-1px]" />}
                       {s.label}
                     </span>
 

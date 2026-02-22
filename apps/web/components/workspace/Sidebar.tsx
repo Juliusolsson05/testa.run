@@ -147,7 +147,7 @@ export function Sidebar() {
                   className={cn(
                     "h-2 w-2 shrink-0 rounded-full",
                     focusedNode.data.status === "passed" && "bg-emerald-500",
-                    focusedNode.data.status === "running" && "bg-amber-400",
+                    focusedNode.data.status === "running" && "bg-[#1d6ef5]",
                     focusedNode.data.status === "pending" && "bg-indigo-400"
                   )}
                 />
