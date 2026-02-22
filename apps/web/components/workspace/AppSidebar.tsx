@@ -76,7 +76,7 @@ export function AppSidebar() {
       <nav className="flex flex-col gap-0.5 px-3">
         <div className="mb-1 px-2 text-[10px] font-bold uppercase tracking-[0.6px] text-white/30">Navigate</div>
         {nav.map(({ label, href, icon: Icon }) => {
-          const isActive = pathname === href || (href.startsWith("/workspace/") && pathname.startsWith(href.split("?")[0]))
+          const isActive = pathname === href || (href.startsWith("/workspace/") && pathname.startsWith(href.split("?")[0] ?? ""))
           return (
             <Link key={href} href={href} className={cn("flex items-center gap-2.5 rounded px-2.5 py-2 text-[13px] font-medium transition-colors", isActive ? "bg-[#1d6ef5]/15 text-[#7eb3f5]" : "text-white/60 hover:bg-white/8 hover:text-white")}>
               <Icon className={cn("h-3.5 w-3.5 shrink-0", isActive ? "text-[#1d6ef5]" : "text-white/40")} />

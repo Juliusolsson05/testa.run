@@ -1,3 +1,4 @@
+import type { Prisma } from '@prisma/client'
 import { db } from '@/lib/db'
 
 type RunEventEnvelope = {
@@ -44,7 +45,7 @@ export async function appendRunEvent(runId: string, type: string, payload: Recor
         runId,
         seq: run.eventSeq,
         type,
-        payload,
+        payload: payload as Prisma.InputJsonValue,
       },
     })
 
