@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import { requireAppUser, requireOrgMember } from '@/lib/auth'
 import { db } from '@/lib/db'
+import { toScreenshotProxyUrl } from '@/lib/screenshots'
 
 // GET /api/runs/:runId/workspace — full canvas payload
 export async function GET(_req: Request, { params }: { params: Promise<{ runId: string }> }) {
@@ -40,24 +41,27 @@ export async function GET(_req: Request, { params }: { params: Promise<{ runId: 
       startedAt: run.startedAt,
       securitySynopsis: run.securitySynopsis,
     },
-    nodes: nodes.map((n: NodeItem) => ({
-      id: n.nodeKey,
-      position: { x: n.positionX, y: n.positionY },
-      data: {
-        label: n.label,
-        url: n.url,
-        status: n.status,
-        step: n.step,
-        duration: n.durationMs ? `${(n.durationMs / 1000).toFixed(1)}s` : undefined,
-        isMain: n.isMain,
-        isLarge: n.isLarge,
-        imageSrc: n.screenshotUrl || n.screenshotPath,
-        sourceHandle: n.sourceHandleSide
-          ? { side: n.sourceHandleSide, imageY: n.sourceHandleImageY }
-          : undefined,
-        ...((n.data as Record<string, unknown>) ?? {}),
-      },
-    })),
+    nodes: nodes.map((n: NodeItem) => {
+      const extraData = ((n.data as Record<string, unknown>) ?? {})
+      return {
+        id: n.nodeKey,
+        position: { x: n.positionX, y: n.positionY },
+        data: {
+          ...extraData,
+          label: n.label,
+          url: n.url,
+          status: n.status,
+          step: n.step,
+          duration: n.durationMs ? `${(n.durationMs / 1000).toFixed(1)}s` : undefined,
+          isMain: n.isMain,
+          isLarge: n.isLarge,
+          imageSrc: toScreenshotProxyUrl(n.screenshotUrl || n.screenshotPath),
+          sourceHandle: n.sourceHandleSide
+            ? { side: n.sourceHandleSide, imageY: n.sourceHandleImageY }
+            : undefined,
+        },
+      }
+    }),
     edges: edges.map((e: EdgeItem) => ({
       id: e.edgeKey,
       source: nodeById.get(e.sourceNodeId)?.nodeKey ?? e.sourceNodeId,
