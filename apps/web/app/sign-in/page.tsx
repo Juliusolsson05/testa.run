@@ -1,12 +1,12 @@
 "use client"
 
 import Link from "next/link"
+import { Suspense, useEffect, useState } from "react"
 import { useRouter, useSearchParams } from "next/navigation"
-import { useEffect, useState } from "react"
 import { getBrowserSupabase } from "@/lib/supabase-browser"
 import { useAuth } from "@/components/auth/AuthProvider"
 
-export default function SignInPage() {
+function SignInForm() {
   const router = useRouter()
   const params = useSearchParams()
   const incomingTargetUrl = params.get("targetUrl")
@@ -86,5 +86,13 @@ export default function SignInPage() {
         </p>
       </form>
     </main>
+  )
+}
+
+export default function SignInPage() {
+  return (
+    <Suspense fallback={<main className="flex min-h-dvh items-center justify-center bg-app-bg px-4 text-ui-muted">Loading…</main>}>
+      <SignInForm />
+    </Suspense>
   )
 }
