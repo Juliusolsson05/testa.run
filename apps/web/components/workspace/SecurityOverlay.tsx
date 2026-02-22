@@ -21,7 +21,12 @@ export function SecurityOverlay() {
         ? "Low"
         : "None"
 
-  const riskTone = "text-red-700 border-red-300 bg-red-50/92"
+  const riskTone = {
+    Critical: "text-red-700 border-red-300 bg-red-50/92",
+    High: "text-amber-700 border-amber-300 bg-amber-50/92",
+    Low: "text-amber-700 border-amber-300 bg-amber-50/92",
+    None: "text-slate-700 border-slate-300 bg-white/95",
+  }[riskLevel]
 
   return (
     <Link

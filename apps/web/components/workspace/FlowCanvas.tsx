@@ -191,7 +191,7 @@ function FlowController() {
 }
 
 export function FlowCanvas() {
-  const { nodes: workspaceNodes, edges } = useWorkspaceData()
+  const { run, nodes: workspaceNodes, edges } = useWorkspaceData()
   const layoutedNodes = useMemo(
     () => autoLayoutNodes(workspaceNodes, edges.map((e) => ({ source: String(e.source), target: String(e.target) }))),
     [workspaceNodes, edges]
@@ -221,6 +221,20 @@ export function FlowCanvas() {
 
   return (
     <div className="relative flex h-full flex-1 flex-col overflow-hidden bg-white">
+      {nodes.length === 0 && (
+        <div className="pointer-events-none absolute inset-0 z-30 grid place-items-center">
+          <div className="w-[360px] rounded-lg border border-ui-border bg-white/95 p-5 text-center shadow-xl backdrop-blur">
+            <div className="mx-auto mb-3 h-6 w-6 animate-spin rounded-full border-2 border-[#1d6ef5] border-t-transparent" />
+            <div className="text-sm font-semibold text-[#1a2a33]">
+              {run.status === 'running' ? 'Building workflow graph…' : 'Preparing workspace…'}
+            </div>
+            <p className="mt-1 text-xs text-ui-muted">
+              We are ingesting streamed events and will render nodes as soon as they are available.
+            </p>
+          </div>
+        </div>
+      )}
+
       <ReactFlow
         className="h-full w-full"
         nodes={nodes}
