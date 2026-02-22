@@ -1,13 +1,14 @@
 "use client"
 
 import { useState } from "react"
+import { toast } from "sonner"
 import { RequireAuth } from "@/components/auth/RequireAuth"
 import { useAuth } from "@/components/auth/AuthProvider"
 import { AppSidebar } from "@/components/workspace/AppSidebar"
 import { useAppSelector } from "@/store/hooks"
 
 function SettingsContent() {
-  const { user } = useAuth()
+  const { user, accessToken } = useAuth()
   const activeOrgId = useAppSelector((s) => s.workspace.activeOrgId)
   const billingPlan = useAppSelector((s) => s.billing.plan)
   const billingStatus = useAppSelector((s) => s.billing.status)
@@ -15,54 +16,58 @@ function SettingsContent() {
   const [isLoading, setIsLoading] = useState(false)
 
   const handleUpgrade = async () => {
-    if (!activeOrgId) return
+    if (!activeOrgId || !accessToken) return
     setIsLoading(true)
     try {
       const res = await fetch("/api/stripe/checkout", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${accessToken}`,
+        },
         body: JSON.stringify({ orgId: activeOrgId }),
       })
       const data = await res.json()
       if (data.url) {
         window.location.href = data.url
       } else {
-        alert(data.error || "Something went wrong")
+        toast.error(data.error || "Could not create checkout session")
       }
     } catch (err) {
       console.error(err)
-      alert("Failed to create checkout session")
+      toast.error("Failed to create checkout session")
     } finally {
       setIsLoading(false)
     }
   }
 
   const handleManage = async () => {
-    if (!activeOrgId) return
+    if (!activeOrgId || !accessToken) return
     setIsLoading(true)
     try {
       const res = await fetch("/api/stripe/portal", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${accessToken}`,
+        },
         body: JSON.stringify({ orgId: activeOrgId }),
       })
       const data = await res.json()
       if (data.url) {
         window.location.href = data.url
       } else {
-        alert(data.error || "Something went wrong")
+        toast.error(data.error || "Could not open billing portal")
       }
     } catch (err) {
       console.error(err)
-      alert("Failed to redirect to portal")
+      toast.error("Failed to redirect to billing portal")
     } finally {
       setIsLoading(false)
     }
   }
 
-  // The prompt mentions "Access control: Pro tier access is granted only if subscription status is active"
-  // So users who have past_due might still see 'Manage billing' to resume or fix their payment
-  const isPro = billingPlan === "pro" && billingStatus === "active"
+  // Users with pro/past_due should be able to access billing portal to manage payment state.
 
   return (
     <div className="flex h-dvh bg-app-bg font-sans">
