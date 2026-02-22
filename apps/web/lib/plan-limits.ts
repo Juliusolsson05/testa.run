@@ -5,14 +5,20 @@ export const PLAN_LIMITS = {
   pro: { monthlyRuns: null as number | null },
 } as const
 
+export type PlanName = keyof typeof PLAN_LIMITS
+
+function normalizePlan(plan: string | null | undefined): PlanName {
+  return plan === "pro" ? "pro" : "starter"
+}
+
 function startOfCurrentMonth() {
   const now = new Date()
   return new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), 1, 0, 0, 0, 0))
 }
 
-export async function getOrgPlan(orgId: string) {
+export async function getOrgPlan(orgId: string): Promise<PlanName> {
   const billing = await db.billingAccount.findUnique({ where: { orgId }, select: { plan: true } })
-  return billing?.plan ?? "starter"
+  return normalizePlan(billing?.plan)
 }
 
 export async function enforceMonthlyRunLimit(orgId: string) {
