@@ -28,7 +28,7 @@ export async function GET(_req: Request, { params }: { params: Promise<{ runId: 
   type IssueItem = (typeof issues)[number]
 
   // Build nodeKey lookup for edges and issues
-  const nodeById = new Map(nodes.map((n: NodeItem) => [n.id, n]))
+  const nodeById = new Map<string, NodeItem>(nodes.map((n: NodeItem) => [n.id, n]))
 
   return NextResponse.json({
     run: {
