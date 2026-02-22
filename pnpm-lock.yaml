@@ -124,6 +124,9 @@ importers:
       '@reduxjs/toolkit':
         specifier: ^2.11.2
         version: 2.11.2(react-redux@9.2.0(@types/react@19.2.2)(react@19.2.0)(redux@5.0.1))(react@19.2.0)
+      '@repo/domain':
+        specifier: workspace:*
+        version: link:../../packages/domain
       '@repo/testing':
         specifier: workspace:*
         version: link:../../packages/testing
@@ -205,6 +208,15 @@ importers:
 
   packages/config-tailwind: {}
 
+  packages/domain:
+    devDependencies:
+      '@repo/typescript-config':
+        specifier: workspace:*
+        version: link:../typescript-config
+      typescript:
+        specifier: 5.9.2
+        version: 5.9.2
+
   packages/eslint-config:
     devDependencies:
       '@eslint/js':
@@ -243,6 +255,9 @@ importers:
 
   packages/testing:
     devDependencies:
+      '@repo/domain':
+        specifier: workspace:*
+        version: link:../domain
       '@repo/typescript-config':
         specifier: workspace:*
         version: link:../typescript-config

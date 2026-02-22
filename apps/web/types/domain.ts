@@ -1,3 +1,13 @@
+import type {
+  IssueCategory,
+  IssueSeverity,
+  IssueStatus,
+  NodeStatus,
+  RunStatus,
+  RunStepAction,
+  RunStepStatus,
+} from "@repo/domain"
+
 // ────────────────────────────────────────────────────────────────────────────
 // Canonical domain types — single source of truth
 // ────────────────────────────────────────────────────────────────────────────
@@ -9,10 +19,15 @@ export type NodeId = string
 
 // ── Issues ──────────────────────────────────────────────────────────────────
 
-export type IssueSeverity = "error" | "warning"
-export type IssueStatus = "open" | "resolved"
-
-export type IssueCategory = "security" | "other"
+export type {
+  IssueCategory,
+  IssueSeverity,
+  IssueStatus,
+  NodeStatus,
+  RunStatus,
+  RunStepAction,
+  RunStepStatus,
+} from "@repo/domain"
 
 export type Issue = {
   id: IssueId
@@ -28,18 +43,6 @@ export type Issue = {
 }
 
 // ── Runs ────────────────────────────────────────────────────────────────────
-
-export type RunStatus = "passed" | "failed" | "running" | "warning"
-export type RunStepStatus = "passed" | "failed" | "warning"
-export type RunStepAction =
-  | "navigate"
-  | "scroll"
-  | "audit"
-  | "click"
-  | "wait"
-  | "fill"
-  | "resize"
-  | "screenshot"
 
 export type RunStep = {
   id: string
@@ -84,4 +87,3 @@ export type RunSummary = {
 
 // ── Flow node status (UI) ───────────────────────────────────────────────────
 
-export type NodeStatus = "passed" | "running" | "pending"

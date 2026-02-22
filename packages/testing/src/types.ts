@@ -1,28 +1,19 @@
+import type {
+  IssueCategory,
+  IssueSeverity,
+  IssueStatus,
+  NodeStatus,
+  RunStatus,
+  RunStepAction,
+  RunStepStatus,
+} from "@repo/domain";
+
 export type TestRunRequest = {
   url: string;
   prompt?: string;
 };
 
 export type RunCategory = "security" | "buttons" | "ux";
-export type RunStatus = "running" | "passed" | "warning" | "failed";
-
-export type RunStepStatus = "passed" | "failed" | "warning";
-export type RunStepAction =
-  | "navigate"
-  | "scroll"
-  | "audit"
-  | "click"
-  | "wait"
-  | "fill"
-  | "resize"
-  | "screenshot";
-
-export type NodeStatus = "passed" | "running" | "pending";
-
-export type IssueSeverity = "error" | "warning";
-export type IssueStatus = "open" | "resolved";
-export type IssueCategory = "security" | "other";
-
 export type RunMeta = {
   runKey: string;
   name: string;
@@ -180,4 +171,14 @@ export type EngineConfig = {
 export type ChatMessage = {
   role: "system" | "user" | "assistant";
   content: string;
+};
+
+export type {
+  IssueCategory,
+  IssueSeverity,
+  IssueStatus,
+  NodeStatus,
+  RunStatus,
+  RunStepAction,
+  RunStepStatus,
 };

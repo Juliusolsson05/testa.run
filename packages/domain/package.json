@@ -1,5 +1,5 @@
 {
-  "name": "@repo/testing",
+  "name": "@repo/domain",
   "version": "0.0.0",
   "private": true,
   "type": "module",
@@ -9,9 +9,7 @@
     "check-types": "tsc --noEmit"
   },
   "devDependencies": {
-    "@repo/domain": "workspace:*",
     "@repo/typescript-config": "workspace:*",
-    "@types/node": "^22.15.3",
     "typescript": "5.9.2"
   }
 }
