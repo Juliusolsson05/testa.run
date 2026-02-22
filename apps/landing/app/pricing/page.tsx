@@ -4,6 +4,7 @@ import { PageShell } from '@/app/components/SiteNav'
 import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
+import { appHref } from '@/lib/urls'
 
 const plans = [
   {
@@ -13,7 +14,7 @@ const plans = [
     desc: 'For solo devs validating one core flow.',
     features: ['1 run / month', '1 journey', 'Basic report', 'Email support'],
     cta: 'Start free',
-    href: '/signup',
+    href: appHref('/sign-up'),
   },
   {
     name: 'Pro',
@@ -22,7 +23,7 @@ const plans = [
     desc: 'For teams shipping weekly.',
     features: ['Unlimited runs', '10 journeys', 'Security scanning', 'Evidence reports', 'Priority support'],
     cta: 'Start free trial',
-    href: '/signup',
+    href: appHref('/sign-up'),
     featured: true,
   },
   {

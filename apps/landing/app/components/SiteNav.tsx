@@ -1,5 +1,6 @@
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
+import { appHref } from '@/lib/urls'
 
 export function SiteNav() {
   return (
@@ -14,8 +15,8 @@ export function SiteNav() {
         <li><Link href="/contact" className="text-[13px] text-gray-500 hover:text-gray-900 transition-colors">Contact</Link></li>
       </ul>
       <div className="flex items-center gap-2">
-        <Button size="sm" variant="ghost" asChild><Link href="/login">Log in</Link></Button>
-        <Button size="sm" asChild><Link href="/signup">Get started</Link></Button>
+        <Button size="sm" variant="ghost" asChild><Link href={appHref('/sign-in')}>Log in</Link></Button>
+        <Button size="sm" asChild><Link href={appHref('/sign-up')}>Get started</Link></Button>
       </div>
     </nav>
   )

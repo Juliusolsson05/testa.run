@@ -9,6 +9,7 @@ import {
 } from 'lucide-react'
 import PitchDeck from '@/components/pitch-deck'
 import { SiteNav, SiteFooter } from '@/app/components/SiteNav'
+import { appHref } from '@/lib/urls'
 
 const steps = [
   { num: '01', title: 'Enter your URL', desc: 'Paste any web app URL and describe what a user would do — sign up, buy something, reset a password.' },
@@ -256,7 +257,7 @@ export default function Home() {
                     variant={plan.highlighted ? 'default' : 'outline'}
                     asChild
                   >
-                    <a href={plan.name === 'Enterprise' ? 'mailto:hello@testa.run' : '#'}>{plan.cta}</a>
+                    <a href={plan.name === 'Enterprise' ? 'mailto:hello@testa.run' : appHref('/sign-up')}>{plan.cta}</a>
                   </Button>
                   <ul className="space-y-2.5">
                     {plan.features.map(f => (
