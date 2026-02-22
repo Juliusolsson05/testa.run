@@ -1,4 +1,4 @@
-export { createTestRun } from "./client.js";
+export { createTestRun } from "./client";
 export type {
   TestRunRequest,
   TestRunHandle,
@@ -20,4 +20,4 @@ export type {
   RunError,
   EngineConfig,
   ChatMessage,
-} from "./types.js";
+} from "./types";

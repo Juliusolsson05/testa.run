@@ -10,15 +10,15 @@ import type {
   TestRunHandle,
   TestRunRequest,
   TestRunResult,
-} from "./types.js";
-import { streamEngine } from "./engine.js";
-import { buildPrompt } from "./prompt.js";
+} from "./types";
+import { streamEngine } from "./engine";
+import { buildPrompt } from "./prompt";
 import {
   backfillIssueNodeKeys,
   buildFlowGraph,
   inferStatusFromStepsAndIssues,
   parseEngineOutput,
-} from "./parser.js";
+} from "./parser";
 
 class AsyncEventQueue<T> implements AsyncIterable<T> {
   private items: T[] = [];

@@ -1,4 +1,4 @@
-import type { ChatMessage, EngineConfig } from "./types.js";
+import type { ChatMessage, EngineConfig } from "./types";
 
 const DEBUG_ENABLED = /^(1|true|yes)$/i.test(
   process.env["TESTING_DEBUG"] ?? "",

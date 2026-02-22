@@ -1,4 +1,4 @@
-import type { ChatMessage, TestRunRequest } from "./types.js";
+import type { ChatMessage, TestRunRequest } from "./types";
 
 type PromptContext = {
   runKey: string;

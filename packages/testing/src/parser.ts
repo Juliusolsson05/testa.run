@@ -5,7 +5,7 @@ import type {
   RunStepAction,
   RunStepStatus,
   StepItem,
-} from "./types.js";
+} from "./types";
 
 export type ParsedOutput = {
   name: string;
