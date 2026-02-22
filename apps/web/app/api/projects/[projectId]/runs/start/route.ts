@@ -3,6 +3,7 @@ import { requireAppUser, requireOrgMember } from '@/lib/auth'
 import { db } from '@/lib/db'
 import { appendRunEvent } from '@/lib/run-events'
 import { startRunExecution } from '@/lib/run-runner'
+import { enforceMonthlyRunLimit } from '@/lib/plan-limits'
 
 // POST /api/projects/:projectId/runs/start — create and start a new run (user-auth)
 export async function POST(req: Request, { params }: { params: Promise<{ projectId: string }> }) {
@@ -15,6 +16,20 @@ export async function POST(req: Request, { params }: { params: Promise<{ project
 
   const member = await requireOrgMember(user.id, project.orgId)
   if (!member) return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+
+  const quota = await enforceMonthlyRunLimit(project.orgId)
+  if (!quota.ok) {
+    return NextResponse.json(
+      {
+        error: 'Starter plan monthly run limit reached. Upgrade to Pro for unlimited runs.',
+        code: 'PLAN_LIMIT_REACHED',
+        plan: quota.plan,
+        limit: quota.limit,
+        used: quota.used,
+      },
+      { status: 402 }
+    )
+  }
 
   if (!process.env.TESTING_ENGINE_URL) {
     return NextResponse.json({ error: 'TESTING_ENGINE_URL is not configured.' }, { status: 500 })

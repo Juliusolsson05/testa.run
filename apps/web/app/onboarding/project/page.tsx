@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from "react"
 import { useRouter } from "next/navigation"
 import { useAuth } from "@/components/auth/AuthProvider"
 import { useAppSelector } from "@/store/hooks"
+import { OnboardingBackground } from "@/components/onboarding/OnboardingBackground"
 
 function slugify(input: string) {
   return input
@@ -95,8 +96,9 @@ export default function OnboardingProjectPage() {
   }
 
   return (
-    <main className="flex min-h-dvh items-center justify-center bg-app-bg px-4">
-      <form onSubmit={onSubmit} className="w-full max-w-md rounded-lg border border-ui-border bg-white p-6 shadow-sm">
+    <main className="relative flex min-h-dvh items-center justify-center overflow-hidden bg-white px-4">
+      <OnboardingBackground />
+      <form onSubmit={onSubmit} className="relative w-full max-w-md rounded-lg border border-ui-border bg-white p-6 shadow-sm">
         <h1 className="text-2xl font-semibold text-[#1a2a33]">Create project</h1>
         <p className="mt-1 text-sm text-ui-muted">Add your first target application.</p>
 

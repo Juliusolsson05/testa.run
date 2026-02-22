@@ -4,6 +4,7 @@ import { useCallback, useEffect, useMemo, useState } from "react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { Play, X } from "lucide-react"
+import { toast } from "sonner"
 import { AppSidebar } from "@/components/workspace/AppSidebar"
 import { Badge } from "@/components/ui/badge"
 import { RequireAuth } from "@/components/auth/RequireAuth"
@@ -137,7 +138,15 @@ function RunsHome() {
         },
         body: JSON.stringify({ name: "New Test Run", category: "ux" }),
       })
-      if (!res.ok) throw new Error("Failed to start run")
+      if (!res.ok) {
+        const payload = await res.json().catch(() => null)
+        if (payload?.code === "PLAN_LIMIT_REACHED") {
+          toast.error(`Starter includes ${payload.limit} run/month. Upgrade to Pro for unlimited runs.`)
+        } else {
+          toast.error(payload?.error || "Failed to start run")
+        }
+        throw new Error("Failed to start run")
+      }
       const data = await res.json()
       setShowConfirm(false)
       router.push(`/workspace/${data.run.id}`)

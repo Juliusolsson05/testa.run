@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import { requireAppUser, requireOrgMember } from '@/lib/auth'
 import { db } from '@/lib/db'
+import { enforceMonthlyRunLimit } from '@/lib/plan-limits'
 
 // GET /api/projects/:projectId/runs — paginated run list for home page
 export async function GET(req: Request, { params }: { params: Promise<{ projectId: string }> }) {
@@ -65,6 +66,20 @@ export async function POST(req: Request, { params }: { params: Promise<{ project
 
   const member = await requireOrgMember(user.id, project.orgId)
   if (!member) return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+
+  const quota = await enforceMonthlyRunLimit(project.orgId)
+  if (!quota.ok) {
+    return NextResponse.json(
+      {
+        error: 'Starter plan monthly run limit reached. Upgrade to Pro for unlimited runs.',
+        code: 'PLAN_LIMIT_REACHED',
+        plan: quota.plan,
+        limit: quota.limit,
+        used: quota.used,
+      },
+      { status: 402 }
+    )
+  }
 
   const body = await req.json().catch(() => null)
   if (!body) return NextResponse.json({ error: 'Invalid request.' }, { status: 400 })

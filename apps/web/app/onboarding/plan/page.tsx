@@ -6,6 +6,7 @@ import { Check } from "lucide-react"
 import { useAppDispatch, useAppSelector } from "@/store/hooks"
 import { createCheckoutSession } from "@/store/billing-thunks"
 import { bootstrapAppContext } from "@/store/app-thunks"
+import { OnboardingBackground } from "@/components/onboarding/OnboardingBackground"
 
 const proFeatures = [
   "Unlimited test runs",
@@ -41,8 +42,7 @@ export default function OnboardingPlanPage() {
 
   return (
     <main className="relative flex min-h-dvh items-center justify-center overflow-hidden bg-white px-4 py-12">
-      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(1000px_380px_at_50%_0%,rgba(191,219,254,0.45),transparent_72%)]" />
-      <div className="pointer-events-none absolute inset-0 opacity-[0.1]" style={{ backgroundImage: "radial-gradient(circle, #64748b 0.8px, transparent 0.8px)", backgroundSize: "20px 20px" }} />
+      <OnboardingBackground />
 
       <div className="relative w-full max-w-lg rounded-2xl border border-ui-border bg-white p-7 shadow-[0_18px_50px_rgba(29,110,245,0.13)]">
         <div className="mb-3 inline-flex rounded-full border border-[#bfdbfe] bg-[#eff6ff] px-3 py-1 text-xs font-semibold text-[#1d6ef5]">
@@ -61,7 +61,7 @@ export default function OnboardingPlanPage() {
               <p className="text-xs text-ui-muted">Most popular for teams shipping weekly</p>
             </div>
             <div className="text-right">
-              <p className="text-2xl font-bold text-[#1a2a33]">$49</p>
+              <p className="text-2xl font-bold text-[#1a2a33]">$29</p>
               <p className="text-xs text-ui-muted">per month</p>
             </div>
           </div>

@@ -17,8 +17,8 @@ const steps = [
 ]
 
 const pricing = [
-  { name: 'Starter', price: '$0', period: '/mo', desc: 'For side projects and personal apps.', features: ['5 test runs / month', '1 user journey', 'Basic findings report', 'Community support'], cta: 'Start free', highlighted: false },
-  { name: 'Pro', price: '$49', period: '/mo', desc: 'For teams that ship weekly.', features: ['Unlimited test runs', '10 user journeys', 'Security scanning', 'Screenshot evidence', 'API monitoring', 'Priority support'], cta: 'Start free trial', highlighted: true },
+  { name: 'Starter', price: '$0', period: '/mo', desc: 'For solo testing and quick checks.', features: ['1 test run / month', '1 user journey', 'Basic findings report', 'Community support'], cta: 'Start free', highlighted: false },
+  { name: 'Pro', price: '$29', period: '/mo', desc: 'For teams that ship weekly.', features: ['Unlimited test runs', '10 user journeys', 'Security scanning', 'Screenshot evidence', 'API monitoring', 'Priority support'], cta: 'Start free trial', highlighted: true },
   { name: 'Enterprise', price: 'Custom', period: '', desc: 'For regulated industries and large orgs.', features: ['Everything in Pro', 'Unlimited journeys', 'SSO & audit logs', 'Custom integrations', 'Dedicated support', 'SLA guarantee'], cta: 'Contact us', highlighted: false },
 ]
 

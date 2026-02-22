@@ -176,3 +176,16 @@
   animation: nodeFocusIn 0.35s cubic-bezier(0.16, 1, 0.3, 1) both;
 }
 
+@keyframes cloud-drift-1 {
+  0%, 100% { transform: translateX(0) translateY(0); }
+  50% { transform: translateX(18px) translateY(-6px); }
+}
+@keyframes cloud-drift-2 {
+  0%, 100% { transform: translateX(0) translateY(0); }
+  50% { transform: translateX(-14px) translateY(5px); }
+}
+@keyframes cloud-drift-3 {
+  0%, 100% { transform: translateX(0) translateY(0); }
+  50% { transform: translateX(10px) translateY(-8px); }
+}
+
