@@ -19,12 +19,14 @@ export async function GET(req: Request, { params }: { params: Promise<{ projectI
   const status = url.searchParams.get('status') as string | null
   const severity = url.searchParams.get('severity') as string | null
   const category = url.searchParams.get('category') as string | null
+  const includeArchived = url.searchParams.get('includeArchived') === 'true'
 
   const issues = await db.issue.findMany({
     where: {
       run: { projectId },
       ...(runId ? { runId } : {}),
       ...(status ? { status: status as never } : {}),
+      ...(!status && !includeArchived ? { status: { not: 'archived' as never } } : {}),
       ...(severity ? { severity: severity as never } : {}),
       ...(category ? { category: category as never } : {}),
     },

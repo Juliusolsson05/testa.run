@@ -20,19 +20,24 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ issueI
   const body = await req.json().catch(() => null)
   if (!body) return NextResponse.json({ error: 'Invalid request.' }, { status: 400 })
 
-  const newStatus = body.status as 'open' | 'resolved' | undefined
+  const newStatus = body.status as 'open' | 'resolved' | 'archived' | undefined
   const resolutionNote = body.resolutionNote as string | undefined
+
+  const data: Record<string, unknown> = {
+    ...(newStatus === 'resolved'
+      ? { status: 'resolved', resolvedAt: new Date(), resolvedById: user.id, resolutionNote: resolutionNote ?? null }
+      : {}),
+    ...(newStatus === 'open'
+      ? { status: 'open', resolvedAt: null, resolvedById: null, resolutionNote: null }
+      : {}),
+    ...(newStatus === 'archived'
+      ? { status: 'archived', resolvedAt: issue.resolvedAt ?? new Date(), resolvedById: issue.resolvedById ?? user.id }
+      : {}),
+  }
 
   const updated = await db.issue.update({
     where: { id: issueId },
-    data: {
-      ...(newStatus === 'resolved'
-        ? { status: 'resolved', resolvedAt: new Date(), resolvedById: user.id, resolutionNote: resolutionNote ?? null }
-        : {}),
-      ...(newStatus === 'open'
-        ? { status: 'open', resolvedAt: null, resolvedById: null, resolutionNote: null }
-        : {}),
-    },
+    data: data as never,
   })
 
   // Update denormalized counts on run

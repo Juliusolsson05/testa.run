@@ -1,7 +1,8 @@
 "use client"
 
-import { useMemo, useState } from "react"
-import { AlertTriangle, Clock, XCircle } from "lucide-react"
+import Image from "next/image"
+import { useEffect, useMemo, useState } from "react"
+import { AlertTriangle, Clock, Expand, X, XCircle } from "lucide-react"
 
 import { Wordmark } from "@/components/ui/TestaRunLogo"
 import { Badge } from "@/components/ui/badge"
@@ -58,12 +59,22 @@ export function Sidebar({ loading = false }: { loading?: boolean }) {
   // ── Show-more state for global issue lists ───────────────────────────────
   const [showAllOpen,     setShowAllOpen]     = useState(false)
   const [showAllResolved, setShowAllResolved] = useState(false)
+  const [fullscreenImageSrc, setFullscreenImageSrc] = useState<string | null>(null)
   const ISSUE_LIMIT = 3
 
   // ── Active issue ─────────────────────────────────────────────────────────
   const activeIssue = activeIssueId ? effectiveIssues.find((i) => i.id === activeIssueId) ?? null : null
 
   const sidebarWidth = activeIssue ? 480 : focusedNode ? 420 : 320
+
+  useEffect(() => {
+    if (!fullscreenImageSrc) return
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setFullscreenImageSrc(null)
+    }
+    window.addEventListener("keydown", onKeyDown)
+    return () => window.removeEventListener("keydown", onKeyDown)
+  }, [fullscreenImageSrc])
 
   async function updateIssueStatus(issueId: string, nextStatus: "open" | "resolved") {
     if (!accessToken) return
@@ -287,6 +298,19 @@ export function Sidebar({ loading = false }: { loading?: boolean }) {
               </div>
             </CardContent>
           </Card>
+
+          {focusedNode.data.imageSrc && (
+            <Button
+              type="button"
+              size="xs"
+              variant="ghost"
+              onClick={() => setFullscreenImageSrc(focusedNode.data.imageSrc ?? null)}
+              className="h-auto w-fit rounded-none border border-white/10 px-2 py-1 text-[10px] text-white/70 hover:bg-white/10"
+            >
+              <Expand className="mr-1 h-3.5 w-3.5" />
+              See image fullscreen
+            </Button>
+          )}
 
           {/* Node issue stats */}
           <div className="grid grid-cols-3 gap-2">
@@ -609,6 +633,31 @@ export function Sidebar({ loading = false }: { loading?: boolean }) {
           </>
         )}
       </div>
+
+      {fullscreenImageSrc && (
+        <div
+          className="fixed inset-0 z-[10000] flex items-center justify-center bg-black/85 p-6"
+          onClick={() => setFullscreenImageSrc(null)}
+        >
+          <button
+            type="button"
+            onClick={() => setFullscreenImageSrc(null)}
+            className="absolute right-6 top-6 rounded border border-white/30 bg-black/40 p-2 text-white hover:bg-black/60"
+            aria-label="Close fullscreen image"
+          >
+            <X className="h-4 w-4" />
+          </button>
+          <Image
+            src={fullscreenImageSrc}
+            alt="Node screenshot"
+            width={1600}
+            height={1000}
+            unoptimized
+            className="max-h-[90vh] max-w-[90vw] h-auto w-auto object-contain"
+            onClick={(e) => e.stopPropagation()}
+          />
+        </div>
+      )}
     </aside>
   )
 }

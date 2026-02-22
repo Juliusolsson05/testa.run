@@ -14,5 +14,5 @@ export type RunStepAction =
 export type NodeStatus = "passed" | "running" | "pending"
 
 export type IssueSeverity = "error" | "warning"
-export type IssueStatus = "open" | "resolved"
+export type IssueStatus = "open" | "resolved" | "archived"
 export type IssueCategory = "security" | "other"

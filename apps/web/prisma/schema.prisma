@@ -78,6 +78,7 @@ enum IssueSeverity {
 enum IssueStatus {
   open
   resolved
+  archived
 }
 
 enum IssueCategory {

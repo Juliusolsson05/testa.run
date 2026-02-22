@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useState } from "react"
 import Link from "next/link"
 import { useSearchParams } from "next/navigation"
-import { Filter, KanbanSquare, LayoutList } from "lucide-react"
+import { Filter, KanbanSquare, LayoutList, Plus } from "lucide-react"
 import { AppSidebar } from "@/components/workspace/AppSidebar"
 import { useAuth } from "@/components/auth/AuthProvider"
 import { InlineLoading } from "@/components/loading/InlineLoading"
@@ -23,7 +23,7 @@ type RunIssue = {
   nodeLabel: string
   stepIndex: number | null
   severity: "error" | "warning"
-  status: "open" | "resolved"
+  status: "open" | "resolved" | "archived"
   title: string
   element: string
 }
@@ -52,11 +52,13 @@ function IssueListRow({
         <span
           className={cn(
             "h-2 w-2 rounded-full",
-            issue.status === "resolved"
-              ? "bg-emerald-500"
-              : issue.severity === "error"
-                ? "bg-red-500"
-                : "bg-amber-400"
+            issue.status === "archived"
+              ? "bg-slate-400"
+              : issue.status === "resolved"
+                ? "bg-emerald-500"
+                : issue.severity === "error"
+                  ? "bg-red-500"
+                  : "bg-amber-400"
           )}
         />
         <div className="flex-1">
@@ -83,11 +85,13 @@ function KanbanColumn({
   label: string
   items: RunIssue[]
   hrefFor: (issue: RunIssue) => string
-  status: "open" | "resolved"
-  onDropTo: (status: "open" | "resolved") => void
+  status: "open" | "resolved" | "archived"
+  onDropTo: (status: "open" | "resolved" | "archived") => void
   onDragStart: (id: string) => void
   dropActive: boolean
 }) {
+  const isArchived = status === "archived"
+
   return (
     <div className="flex min-w-0 flex-1 flex-col gap-2">
       <div className="flex items-center gap-2">
@@ -101,22 +105,33 @@ function KanbanColumn({
         onDragOver={(e) => e.preventDefault()}
         onDrop={() => onDropTo(status)}
         className={cn(
-          "min-h-24 rounded border border-dashed border-ui-border p-2",
-          dropActive && "border-[#1d6ef5] bg-[#eff6ff]"
+          "min-h-24 rounded p-2",
+          isArchived ? "border-2 border-dashed border-[#9ca3af] bg-[#f8fafc]" : "border border-dashed border-ui-border",
+          dropActive && (isArchived ? "border-[#1d6ef5] bg-[#eff6ff]" : "border-[#1d6ef5] bg-[#eff6ff]")
         )}
       >
         {items.length === 0 ? (
-          <div className="px-4 py-6 text-center text-[12px] text-ui-muted">Drop issue here</div>
+          isArchived ? (
+            <div className="flex min-h-24 flex-col items-center justify-center gap-1.5 px-4 py-6 text-center text-[12px] text-ui-muted">
+              <span className="inline-flex h-7 w-7 items-center justify-center rounded border-2 border-dashed border-[#9ca3af] bg-white text-[#64748b]">
+                <Plus className="h-4 w-4" />
+              </span>
+              Drop resolved issues here
+            </div>
+          ) : (
+            <div className="px-4 py-6 text-center text-[12px] text-ui-muted">Drop issue here</div>
+          )
         ) : (
           <div className="space-y-2">
             {items.map((issue) => (
-              <IssueListRow
-                key={issue.id}
-                issue={issue}
-                href={hrefFor(issue)}
-                draggable
-                onDragStart={onDragStart}
-              />
+              <div key={issue.id} className={cn(isArchived && "opacity-70") }>
+                <IssueListRow
+                  issue={issue}
+                  href={hrefFor(issue)}
+                  draggable
+                  onDragStart={onDragStart}
+                />
+              </div>
             ))}
           </div>
         )}
@@ -137,6 +152,7 @@ export default function IssuesPage() {
   const [issues, setIssues] = useState<RunIssue[]>([])
   const [loadingIssues, setLoadingIssues] = useState(true)
   const [draggingIssueId, setDraggingIssueId] = useState<string | null>(null)
+  const [showArchived, setShowArchived] = useState(false)
 
   useEffect(() => {
     if (!runIdParam) return
@@ -162,8 +178,9 @@ export default function IssuesPage() {
       }
 
       setLoadingIssues(true)
-      const query = scope === "all" ? "" : `?runId=${encodeURIComponent(scope)}`
-      const res = await fetch(`/api/projects/${project.id}/issues${query}`, {
+      const query = new URLSearchParams({ includeArchived: "true" })
+      if (scope !== "all") query.set("runId", scope)
+      const res = await fetch(`/api/projects/${project.id}/issues?${query.toString()}`, {
         headers: { Authorization: `Bearer ${accessToken}` },
         cache: "no-store",
       })
@@ -179,7 +196,7 @@ export default function IssuesPage() {
     void load()
   }, [accessToken, project?.id, runsLoading, scope])
 
-  async function updateIssueStatus(issueId: string, nextStatus: "open" | "resolved") {
+  async function updateIssueStatus(issueId: string, nextStatus: "open" | "resolved" | "archived") {
     if (!accessToken) return
 
     const previous = issues
@@ -203,21 +220,25 @@ export default function IssuesPage() {
 
   const filtered = useMemo(() => {
     return issues.filter((i) => {
+      if (showArchived && i.status === "archived") return true
+      if (!showArchived && i.status === "archived") return false
       if (filter === "all") return true
       if (filter === "resolved") return i.status === "resolved"
       if (filter === "error") return i.status === "open" && i.severity === "error"
       return i.status === "open" && i.severity === "warning"
     })
-  }, [filter, issues])
+  }, [filter, issues, showArchived])
 
-  const { openErrors, openWarnings, resolved } = useMemo(() => {
+  const { openErrors, openWarnings, resolved, archived } = useMemo(() => {
     const openErrorsIssues = filtered.filter((i) => i.status === "open" && i.severity === "error")
     const openWarningsIssues = filtered.filter((i) => i.status === "open" && i.severity === "warning")
     const resolvedIssues = filtered.filter((i) => i.status === "resolved")
+    const archivedIssues = filtered.filter((i) => i.status === "archived")
     return {
       openErrors: openErrorsIssues,
       openWarnings: openWarningsIssues,
       resolved: resolvedIssues,
+      archived: archivedIssues,
     }
   }, [filtered])
 
@@ -225,14 +246,21 @@ export default function IssuesPage() {
   const totalErrors = issues.filter((i) => i.status === "open" && i.severity === "error").length
   const totalWarnings = issues.filter((i) => i.status === "open" && i.severity === "warning").length
   const totalResolved = issues.filter((i) => i.status === "resolved").length
+  const totalArchived = issues.filter((i) => i.status === "archived").length
 
   const issueHref = (issue: RunIssue) => `/workspace/${issue.runId}?issueId=${issue.id}`
 
-  const onDropTo = (status: "open" | "resolved") => {
+  const onDropTo = (status: "open" | "resolved" | "archived") => {
     if (!draggingIssueId) return
     const current = issues.find((i) => i.id === draggingIssueId)
     setDraggingIssueId(null)
     if (!current || current.status === status) return
+    if (status === "archived" && current.status !== "resolved") return
+
+    if (status === "archived") {
+      setShowArchived(true)
+    }
+
     void updateIssueStatus(current.id, status)
   }
 
@@ -288,6 +316,18 @@ export default function IssuesPage() {
             ))}
           </select>
 
+          <label className="ml-2 inline-flex items-center gap-1.5 text-[11px] font-semibold text-ui-muted">
+            <input
+              type="checkbox"
+              checked={showArchived}
+              onChange={(e) => {
+                setShowArchived(e.target.checked)
+              }}
+              className="h-3.5 w-3.5 rounded border-ui-border"
+            />
+            Show archived{totalArchived > 0 ? ` (${totalArchived})` : ""}
+          </label>
+
           <div className="ml-2 flex items-center gap-1 rounded border border-ui-border bg-white p-1">
             <button
               onClick={() => setViewMode("kanban")}
@@ -326,7 +366,7 @@ export default function IssuesPage() {
               ))}
             </div>
           ) : (
-            <div className="grid gap-4 lg:grid-cols-3">
+            <div className={cn("grid gap-4", showArchived ? "lg:grid-cols-4" : "lg:grid-cols-3")}>
               <KanbanColumn
                 label="Open errors"
                 items={openErrors}
@@ -354,6 +394,17 @@ export default function IssuesPage() {
                 onDragStart={setDraggingIssueId}
                 dropActive={draggingIssueId !== null}
               />
+              {showArchived && (
+                <KanbanColumn
+                  label="Archived"
+                  items={archived}
+                  hrefFor={issueHref}
+                  status="archived"
+                  onDropTo={onDropTo}
+                  onDragStart={setDraggingIssueId}
+                  dropActive={draggingIssueId !== null}
+                />
+              )}
             </div>
           )}
         </div>

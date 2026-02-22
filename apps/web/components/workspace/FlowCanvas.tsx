@@ -207,7 +207,7 @@ function FlowController() {
 
       const nodeData = node.data as ScreenshotNodeData
       const nodeWidth = nodeData.isMain || nodeData.isLarge ? NODE_WIDE : NODE_WIDTH
-      const targetZoom = Math.min((window.innerHeight * 0.8) / nodeHeight, MAX_ZOOM)
+      const targetZoom = Math.min((window.innerHeight * 0.74) / nodeHeight, MAX_ZOOM)
       focusZoomRef.current = targetZoom
       const centerX = node.position.x + nodeWidth / 2
       const centerY = node.position.y + nodeHeight / 2
