@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation"
 import { Check } from "lucide-react"
 import { useAppDispatch, useAppSelector } from "@/store/hooks"
 import { createCheckoutSession } from "@/store/billing-thunks"
-import { setOnboardingState } from "@/store/onboarding-slice"
+import { bootstrapAppContext } from "@/store/app-thunks"
 
 const proFeatures = [
   "Unlimited test runs",
@@ -34,8 +34,8 @@ export default function OnboardingPlanPage() {
     setError("Could not start checkout. Please try again.")
   }
 
-  function continueStarter() {
-    dispatch(setOnboardingState({ stage: "done", needsPlan: false, blockReason: "none" }))
+  async function continueStarter() {
+    await dispatch(bootstrapAppContext())
     router.replace("/")
   }
 

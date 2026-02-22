@@ -3,8 +3,7 @@
 import { useEffect, useMemo, useState } from "react"
 import { useRouter } from "next/navigation"
 import { useAuth } from "@/components/auth/AuthProvider"
-import { useAppDispatch, useAppSelector } from "@/store/hooks"
-import { bootstrapAppContext } from "@/store/app-thunks"
+import { useAppSelector } from "@/store/hooks"
 
 function slugify(input: string) {
   return input
@@ -17,7 +16,6 @@ function slugify(input: string) {
 
 export default function OnboardingProjectPage() {
   const router = useRouter()
-  const dispatch = useAppDispatch()
   const { accessToken } = useAuth()
   const activeOrgId = useAppSelector((s) => s.workspace.activeOrgId)
 
@@ -93,7 +91,6 @@ export default function OnboardingProjectPage() {
       return
     }
 
-    await dispatch(bootstrapAppContext())
     router.replace("/onboarding/plan")
   }
 
