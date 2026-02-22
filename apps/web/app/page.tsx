@@ -11,7 +11,8 @@ import { RequireAuth } from "@/components/auth/RequireAuth"
 import { useAuth } from "@/components/auth/AuthProvider"
 import { InlineLoading } from "@/components/loading/InlineLoading"
 import { useProjectRuns } from "@/components/workspace/useProjectRuns"
-import { useAppSelector } from "@/store/hooks"
+import { fetchProjectRuns } from "@/store/runs-slice"
+import { useAppDispatch, useAppSelector } from "@/store/hooks"
 import type { Run, RunStatus } from "@/types/domain"
 import { cn } from "@/lib/utils"
 
@@ -93,6 +94,7 @@ function mapApiRunToUi(run: ApiRun, nowMs: number): Run {
 
 function RunsHome() {
   const router = useRouter()
+  const dispatch = useAppDispatch()
   const { accessToken } = useAuth()
   const [filter, setFilter] = useState<FilterType>("all")
   const [showConfirm, setShowConfirm] = useState(false)
@@ -131,6 +133,42 @@ function RunsHome() {
     [issueCounts]
   )
 
+  function defaultRunName() {
+    const now = new Date()
+    const stamp = now.toLocaleString("sv-SE", {
+      year: "numeric",
+      month: "2-digit",
+      day: "2-digit",
+      hour: "2-digit",
+      minute: "2-digit",
+    })
+    return `Run ${stamp}`
+  }
+
+  async function renameRun(runId: string, currentName: string) {
+    if (!accessToken) return
+    const name = window.prompt("Rename run", currentName)?.trim()
+    if (!name || name === currentName) return
+
+    const res = await fetch(`/api/runs/${runId}`, {
+      method: "PATCH",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${accessToken}`,
+      },
+      body: JSON.stringify({ name }),
+    })
+
+    if (!res.ok) {
+      const payload = await res.json().catch(() => null)
+      toast.error(payload?.error || "Could not rename run")
+      return
+    }
+
+    toast.success("Run renamed")
+    void dispatch(fetchProjectRuns({ force: true }))
+  }
+
   const startNewRun = useCallback(async () => {
     if (!accessToken || !project?.id || !usageReady || runLocked) return
     setStarting(true)
@@ -141,7 +179,7 @@ function RunsHome() {
           "Content-Type": "application/json",
           Authorization: `Bearer ${accessToken}`,
         },
-        body: JSON.stringify({ name: "New Test Run", category: "ux" }),
+        body: JSON.stringify({ name: defaultRunName(), category: "ux" }),
       })
       if (!res.ok) {
         const payload = await res.json().catch(() => null)
@@ -295,6 +333,16 @@ function RunsHome() {
                     <div className="min-w-0 flex-1">
                       <div className="flex items-baseline gap-2">
                         <span className="text-[14px] font-semibold text-[#1a2a33] transition-colors group-hover:text-[#1d6ef5]">{run.name}</span>
+                        <button
+                          onClick={(e) => {
+                            e.preventDefault()
+                            e.stopPropagation()
+                            void renameRun(run.id, run.name)
+                          }}
+                          className="rounded border border-ui-border px-1.5 py-0.5 text-[10px] font-semibold text-ui-muted hover:text-[#1d6ef5]"
+                        >
+                          Rename
+                        </button>
                         <span className="font-mono text-[11px] text-ui-muted">{run.label}</span>
                       </div>
                       <div className="mt-0.5 flex items-center gap-3 font-mono text-[11px] text-ui-muted">
