@@ -4,6 +4,7 @@ import { useEffect, useState } from "react"
 import { ChevronDown, ChevronRight } from "lucide-react"
 import { AppSidebar } from "@/components/workspace/AppSidebar"
 import { useAuth } from "@/components/auth/AuthProvider"
+import { InlineLoading } from "@/components/loading/InlineLoading"
 import { useProjectRuns, type ProjectRun } from "@/components/workspace/useProjectRuns"
 
 type RunStep = {
@@ -23,7 +24,7 @@ function duration(ms: number | null) {
 
 export default function RunsPage() {
   const { accessToken } = useAuth()
-  const { runs } = useProjectRuns(undefined, 30)
+  const { loading, runs } = useProjectRuns(undefined, 30)
   const [openRunId, setOpenRunId] = useState<string | null>(null)
   const [stepsByRun, setStepsByRun] = useState<Record<string, RunStep[]>>({})
 
@@ -50,6 +51,10 @@ export default function RunsPage() {
         <h1 className="mb-4 text-[22px] font-bold text-[#1a2a33]">Runs</h1>
 
         <div className="space-y-3">
+          {loading && runs.length === 0 ? (
+            <InlineLoading label="Loading runs…" cubeSize={52} className="min-h-[280px]" />
+          ) : (
+            <>
           {runs.map((run) => {
             const isOpen = openRunId === run.id
             const steps = stepsByRun[run.id] ?? []
@@ -91,6 +96,8 @@ export default function RunsPage() {
             )
           })}
           {runs.length === 0 && <div className="text-sm text-ui-muted">No runs yet.</div>}
+            </>
+          )}
         </div>
       </div>
     </div>

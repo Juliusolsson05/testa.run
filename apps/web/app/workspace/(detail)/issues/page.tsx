@@ -128,7 +128,7 @@ export default function IssuesPage() {
   const params = useSearchParams()
   const runIdParam = params.get("runId") || undefined
   const { accessToken } = useAuth()
-  const { project, runs } = useProjectRuns(undefined, 20)
+  const { loading: runsLoading, project, runs } = useProjectRuns(undefined, 20)
 
   const [filter, setFilter] = useState<FilterType>("all")
   const [viewMode, setViewMode] = useState<ViewMode>("kanban")
@@ -144,7 +144,22 @@ export default function IssuesPage() {
 
   useEffect(() => {
     async function load() {
-      if (!accessToken || !project?.id) return
+      if (!accessToken) {
+        setLoadingIssues(false)
+        setIssues([])
+        return
+      }
+
+      if (!project?.id) {
+        if (runsLoading) {
+          setLoadingIssues(true)
+        } else {
+          setLoadingIssues(false)
+          setIssues([])
+        }
+        return
+      }
+
       setLoadingIssues(true)
       const query = scope === "all" ? "" : `?runId=${encodeURIComponent(scope)}`
       const res = await fetch(`/api/projects/${project.id}/issues${query}`, {
@@ -161,7 +176,7 @@ export default function IssuesPage() {
     }
 
     void load()
-  }, [accessToken, project?.id, scope])
+  }, [accessToken, project?.id, runsLoading, scope])
 
   async function updateIssueStatus(issueId: string, nextStatus: "open" | "resolved") {
     if (!accessToken) return

@@ -11,8 +11,12 @@ import { useProjectRuns } from "@/components/workspace/useProjectRuns"
 import { InlineLoading } from "@/components/loading/InlineLoading"
 import { cn } from "@/lib/utils"
 
+type ScopeType = "all" | string
+
 type SecurityIssue = {
   id: string
+  runId: string
+  runName: string
   stepIndex: number | null
   nodeLabel: string
   severity: "error" | "warning"
@@ -29,22 +33,47 @@ export default function SecurityPage() {
   const params = useSearchParams()
   const runIdParam = params.get("runId") || undefined
   const { accessToken } = useAuth()
-  const { activeRun } = useProjectRuns(runIdParam, 10)
+  const { loading: runsLoading, project, runs } = useProjectRuns(undefined, 20)
 
+  const [scope, setScope] = useState<ScopeType>(runIdParam ?? "all")
   const [issues, setIssues] = useState<SecurityIssue[]>([])
   const [runDetail, setRunDetail] = useState<RunDetail | null>(null)
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
+    if (!runIdParam) return
+    setScope(runIdParam)
+  }, [runIdParam])
+
+  useEffect(() => {
     async function load() {
-      if (!accessToken || !activeRun?.id) return
+      if (!accessToken) {
+        setLoading(false)
+        setIssues([])
+        setRunDetail(null)
+        return
+      }
+
+      if (!project?.id) {
+        if (runsLoading) {
+          setLoading(true)
+        } else {
+          setLoading(false)
+          setIssues([])
+          setRunDetail(null)
+        }
+        return
+      }
+
       setLoading(true)
       const headers = { Authorization: `Bearer ${accessToken}` }
+      const query = new URLSearchParams({ category: "security" })
+      if (scope !== "all") query.set("runId", scope)
 
-      const [issuesRes, runRes] = await Promise.all([
-        fetch(`/api/runs/${activeRun.id}/issues?category=security`, { headers, cache: "no-store" }),
-        fetch(`/api/runs/${activeRun.id}`, { headers, cache: "no-store" }),
-      ])
+      const issuesRes = await fetch(`/api/projects/${project.id}/issues?${query.toString()}`, {
+        headers,
+        cache: "no-store",
+      })
 
       if (issuesRes.ok) {
         const data = await issuesRes.json()
@@ -53,9 +82,14 @@ export default function SecurityPage() {
         setIssues([])
       }
 
-      if (runRes.ok) {
-        const data = await runRes.json()
-        setRunDetail({ securitySynopsis: data.run.securitySynopsis ?? null })
+      if (scope !== "all") {
+        const runRes = await fetch(`/api/runs/${scope}`, { headers, cache: "no-store" })
+        if (runRes.ok) {
+          const data = await runRes.json()
+          setRunDetail({ securitySynopsis: data.run.securitySynopsis ?? null })
+        } else {
+          setRunDetail(null)
+        }
       } else {
         setRunDetail(null)
       }
@@ -64,7 +98,7 @@ export default function SecurityPage() {
     }
 
     void load()
-  }, [accessToken, activeRun?.id])
+  }, [accessToken, project?.id, runsLoading, scope])
 
   const openSec = useMemo(() => issues.filter((i) => i.status === "open"), [issues])
   const resolvedSec = useMemo(() => issues.filter((i) => i.status === "resolved"), [issues])
@@ -82,6 +116,10 @@ export default function SecurityPage() {
     Low: { label: "LOW", dot: "bg-emerald-500", text: "text-emerald-600", bg: "bg-emerald-500/10" },
     None: { label: "NONE", dot: "bg-white/30", text: "text-white/50", bg: "bg-white/10" },
   }[riskLevel]
+
+  const selectedRunName = scope === "all"
+    ? "All jobs"
+    : runs.find((r) => r.id === scope)?.name ?? "Selected job"
 
   return (
     <div className="flex h-dvh bg-[#eff6ff] font-sans">
@@ -102,6 +140,23 @@ export default function SecurityPage() {
               </div>
             ))}
           </div>
+        </div>
+
+        <div className="flex items-center gap-3 border-b border-[#c7d9f0] bg-white px-8 py-3">
+          <ShieldAlert className="h-3.5 w-3.5 text-[#4a7ab5]" />
+          <select
+            className="rounded border border-[#c7d9f0] bg-white px-2 py-1 text-[12px] text-[#1a2a33]"
+            value={scope}
+            onChange={(e) => setScope(e.target.value)}
+          >
+            <option value="all">All jobs</option>
+            {runs.map((run) => (
+              <option key={run.id} value={run.id}>
+                {run.name}
+              </option>
+            ))}
+          </select>
+          <span className="ml-auto text-[11px] text-[#4a7ab5]">{selectedRunName}</span>
         </div>
 
         <div className="flex-1 px-8 py-6 flex flex-col gap-6">
@@ -147,7 +202,7 @@ export default function SecurityPage() {
                       return (
                         <Link
                           key={issue.id}
-                          href={activeRun ? `/workspace/${activeRun.id}?issueId=${issue.id}` : "#"}
+                          href={`/workspace/${issue.runId}?issueId=${issue.id}`}
                           className={cn(
                             "group flex flex-col gap-2.5 border-l-4 px-5 py-4 transition-colors cursor-pointer",
                             idx !== 0 && "border-t border-[#eff6ff]",
