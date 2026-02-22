@@ -10,6 +10,7 @@ import { applyRunEvent } from "@/store/runs-slice"
 import { ingestRunEventMeta, setRunStreamStatus } from "@/store/run-live-slice"
 import type { Issue, NodeStatus } from "@/types/domain"
 import type { ScreenshotNodeData } from "@/types/flow"
+import type { RunEventEnvelope } from "@/types/events"
 import type { WorkspaceRun } from "@/context/workspace-data-context"
 
 type WorkspaceApiPayload = {
@@ -31,14 +32,6 @@ type WorkspaceApiPayload = {
   }>
   edges: Edge[]
   issues: Issue[]
-}
-
-type RunEventEnvelope = {
-  runId: string
-  seq: number
-  at: string
-  type: string
-  payload: Record<string, unknown>
 }
 
 function applyEvent(current: WorkspaceApiPayload, event: RunEventEnvelope): WorkspaceApiPayload {

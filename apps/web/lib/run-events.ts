@@ -1,13 +1,6 @@
 import type { Prisma } from '@prisma/client'
 import { db } from '@/lib/db'
-
-type RunEventEnvelope = {
-  runId: string
-  seq: number
-  at: string
-  type: string
-  payload: Record<string, unknown>
-}
+import type { RunEventEnvelope } from '@/types/events'
 
 type RunEventListener = (event: RunEventEnvelope) => void
 

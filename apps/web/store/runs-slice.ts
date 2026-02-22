@@ -1,6 +1,7 @@
 import { createAsyncThunk, createSlice, type PayloadAction } from "@reduxjs/toolkit"
 import { toast } from "sonner"
 import type { RootState } from "@/store"
+import type { RunEventEnvelope } from "@/types/events"
 
 export type ProjectRef = {
   id: string
@@ -27,14 +28,6 @@ type RunsState = {
   project: ProjectRef | null
   runs: ProjectRun[]
   lastFetchedAt: number | null
-}
-
-type RunEventEnvelope = {
-  runId: string
-  seq: number
-  at: string
-  type: string
-  payload: Record<string, unknown>
 }
 
 const initialState: RunsState = {
