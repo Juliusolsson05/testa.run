@@ -38,8 +38,10 @@ export async function GET(req: Request, { params }: { params: Promise<{ projectI
   const hasMore = runs.length > take
   const items = hasMore ? runs.slice(0, take) : runs
 
+  type RunItem = (typeof items)[number]
+
   return NextResponse.json({
-    runs: items.map((r) => ({
+    runs: items.map((r: RunItem) => ({
       id: r.id,
       label: r.label,
       name: r.name,

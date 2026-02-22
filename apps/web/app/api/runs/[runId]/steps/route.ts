@@ -25,8 +25,10 @@ export async function GET(_req: Request, { params }: { params: Promise<{ runId: 
     },
   })
 
+  type StepItem = (typeof steps)[number]
+
   return NextResponse.json({
-    steps: steps.map((s) => ({
+    steps: steps.map((s: StepItem) => ({
       id: s.id,
       index: s.index,
       action: s.action,

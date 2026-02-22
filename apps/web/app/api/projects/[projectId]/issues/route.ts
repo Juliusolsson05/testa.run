@@ -38,8 +38,10 @@ export async function GET(req: Request, { params }: { params: Promise<{ projectI
     },
   })
 
+  type IssueItem = (typeof issues)[number]
+
   return NextResponse.json({
-    issues: issues.map((i) => ({
+    issues: issues.map((i: IssueItem) => ({
       id: i.id,
       runId: i.runId,
       runName: i.run.label || i.run.name,

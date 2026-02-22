@@ -23,8 +23,12 @@ export async function GET(_req: Request, { params }: { params: Promise<{ runId: 
     db.issue.findMany({ where: { runId }, orderBy: { detectedAt: 'asc' } }),
   ])
 
+  type NodeItem = (typeof nodes)[number]
+  type EdgeItem = (typeof edges)[number]
+  type IssueItem = (typeof issues)[number]
+
   // Build nodeKey lookup for edges and issues
-  const nodeById = new Map(nodes.map((n) => [n.id, n]))
+  const nodeById = new Map(nodes.map((n: NodeItem) => [n.id, n]))
 
   return NextResponse.json({
     run: {
@@ -36,7 +40,7 @@ export async function GET(_req: Request, { params }: { params: Promise<{ runId: 
       startedAt: run.startedAt,
       securitySynopsis: run.securitySynopsis,
     },
-    nodes: nodes.map((n) => ({
+    nodes: nodes.map((n: NodeItem) => ({
       id: n.nodeKey,
       position: { x: n.positionX, y: n.positionY },
       data: {
@@ -54,7 +58,7 @@ export async function GET(_req: Request, { params }: { params: Promise<{ runId: 
         ...((n.data as Record<string, unknown>) ?? {}),
       },
     })),
-    edges: edges.map((e) => ({
+    edges: edges.map((e: EdgeItem) => ({
       id: e.edgeKey,
       source: nodeById.get(e.sourceNodeId)?.nodeKey ?? e.sourceNodeId,
       target: nodeById.get(e.targetNodeId)?.nodeKey ?? e.targetNodeId,
@@ -63,7 +67,7 @@ export async function GET(_req: Request, { params }: { params: Promise<{ runId: 
       zIndex: e.zIndex,
       style: e.style,
     })),
-    issues: issues.map((i) => ({
+    issues: issues.map((i: IssueItem) => ({
       id: i.id,
       nodeId: nodeById.get(i.nodeId)?.nodeKey ?? i.nodeId,
       runId: i.runId,

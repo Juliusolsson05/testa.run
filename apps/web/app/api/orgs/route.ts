@@ -19,8 +19,10 @@ export async function GET() {
     },
   })
 
+  type Membership = (typeof memberships)[number]
+
   return NextResponse.json({
-    orgs: memberships.map((m) => ({
+    orgs: memberships.map((m: Membership) => ({
       id: m.org.id,
       name: m.org.name,
       slug: m.org.slug,
