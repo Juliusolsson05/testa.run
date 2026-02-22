@@ -9,6 +9,7 @@ import {
   type Node,
   type NodeProps,
 } from "@xyflow/react"
+import { Camera, ImageOff } from "lucide-react"
 
 import { Badge } from "@/components/ui/badge"
 import { CHROME_HEIGHT, NODE_WIDTH, NODE_WIDE, SCREENSHOT_RATIO } from "@/constants/flow"
@@ -105,7 +106,11 @@ export function ScreenshotNode({ id, data }: NodeProps<Node<ScreenshotNodeData>>
           />
         ) : (
           <div className="flex h-full w-full flex-col items-center justify-center gap-3 border-2 border-dashed border-[#dbeafe] text-xs text-[#93c5fd]">
-            <span className="text-3xl opacity-50">🖼</span>
+            {nodeData.imageSrc ? (
+              <ImageOff className="h-8 w-8 opacity-60" aria-hidden="true" />
+            ) : (
+              <Camera className="h-8 w-8 opacity-60" aria-hidden="true" />
+            )}
             <span>{nodeData.imageSrc ? "Screenshot unavailable (403)" : "Screenshot pending"}</span>
           </div>
         )}
