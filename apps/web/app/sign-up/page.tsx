@@ -1,12 +1,12 @@
 "use client"
 
 import Link from "next/link"
+import { Suspense, useEffect, useState } from "react"
 import { useRouter, useSearchParams } from "next/navigation"
-import { useEffect, useState } from "react"
 import { getBrowserSupabase } from "@/lib/supabase-browser"
 import { useAuth } from "@/components/auth/AuthProvider"
 
-export default function SignUpPage() {
+function SignUpForm() {
   const router = useRouter()
   const params = useSearchParams()
   const incomingTargetUrl = params.get("targetUrl")
@@ -93,5 +93,13 @@ export default function SignUpPage() {
         </p>
       </form>
     </main>
+  )
+}
+
+export default function SignUpPage() {
+  return (
+    <Suspense fallback={<main className="flex min-h-dvh items-center justify-center bg-app-bg px-4 text-ui-muted">Loading…</main>}>
+      <SignUpForm />
+    </Suspense>
   )
 }
