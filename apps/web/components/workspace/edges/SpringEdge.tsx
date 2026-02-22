@@ -11,6 +11,8 @@ import {
 } from "@xyflow/react"
 import { useIssueContext } from "@/context/issue-context"
 import { useWorkspaceData } from "@/context/workspace-data-context"
+import { NODE_WIDTH, NODE_WIDE, SCREENSHOT_RATIO } from "@/constants/flow"
+import type { ScreenshotNodeData } from "@/types/flow"
 
 // Control points match React Flow's getBezierPath: both CPs sit at midX (0.5 × distance)
 function bezierPoint(sx: number, sy: number, tx: number, ty: number, t: number): [number, number] {
@@ -69,16 +71,85 @@ export function SpringEdge({
   const { activeNodeId, selectNode } = useIssueContext()
   const { nodes, edges } = useWorkspaceData()
   const nodesById = useMemo(() => Object.fromEntries(nodes.map((n) => [n.id, n])), [nodes])
+
+  const edgeAnchorsById = useMemo(() => {
+    const anchors = new Map<string, { sourceImageY?: number; targetImageY?: number }>()
+    const outBySource = new Map<string, typeof edges>()
+    const inByTarget = new Map<string, typeof edges>()
+
+    for (const e of edges) {
+      if (!outBySource.has(String(e.source))) outBySource.set(String(e.source), [])
+      outBySource.get(String(e.source))!.push(e)
+
+      if (!inByTarget.has(String(e.target))) inByTarget.set(String(e.target), [])
+      inByTarget.get(String(e.target))!.push(e)
+    }
+
+    const assignAnchors = (grouped: Map<string, typeof edges>, side: "source" | "target") => {
+      for (const [nodeId, group] of grouped) {
+        if (group.length <= 1) continue
+
+        const node = nodesById[nodeId]
+        if (!node) continue
+
+        const sorted = [...group].sort((a, b) => {
+          const otherA = side === "source" ? String(a.target) : String(a.source)
+          const otherB = side === "source" ? String(b.target) : String(b.source)
+          const stepA = (nodesById[otherA]?.data as ScreenshotNodeData | undefined)?.step ?? Number.MAX_SAFE_INTEGER
+          const stepB = (nodesById[otherB]?.data as ScreenshotNodeData | undefined)?.step ?? Number.MAX_SAFE_INTEGER
+          if (stepA !== stepB) return stepA - stepB
+          return otherA.localeCompare(otherB)
+        })
+
+        const minImageY = 0.12
+        const maxImageY = 0.88
+
+        sorted.forEach((edge, i) => {
+          const t = sorted.length === 1 ? 0.5 : i / (sorted.length - 1)
+          const imageY = minImageY + (maxImageY - minImageY) * t
+          const key = String(edge.id)
+          const current = anchors.get(key) ?? {}
+          if (side === "source") current.sourceImageY = imageY
+          else current.targetImageY = imageY
+          anchors.set(key, current)
+        })
+      }
+    }
+
+    assignAnchors(outBySource, "source")
+    assignAnchors(inByTarget, "target")
+
+    return anchors
+  }, [edges, nodesById])
+
   const hasReverseEdge = useMemo(
     () => edges.some((e) => e.source === target && e.target === source && e.id !== id),
     [edges, id, source, target]
   )
 
+  const sourceNodeData = (nodesById[String(source)]?.data as ScreenshotNodeData | undefined)
+  const targetNodeData = (nodesById[String(target)]?.data as ScreenshotNodeData | undefined)
+  const sourceWidth = sourceNodeData && (sourceNodeData.isMain || sourceNodeData.isLarge) ? NODE_WIDE : NODE_WIDTH
+  const targetWidth = targetNodeData && (targetNodeData.isMain || targetNodeData.isLarge) ? NODE_WIDE : NODE_WIDTH
+  const sourceScreenshotHeight = sourceWidth * SCREENSHOT_RATIO
+  const targetScreenshotHeight = targetWidth * SCREENSHOT_RATIO
+
+  const sourceBaseImageY = sourceNodeData?.sourceHandle?.imageY ?? 0.5
+  const targetBaseImageY = 0.5
+
+  const edgeAnchor = edgeAnchorsById.get(String(id))
+  const sourceEdgeOffset = edgeAnchor?.sourceImageY != null
+    ? sourceScreenshotHeight * (edgeAnchor.sourceImageY - sourceBaseImageY)
+    : 0
+  const targetEdgeOffset = edgeAnchor?.targetImageY != null
+    ? targetScreenshotHeight * (edgeAnchor.targetImageY - targetBaseImageY)
+    : 0
+
   const laneOffset = hasReverseEdge ? (source < target ? -18 : 18) : 0
   const sx = sourceX
-  const sy = sourceY + laneOffset
+  const sy = sourceY + sourceEdgeOffset + laneOffset
   const tx = targetX
-  const ty = targetY + laneOffset
+  const ty = targetY + targetEdgeOffset + laneOffset
 
   // Reactive viewport: x/y = canvas pan offset in px, zoom = scale
   const { x: vpX, y: vpY, zoom: vpZoom } = useViewport()
