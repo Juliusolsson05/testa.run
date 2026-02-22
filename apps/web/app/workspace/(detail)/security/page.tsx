@@ -9,6 +9,7 @@ import { AppSidebar } from "@/components/workspace/AppSidebar"
 import { useAuth } from "@/components/auth/AuthProvider"
 import { useProjectRuns } from "@/components/workspace/useProjectRuns"
 import { InlineLoading } from "@/components/loading/InlineLoading"
+import { StatSkeleton } from "@/components/workspace/StatSkeleton"
 import { cn } from "@/lib/utils"
 
 type ScopeType = "all" | string
@@ -39,6 +40,7 @@ export default function SecurityPage() {
   const [issues, setIssues] = useState<SecurityIssue[]>([])
   const [runDetail, setRunDetail] = useState<RunDetail | null>(null)
   const [loading, setLoading] = useState(true)
+  const [showResolved, setShowResolved] = useState(false)
 
   useEffect(() => {
     if (!runIdParam) return
@@ -121,6 +123,13 @@ export default function SecurityPage() {
     ? "All jobs"
     : runs.find((r) => r.id === scope)?.name ?? "Selected job"
 
+  const orderedIssues = useMemo(() => {
+    const openCritical = issues.filter((i) => i.status === "open" && i.severity === "error")
+    const openWarnings = issues.filter((i) => i.status === "open" && i.severity === "warning")
+    const resolved = issues.filter((i) => i.status === "resolved")
+    return showResolved ? [...openCritical, ...openWarnings, ...resolved] : [...openCritical, ...openWarnings]
+  }, [issues, showResolved])
+
   return (
     <div className="flex h-dvh bg-[#eff6ff] font-sans">
       <AppSidebar />
@@ -128,17 +137,21 @@ export default function SecurityPage() {
       <div className="flex min-w-0 flex-1 flex-col overflow-y-auto">
         <div className="border-b border-[#c7d9f0] bg-white">
           <div className="flex items-stretch divide-x divide-[#c7d9f0]">
-            {([
-              { label: "RISK LEVEL", value: riskLevel, color: criticalCount > 0 ? "text-red-500" : "text-amber-500" },
-              { label: "OPEN FINDINGS", value: openSec.length, color: "text-[#1a2a33]" },
-              { label: "CRITICAL", value: criticalCount, color: "text-red-500" },
-              { label: "RESOLVED", value: resolvedSec.length, color: "text-emerald-500" },
-            ] as const).map((stat) => (
-              <div key={stat.label} className="px-10 py-5 first:pl-8">
-                <div className="text-[10px] font-bold uppercase tracking-[0.8px] text-[#4a7ab5]">{stat.label}</div>
-                <div className={cn("mt-0.5 text-[30px] font-bold leading-none tabular-nums", stat.color)}>{stat.value}</div>
-              </div>
-            ))}
+            {loading && issues.length === 0 ? (
+              Array.from({ length: 4 }).map((_, idx) => <StatSkeleton key={idx} className="px-10 py-5 first:pl-8" />)
+            ) : (
+              ([
+                { label: "RISK LEVEL", value: riskLevel, color: criticalCount > 0 ? "text-red-500" : "text-amber-500" },
+                { label: "OPEN FINDINGS", value: openSec.length, color: "text-[#1a2a33]" },
+                { label: "CRITICAL", value: criticalCount, color: "text-red-500" },
+                { label: "RESOLVED", value: resolvedSec.length, color: "text-emerald-500" },
+              ] as const).map((stat) => (
+                <div key={stat.label} className="px-10 py-5 first:pl-8">
+                  <div className="text-[10px] font-bold uppercase tracking-[0.8px] text-[#4a7ab5]">{stat.label}</div>
+                  <div className={cn("mt-0.5 text-[30px] font-bold leading-none tabular-nums", stat.color)}>{stat.value}</div>
+                </div>
+              ))
+            )}
           </div>
         </div>
 
@@ -185,16 +198,27 @@ export default function SecurityPage() {
               )}
 
               <div>
-                <div className="mb-3 text-[10px] font-bold uppercase tracking-[0.8px] text-[#4a7ab5]">Findings</div>
+                <div className="mb-3 flex items-center justify-between">
+                  <div className="text-[10px] font-bold uppercase tracking-[0.8px] text-[#4a7ab5]">Findings</div>
+                  {resolvedSec.length > 0 && (
+                    <button
+                      type="button"
+                      onClick={() => setShowResolved((v) => !v)}
+                      className="rounded border border-[#c7d9f0] bg-white px-2 py-1 text-[10px] font-semibold text-[#4a7ab5] hover:bg-[#eff6ff]"
+                    >
+                      {showResolved ? "Hide resolved" : `Show resolved (${resolvedSec.length})`}
+                    </button>
+                  )}
+                </div>
 
-                {issues.length === 0 ? (
+                {orderedIssues.length === 0 ? (
                   <div className="flex flex-col items-center gap-3 py-20 text-center">
                     <ShieldCheck className="h-8 w-8 text-emerald-500" />
                     <p className="text-[13px] text-[#4a7ab5]">No security findings.</p>
                   </div>
                 ) : (
                   <div className="overflow-hidden border border-[#c7d9f0] bg-white">
-                    {issues.map((issue, idx) => {
+                    {orderedIssues.map((issue, idx) => {
                       const isError = issue.severity === "error" && issue.status === "open"
                       const isWarning = issue.severity === "warning" && issue.status === "open"
                       const isResolved = issue.status === "resolved"

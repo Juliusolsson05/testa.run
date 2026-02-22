@@ -7,6 +7,7 @@ import { Filter, KanbanSquare, LayoutList } from "lucide-react"
 import { AppSidebar } from "@/components/workspace/AppSidebar"
 import { useAuth } from "@/components/auth/AuthProvider"
 import { InlineLoading } from "@/components/loading/InlineLoading"
+import { StatSkeleton } from "@/components/workspace/StatSkeleton"
 import { useProjectRuns } from "@/components/workspace/useProjectRuns"
 import { cn } from "@/lib/utils"
 
@@ -241,17 +242,21 @@ export default function IssuesPage() {
       <div className="flex min-w-0 flex-1 flex-col overflow-y-auto">
         <div className="border-b border-ui-border bg-white">
           <div className="flex items-stretch divide-x divide-ui-border">
-            {[
-              { label: "OPEN", value: totalOpen },
-              { label: "ERRORS", value: totalErrors },
-              { label: "WARNINGS", value: totalWarnings },
-              { label: "RESOLVED", value: totalResolved },
-            ].map((s) => (
-              <div key={s.label} className="px-8 py-4">
-                <div className="text-[10px] text-ui-muted">{s.label}</div>
-                <div className="text-2xl font-bold text-[#1a2a33]">{s.value}</div>
-              </div>
-            ))}
+            {loadingIssues && issues.length === 0 ? (
+              Array.from({ length: 4 }).map((_, idx) => <StatSkeleton key={idx} />)
+            ) : (
+              [
+                { label: "OPEN", value: totalOpen },
+                { label: "ERRORS", value: totalErrors },
+                { label: "WARNINGS", value: totalWarnings },
+                { label: "RESOLVED", value: totalResolved },
+              ].map((s) => (
+                <div key={s.label} className="px-8 py-4">
+                  <div className="text-[10px] text-ui-muted">{s.label}</div>
+                  <div className="text-2xl font-bold text-[#1a2a33]">{s.value}</div>
+                </div>
+              ))
+            )}
           </div>
         </div>
 
