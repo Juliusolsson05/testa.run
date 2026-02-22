@@ -5,7 +5,6 @@ import { useParams, useSearchParams } from "next/navigation"
 import type { Edge, Node } from "@xyflow/react"
 import { WorkspacePage } from "@/components/workspace/WorkspacePage"
 import { useAuth } from "@/components/auth/AuthProvider"
-import { InlineLoading } from "@/components/loading/InlineLoading"
 import { useAppDispatch, useAppSelector } from "@/store/hooks"
 import { applyRunEvent } from "@/store/runs-slice"
 import { ingestRunEventMeta, setRunStreamStatus } from "@/store/run-live-slice"
@@ -243,15 +242,22 @@ export default function WorkspaceRunRoute() {
     return <div className="flex h-dvh items-center justify-center bg-app-bg text-ui-muted">{error}</div>
   }
 
-  if (!payload) {
-    return (
-      <div className="flex h-dvh items-center justify-center bg-app-bg">
-        <InlineLoading label="Loading workspace…" cubeSize={70} className="min-h-[60vh]" />
-      </div>
-    )
+  const effectivePayload: WorkspaceApiPayload = payload ?? {
+    run: {
+      id: params.runId,
+      name: "Loading workspace…",
+      label: null,
+      category: "ux",
+      status: "running",
+      startedAt: new Date().toISOString(),
+      securitySynopsis: null,
+    },
+    nodes: [],
+    edges: [],
+    issues: [],
   }
 
-  const nodes: Node<ScreenshotNodeData>[] = payload.nodes.map((n) => ({
+  const nodes: Node<ScreenshotNodeData>[] = effectivePayload.nodes.map((n) => ({
     id: n.id,
     type: "screenshot",
     position: n.position,
@@ -264,10 +270,10 @@ export default function WorkspaceRunRoute() {
         {streamState === "live" ? "Live" : streamState === "polling" ? "Polling" : streamState === "reconnecting" ? "Reconnecting" : "Idle"}
       </div>
       <WorkspacePage
-        run={payload.run}
+        run={effectivePayload.run}
         nodes={nodes}
-        edges={payload.edges}
-        issues={payload.issues}
+        edges={effectivePayload.edges}
+        issues={effectivePayload.issues}
         initialIssueId={search.get("issueId") ?? undefined}
         initialNodeId={search.get("nodeId") ?? undefined}
       />

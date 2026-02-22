@@ -157,7 +157,6 @@ export function startRunExecution(input: {
 
   void (async () => {
     let finalized = false
-    let lastEventAt = Date.now()
     const startedAt = Date.now()
     const cycles = Math.max(1, Number(process.env.TESTING_RUN_CYCLES ?? '3'))
     let stepOffset = 0
@@ -177,15 +176,12 @@ export function startRunExecution(input: {
     const watchdogTimer = setInterval(() => {
       if (finalized) return
       const now = Date.now()
-      if (now - startedAt > 20 * 60 * 1000) {
+      if (now - startedAt > 30 * 60 * 1000) {
         activeCancel()
-        void finalizeOnce('failed', 'Run exceeded max runtime (20m watchdog).')
+        void finalizeOnce('failed', 'Run exceeded max runtime (30m watchdog).')
         return
       }
-      if (now - lastEventAt > 90 * 1000) {
-        activeCancel()
-        void finalizeOnce('failed', 'Run stalled: no events received for 90s.')
-      }
+      // Intentionally no inactivity timeout; long-running/noisy-sparse runs are allowed.
     }, 15000)
 
     try {
@@ -209,8 +205,6 @@ export function startRunExecution(input: {
         let cycleSummary: string | null = null
 
         for await (const evt of handle.events) {
-          lastEventAt = Date.now()
-
           if (evt.type === 'step.progress') {
             await appendRunEvent(input.runId, 'step.progress', {
               cycle,

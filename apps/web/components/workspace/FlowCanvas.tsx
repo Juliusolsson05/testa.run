@@ -13,6 +13,7 @@ import {
   type Node,
   type NodeChange,
   type NodeMouseHandler,
+  type NodeProps,
 } from "@xyflow/react"
 
 import { useIssueContext } from "@/context/issue-context"
@@ -23,7 +24,25 @@ import { ScreenshotNode } from "@/components/workspace/nodes/ScreenshotNode"
 import { SpringEdge } from "@/components/workspace/edges/SpringEdge"
 import { InlineLoading } from "@/components/loading/InlineLoading"
 
-const nodeTypes = { screenshot: ScreenshotNode }
+type LoadingNodeData = {
+  label: string
+  description: string
+}
+
+function LoadingCanvasNode({ data }: NodeProps<Node<LoadingNodeData>>) {
+  return (
+    <div className="w-[420px] rounded-lg border border-ui-border bg-white/95 p-6 text-center shadow-xl backdrop-blur">
+      <InlineLoading
+        label={data.label}
+        cubeSize={58}
+        className="min-h-[220px]"
+      />
+      <p className="mt-1 text-xs text-ui-muted">{data.description}</p>
+    </div>
+  )
+}
+
+const nodeTypes = { screenshot: ScreenshotNode, loading: LoadingCanvasNode }
 const edgeTypes = { spring: SpringEdge }
 
 function autoLayoutNodes(nodes: Node<ScreenshotNodeData>[], edges: { source: string; target: string }[]) {
@@ -101,7 +120,7 @@ const PAN_SPEED      = 1.0   // scroll-to-pan multiplier
 function FlowController() {
   const { activeNodeId, clearSelection } = useIssueContext()
   const { setCenter } = useReactFlow()
-  const nodes = useNodes<Node<ScreenshotNodeData>>()
+  const nodes = useNodes<Node>()
   const lastRef      = useRef<{ nodeId: string; height: number } | null>(null)
   const animatingRef = useRef(true)    // start true to block fitView from clearing seeded state
 
@@ -119,6 +138,7 @@ function FlowController() {
     }
 
     const node = nodes.find((n) => n.id === activeNodeId)
+    if (!node || node.type !== "screenshot") return
     if (!node?.measured?.height || !node.measured.width) return
 
     const nodeHeight = node.measured.height
@@ -129,7 +149,8 @@ function FlowController() {
     const timer = setTimeout(() => {
       lastRef.current = { nodeId: activeNodeId, height: nodeHeight }
 
-      const nodeWidth = node.data.isMain || node.data.isLarge ? NODE_WIDE : NODE_WIDTH
+      const nodeData = node.data as ScreenshotNodeData
+      const nodeWidth = nodeData.isMain || nodeData.isLarge ? NODE_WIDE : NODE_WIDTH
       const targetZoom = Math.min((window.innerHeight * 0.8) / nodeHeight, MAX_ZOOM)
       const centerX = node.position.x + nodeWidth / 2
       const centerY = node.position.y + nodeHeight / 2
@@ -197,7 +218,7 @@ export function FlowCanvas() {
     () => autoLayoutNodes(workspaceNodes, edges.map((e) => ({ source: String(e.source), target: String(e.target) }))),
     [workspaceNodes, edges]
   )
-  const [nodes, setNodes] = useState(layoutedNodes)
+  const [nodes, setNodes] = useState<Node[]>(layoutedNodes)
   const { selectNode, clearSelection } = useIssueContext()
 
   useEffect(() => {
@@ -205,41 +226,43 @@ export function FlowCanvas() {
   }, [layoutedNodes])
 
   const onNodesChange = useCallback(
-    (changes: NodeChange<Node<ScreenshotNodeData>>[]) => {
-      setNodes((current) =>
-        applyNodeChanges(changes, current) as Node<ScreenshotNodeData>[]
-      )
+    (changes: NodeChange<Node>[]) => {
+      setNodes((current) => applyNodeChanges(changes, current))
     },
     []
   )
 
   const onNodeClick: NodeMouseHandler = useCallback(
     (_event, node) => {
+      if (node.type !== "screenshot") return
       selectNode(node.id)
     },
     [selectNode]
   )
 
+  const displayedNodes: Node[] =
+    nodes.length > 0
+      ? nodes
+      : [
+          {
+            id: "loading-placeholder",
+            type: "loading",
+            position: { x: 180, y: 120 },
+            draggable: false,
+            selectable: false,
+            connectable: false,
+            data: {
+              label: run.status === "running" ? "Building workflow graph…" : "Preparing workspace…",
+              description: "We are ingesting streamed events and will render nodes as soon as they are available.",
+            },
+          } as Node<LoadingNodeData>,
+        ]
+
   return (
     <div className="relative flex h-full flex-1 flex-col overflow-hidden bg-white">
-      {nodes.length === 0 && (
-        <div className="pointer-events-none absolute inset-0 z-30 grid place-items-center">
-          <div className="w-[420px] rounded-lg border border-ui-border bg-white/95 p-6 text-center shadow-xl backdrop-blur">
-            <InlineLoading
-              label={run.status === 'running' ? 'Building workflow graph…' : 'Preparing workspace…'}
-              cubeSize={58}
-              className="min-h-[220px]"
-            />
-            <p className="mt-1 text-xs text-ui-muted">
-              We are ingesting streamed events and will render nodes as soon as they are available.
-            </p>
-          </div>
-        </div>
-      )}
-
       <ReactFlow
         className="h-full w-full"
-        nodes={nodes}
+        nodes={displayedNodes}
         edges={edges}
         nodeTypes={nodeTypes}
         edgeTypes={edgeTypes}
