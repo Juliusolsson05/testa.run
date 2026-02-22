@@ -1,6 +1,6 @@
 "use client"
 
-import { useCallback, useEffect, useMemo, useState } from "react"
+import { useCallback, useMemo, useState } from "react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { Play, X } from "lucide-react"
@@ -9,6 +9,7 @@ import { Badge } from "@/components/ui/badge"
 import { RequireAuth } from "@/components/auth/RequireAuth"
 import { useAuth } from "@/components/auth/AuthProvider"
 import { InlineLoading } from "@/components/loading/InlineLoading"
+import { useProjectRuns } from "@/components/workspace/useProjectRuns"
 import type { Run, RunStatus } from "@/types/domain"
 import { cn } from "@/lib/utils"
 
@@ -35,14 +36,6 @@ type ApiRun = {
   status: RunStatus
   openIssues: { errors: number; warnings: number }
   stepsCount: number
-}
-
-type ApiMeResponse = {
-  orgs: Array<{ projects: Array<{ id: string }> }>
-}
-
-type ApiRunsResponse = {
-  runs: ApiRun[]
 }
 
 function formatDuration(durationMs: number | null) {
@@ -93,78 +86,22 @@ function RunsHome() {
   const router = useRouter()
   const { accessToken } = useAuth()
   const [filter, setFilter] = useState<FilterType>("all")
-  const [runs, setRuns] = useState<Run[]>([])
-  const [issueCounts, setIssueCounts] = useState<Record<string, { errors: number; warnings: number }>>({})
-  const [loadingRuns, setLoadingRuns] = useState(true)
-  const [hasProject, setHasProject] = useState(true)
-  const [projectId, setProjectId] = useState<string | null>(null)
   const [showConfirm, setShowConfirm] = useState(false)
   const [starting, setStarting] = useState(false)
+  const { loading: loadingRuns, project, runs: projectRuns } = useProjectRuns(undefined, 30)
 
-  useEffect(() => {
-    let isMounted = true
-
-    async function loadRuns() {
-      if (!accessToken) return
-
-      const authHeaders = {
-        Authorization: `Bearer ${accessToken}`,
-      }
-
-      const meRes = await fetch("/api/auth/me", {
-        headers: authHeaders,
-        cache: "no-store",
-      })
-      if (!meRes.ok) throw new Error("Failed to load user context")
-
-      const me: ApiMeResponse = await meRes.json()
-      const pId = me.orgs?.[0]?.projects?.[0]?.id
-
-      if (!pId) {
-        if (!isMounted) return
-        setRuns([])
-        setIssueCounts({})
-        setHasProject(false)
-        setLoadingRuns(false)
-        return
-      }
-
-      setProjectId(pId)
-      const projectId = pId
-
-      const runsRes = await fetch(`/api/projects/${projectId}/runs`, {
-        headers: authHeaders,
-        cache: "no-store",
-      })
-      if (!runsRes.ok) throw new Error("Failed to load runs")
-
-      const payload: ApiRunsResponse = await runsRes.json()
-      if (!isMounted) return
-
-      setRuns(payload.runs.map(mapApiRunToUi))
-      setIssueCounts(
-        Object.fromEntries(
-          payload.runs.map((run) => [
-            run.id,
-            { errors: run.openIssues.errors ?? 0, warnings: run.openIssues.warnings ?? 0 },
-          ])
-        )
-      )
-      setHasProject(true)
-      setLoadingRuns(false)
-    }
-
-    void loadRuns().catch(() => {
-      if (!isMounted) return
-      setRuns([])
-      setIssueCounts({})
-      setLoadingRuns(false)
-    })
-
-    return () => {
-      isMounted = false
-    }
-  }, [accessToken])
+  const runs = useMemo(() => projectRuns.map((run) => mapApiRunToUi(run as ApiRun)), [projectRuns])
+  const issueCounts = useMemo(
+    () =>
+      Object.fromEntries(
+        projectRuns.map((run) => [
+          run.id,
+          { errors: run.openIssues.errors ?? 0, warnings: run.openIssues.warnings ?? 0 },
+        ])
+      ),
+    [projectRuns]
+  )
+  const hasProject = !!project
 
   const totalRunning = runs.filter((r) => r.status === "running").length
   const totalPassed = runs.filter((r) => r.status === "passed").length
@@ -176,10 +113,10 @@ function RunsHome() {
   )
 
   const startNewRun = useCallback(async () => {
-    if (!accessToken || !projectId) return
+    if (!accessToken || !project?.id) return
     setStarting(true)
     try {
-      const res = await fetch(`/api/projects/${projectId}/runs/start`, {
+      const res = await fetch(`/api/projects/${project.id}/runs/start`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -194,7 +131,7 @@ function RunsHome() {
     } catch {
       setStarting(false)
     }
-  }, [accessToken, projectId, router])
+  }, [accessToken, project?.id, router])
 
   const filtered = filter === "all" ? runs : runs.filter((r) => r.status === filter)
 
