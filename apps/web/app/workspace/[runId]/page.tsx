@@ -211,10 +211,16 @@ export default function WorkspaceRunRoute() {
       }
     }
 
-    void startLive()
+    void startLive().catch(() => {
+      // swallow unexpected stream errors in dev/HMR cleanup paths
+    })
 
     return () => {
-      abort.abort()
+      try {
+        abort.abort(new DOMException("workspace stream cleanup", "AbortError"))
+      } catch {
+        // ignore cleanup abort noise
+      }
       if (pollingTimer) clearInterval(pollingTimer)
     }
   }, [accessToken, params.runId])

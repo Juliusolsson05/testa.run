@@ -3,9 +3,11 @@
 import Link from "next/link"
 import { ShieldAlert, ShieldCheck } from "lucide-react"
 import { useIssueContext } from "@/context/issue-context"
+import { useWorkspaceData } from "@/context/workspace-data-context"
 
 export function SecurityOverlay() {
   const { issues } = useIssueContext()
+  const { run } = useWorkspaceData()
 
   const securityIssues = issues.filter((i) => i.category === "security")
   const openSec = securityIssues.filter((i) => i.status === "open")
@@ -28,8 +30,8 @@ export function SecurityOverlay() {
 
   return (
     <Link
-      href="/workspace/security"
-      className="pointer-events-auto absolute right-4 top-4 z-40 flex h-[38px] w-[340px] items-center gap-3 border border-red-300 bg-red-50/90 px-4 backdrop-blur-md transition-opacity hover:opacity-90"
+      href={`/workspace/security?runId=${run.id}`}
+      className="pointer-events-auto absolute right-4 top-12 z-40 flex h-[34px] w-[300px] items-center gap-2.5 border border-red-300 bg-red-50/92 px-3 backdrop-blur-md transition-opacity hover:opacity-90"
     >
       {riskLevel === "None"
         ? <ShieldCheck className="h-3.5 w-3.5 shrink-0 text-emerald-500" />

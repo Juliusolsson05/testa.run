@@ -67,8 +67,18 @@ export function SpringEdge({
   labelBgPadding,
 }: EdgeProps) {
   const { activeNodeId, selectNode } = useIssueContext()
-  const { nodes } = useWorkspaceData()
+  const { nodes, edges } = useWorkspaceData()
   const nodesById = useMemo(() => Object.fromEntries(nodes.map((n) => [n.id, n])), [nodes])
+  const hasReverseEdge = useMemo(
+    () => edges.some((e) => e.source === target && e.target === source && e.id !== id),
+    [edges, id, source, target]
+  )
+
+  const laneOffset = hasReverseEdge ? (source < target ? -18 : 18) : 0
+  const sx = sourceX
+  const sy = sourceY + laneOffset
+  const tx = targetX
+  const ty = targetY + laneOffset
 
   // Reactive viewport: x/y = canvas pan offset in px, zoom = scale
   const { x: vpX, y: vpY, zoom: vpZoom } = useViewport()
@@ -85,10 +95,10 @@ export function SpringEdge({
     if (!isFocused || containerWidth === 0) return 0.5
 
     // Convert flow-space handle positions to screen pixels
-    const srcScreenX = sourceX * vpZoom + vpX
-    const srcScreenY = sourceY * vpZoom + vpY
-    const tgtScreenX = targetX * vpZoom + vpX
-    const tgtScreenY = targetY * vpZoom + vpY
+    const srcScreenX = sx * vpZoom + vpX
+    const srcScreenY = sy * vpZoom + vpY
+    const tgtScreenX = tx * vpZoom + vpX
+    const tgtScreenY = ty * vpZoom + vpY
 
     const onScreen = (sx: number, sy: number) =>
       sx >= 0 && sx <= containerWidth && sy >= 0 && sy <= containerHeight
@@ -99,28 +109,28 @@ export function SpringEdge({
     if (isOutgoing) {
       // Right edge of canvas in flow coordinates
       const rightFlowX = (containerWidth - vpX) / vpZoom
-      const midFlowX = (sourceX + rightFlowX) / 2
-      return findTForFlowX(sourceX, sourceY, targetX, targetY, midFlowX)
+      const midFlowX = (sx + rightFlowX) / 2
+      return findTForFlowX(sx, sy, tx, ty, midFlowX)
     } else {
       // Left edge of canvas in flow coordinates
       const leftFlowX = -vpX / vpZoom
-      const midFlowX = (leftFlowX + targetX) / 2
-      return findTForFlowX(sourceX, sourceY, targetX, targetY, midFlowX)
+      const midFlowX = (leftFlowX + tx) / 2
+      return findTForFlowX(sx, sy, tx, ty, midFlowX)
     }
-  }, [isFocused, isOutgoing, sourceX, sourceY, targetX, targetY, vpX, vpY, vpZoom, containerWidth, containerHeight])
+  }, [isFocused, isOutgoing, sx, sy, tx, ty, vpX, vpY, vpZoom, containerWidth, containerHeight])
 
-  const [badgeX, badgeY] = bezierPoint(sourceX, sourceY, targetX, targetY, t)
+  const [badgeX, badgeY] = bezierPoint(sx, sy, tx, ty, t)
   // Incoming edges point back (←), so flip 180°
-  const badgeAngle = bezierAngle(sourceX, sourceY, targetX, targetY, t) + (isIncoming ? 180 : 0)
+  const badgeAngle = bezierAngle(sx, sy, tx, ty, t) + (isIncoming ? 180 : 0)
   // Clicking navigates to the other end of the edge
   const navigateTo = isOutgoing ? target : source
   const navigateLabel = nodesById[navigateTo]?.data.label ?? "node"
 
   const spring = useSpring({
-    sx: sourceX,
-    sy: sourceY,
-    tx: targetX,
-    ty: targetY,
+    sx: sx,
+    sy: sy,
+    tx: tx,
+    ty: ty,
     config: { tension: 260, friction: 18, mass: 1 },
   })
 
@@ -130,8 +140,8 @@ export function SpringEdge({
       getBezierPath({ sourceX: sx, sourceY: sy, targetX: tx, targetY: ty, sourcePosition, targetPosition })[0]
   )
 
-  const labelX = (sourceX + targetX) / 2
-  const labelY = (sourceY + targetY) / 2
+  const labelX = (sx + tx) / 2
+  const labelY = (sy + ty) / 2
   const [bgPadX, bgPadY] = (labelBgPadding as [number, number]) ?? [6, 8]
 
   return (
@@ -176,7 +186,7 @@ export function SpringEdge({
             {/* Label floats below the circle; absolutely positioned so it can't shift the circle */}
             {label && (
               <div
-                className="pointer-events-none absolute left-1/2 top-[calc(100%+7px)] -translate-x-1/2 whitespace-nowrap rounded border border-[rgba(29,110,245,0.22)] bg-white/95 px-2 py-0.5 font-mono text-[11px] text-[#1D4ED8] shadow-[0_1px_4px_rgba(29,110,245,0.1)]"
+                className="pointer-events-none absolute left-1/2 top-[calc(100%+7px)] -translate-x-1/2 rounded border border-[rgba(29,110,245,0.22)] bg-white/95 px-2 py-0.5 font-mono text-[11px] text-[#1D4ED8] shadow-[0_1px_4px_rgba(29,110,245,0.1)] max-w-[260px] truncate"
               >
                 {String(label)}
               </div>
@@ -198,7 +208,7 @@ export function SpringEdge({
               borderRadius: 6,
             }}
           >
-            <span style={labelStyle as React.CSSProperties}>{label as string}</span>
+            <span className="block max-w-[260px] truncate" style={labelStyle as React.CSSProperties}>{label as string}</span>
           </div>
         </EdgeLabelRenderer>
       )}
