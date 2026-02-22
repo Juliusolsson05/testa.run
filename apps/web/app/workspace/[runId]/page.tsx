@@ -229,7 +229,8 @@ export default function WorkspaceRunRoute() {
 
     return () => {
       try {
-        abort.abort()
+        // Pass an explicit AbortError reason to avoid runtime "aborted without reason" noise.
+        abort.abort(new DOMException("Workspace route cleanup", "AbortError"))
       } catch {
         // ignore cleanup abort noise
       }
