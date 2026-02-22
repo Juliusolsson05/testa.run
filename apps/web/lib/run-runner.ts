@@ -11,10 +11,10 @@ const globalRunner = globalThis as typeof globalThis & {
 
 if (!globalRunner.__testaRunJobs) globalRunner.__testaRunJobs = new Map()
 
-function toAgentEvent(evt: TestRunEvent): AgentEvent | null {
+function toAgentEvents(evt: TestRunEvent): AgentEvent[] {
   switch (evt.type) {
     case 'node.upserted':
-      return {
+      return [{
         type: 'node.upsert',
         node: {
           nodeKey: evt.node.nodeKey,
@@ -27,9 +27,9 @@ function toAgentEvent(evt: TestRunEvent): AgentEvent | null {
           position: { x: evt.node.step * 260, y: 200 },
           isMain: evt.node.step === 1,
         },
-      }
+      }]
     case 'edge.upserted':
-      return {
+      return [{
         type: 'edge.upsert',
         edge: {
           edgeKey: evt.edge.edgeKey,
@@ -38,23 +38,38 @@ function toAgentEvent(evt: TestRunEvent): AgentEvent | null {
           label: evt.edge.label,
           type: 'spring',
         },
-      }
+      }]
     case 'step.upserted':
-      return {
-        type: 'step.create',
-        step: {
-          index: evt.step.index,
-          nodeKey: evt.step.nodeKey,
-          action: evt.step.action,
-          target: evt.step.target,
-          description: evt.step.description,
-          reasoning: evt.step.reasoning,
-          durationMs: evt.step.durationMs,
-          status: evt.step.status,
+      // AI output can emit steps before explicit nodes; seed node first to avoid skipped steps.
+      return [
+        {
+          type: 'node.upsert',
+          node: {
+            nodeKey: evt.step.nodeKey,
+            label: evt.step.nodeKey,
+            url: evt.step.url,
+            status: evt.step.status === 'failed' ? 'running' : 'passed',
+            step: evt.step.index,
+            position: { x: evt.step.index * 260, y: 200 },
+            isMain: evt.step.index === 1,
+          },
         },
-      }
+        {
+          type: 'step.create',
+          step: {
+            index: evt.step.index,
+            nodeKey: evt.step.nodeKey,
+            action: evt.step.action,
+            target: evt.step.target,
+            description: evt.step.description,
+            reasoning: evt.step.reasoning,
+            durationMs: evt.step.durationMs,
+            status: evt.step.status,
+          },
+        },
+      ]
     case 'issue.created':
-      return {
+      return [{
         type: 'issue.create',
         issue: {
           nodeKey: evt.issue.nodeKey,
@@ -66,9 +81,9 @@ function toAgentEvent(evt: TestRunEvent): AgentEvent | null {
           reasoning: evt.issue.reasoning,
           element: evt.issue.element,
         },
-      }
+      }]
     default:
-      return null
+      return []
   }
 }
 
@@ -181,9 +196,9 @@ export function startRunExecution(input: {
           continue
         }
 
-        const mapped = toAgentEvent(evt)
-        if (mapped) {
-          await applyAgentEvents(input.runId, [mapped])
+        const mapped = toAgentEvents(evt)
+        if (mapped.length > 0) {
+          await applyAgentEvents(input.runId, mapped)
         }
       }
 

@@ -1,6 +1,8 @@
 "use client"
 
-import Image from "next/image"
+/* eslint-disable @next/next/no-img-element */
+
+import { useEffect, useState } from "react"
 import {
   Handle,
   Position,
@@ -26,6 +28,11 @@ export function ScreenshotNode({ id, data }: NodeProps<Node<ScreenshotNodeData>>
   const isActive = activeNodeId === id
   const nodeData = data
   const status = nodeStatusConfig[nodeData.status]
+  const [imageBlocked, setImageBlocked] = useState(false)
+
+  useEffect(() => {
+    setImageBlocked(false)
+  }, [nodeData.imageSrc])
 
   const nodeIssues = issuesByNodeId[id] ?? []
   const errorCount = nodeIssues.filter((i) => i.severity === "error" && i.status === "open").length
@@ -86,12 +93,20 @@ export function ScreenshotNode({ id, data }: NodeProps<Node<ScreenshotNodeData>>
 
       {/* Screenshot */}
       <div className="relative aspect-[16/10] w-full overflow-hidden bg-[#dbeafe]">
-        {nodeData.imageSrc ? (
-          <Image src={nodeData.imageSrc} alt={nodeData.label} fill sizes="(max-width: 768px) 90vw, 480px" className="object-cover" />
+        {nodeData.imageSrc && !imageBlocked ? (
+          // Use regular img to avoid Next image optimizer restrictions/noise in dev.
+          <img
+            src={nodeData.imageSrc}
+            alt={nodeData.label}
+            className="h-full w-full object-cover"
+            loading="lazy"
+            referrerPolicy="no-referrer"
+            onError={() => setImageBlocked(true)}
+          />
         ) : (
           <div className="flex h-full w-full flex-col items-center justify-center gap-3 border-2 border-dashed border-[#dbeafe] text-xs text-[#93c5fd]">
             <span className="text-3xl opacity-50">🖼</span>
-            <span>Screenshot pending</span>
+            <span>{nodeData.imageSrc ? "Screenshot unavailable (403)" : "Screenshot pending"}</span>
           </div>
         )}
       </div>

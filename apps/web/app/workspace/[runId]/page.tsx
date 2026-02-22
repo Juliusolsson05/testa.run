@@ -99,7 +99,14 @@ async function parseSseResponse(
 
   while (true) {
     if (signal?.aborted) break
-    const { done, value } = await reader.read()
+    let chunk: ReadableStreamReadResult<Uint8Array>
+    try {
+      chunk = await reader.read()
+    } catch {
+      if (signal?.aborted) return
+      throw new Error('SSE read failed')
+    }
+    const { done, value } = chunk
     if (done) break
 
     buffer += decoder.decode(value, { stream: true })
@@ -158,7 +165,7 @@ export default function WorkspaceRunRoute() {
   }, [accessToken, params.runId])
 
   useEffect(() => {
-    if (!accessToken || !params.runId || !payload) return
+    if (!accessToken || !params.runId) return
 
     const abort = new AbortController()
     let pollingTimer: ReturnType<typeof setInterval> | null = null
@@ -210,7 +217,7 @@ export default function WorkspaceRunRoute() {
       abort.abort()
       if (pollingTimer) clearInterval(pollingTimer)
     }
-  }, [accessToken, params.runId, payload])
+  }, [accessToken, params.runId])
 
   if (error) {
     return <div className="flex h-dvh items-center justify-center bg-app-bg text-ui-muted">{error}</div>
