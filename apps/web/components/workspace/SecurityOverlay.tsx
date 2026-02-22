@@ -21,41 +21,41 @@ export function SecurityOverlay() {
         ? "Low"
         : "None"
 
-  const riskStyle = {
-    Critical: { label: "CRITICAL" },
-    High: { label: "HIGH" },
-    Low: { label: "LOW" },
-    None: { label: "NONE" },
+  const riskTone = {
+    Critical: "text-red-700 border-red-300 bg-red-50/92",
+    High: "text-amber-700 border-amber-300 bg-amber-50/92",
+    Low: "text-emerald-700 border-emerald-300 bg-emerald-50/92",
+    None: "text-slate-700 border-slate-300 bg-white/92",
   }[riskLevel]
 
   return (
     <Link
       href={`/workspace/security?runId=${run.id}`}
-      className="pointer-events-auto absolute right-4 top-12 z-40 flex h-[34px] w-[300px] items-center gap-2.5 border border-red-300 bg-red-50/92 px-3 backdrop-blur-md transition-opacity hover:opacity-90"
+      className={`pointer-events-auto absolute right-4 top-3 z-40 w-[188px] rounded-md border px-3 py-2 backdrop-blur-md transition-opacity hover:opacity-90 ${riskTone}`}
     >
-      {riskLevel === "None"
-        ? <ShieldCheck className="h-3.5 w-3.5 shrink-0 text-emerald-500" />
-        : <ShieldAlert className="h-3.5 w-3.5 shrink-0 text-red-500" />
-      }
-
-      <span className="text-[11px] font-bold uppercase tracking-[0.7px] text-red-700">
-        Security
-      </span>
-
-      <span className="flex items-center gap-1 rounded bg-red-500/15 px-2 py-0.5 text-[10px] font-semibold text-red-600">
-        <span className="h-1 w-1 rounded-full bg-red-500" />
-        {riskStyle.label}
-      </span>
-
-      <div className="mx-1 h-3.5 w-px bg-red-200" />
-
-      <div className="flex items-center gap-3 text-[11px] tabular-nums text-red-700">
-        <span><span className="font-bold">{openSec.length}</span> open</span>
-        <span><span className="font-bold text-red-500">{criticalCount}</span> critical</span>
-        <span><span className="font-bold text-red-400">{securityIssues.filter((i) => i.status === "resolved").length}</span> resolved</span>
+      <div className="flex items-center gap-2">
+        {riskLevel === "None"
+          ? <ShieldCheck className="h-3.5 w-3.5 shrink-0" />
+          : <ShieldAlert className="h-3.5 w-3.5 shrink-0" />
+        }
+        <span className="text-[10px] font-bold uppercase tracking-[0.7px]">Security</span>
+        <span className="ml-auto text-[10px] font-semibold uppercase">{riskLevel}</span>
       </div>
 
-      <span className="ml-auto text-[11px] text-red-400">→</span>
+      <div className="mt-2 grid grid-cols-3 gap-1 text-center text-[10px] tabular-nums">
+        <div className="rounded bg-black/5 px-1.5 py-1">
+          <div className="font-bold">{openSec.length}</div>
+          <div className="opacity-70">open</div>
+        </div>
+        <div className="rounded bg-black/5 px-1.5 py-1">
+          <div className="font-bold">{criticalCount}</div>
+          <div className="opacity-70">critical</div>
+        </div>
+        <div className="rounded bg-black/5 px-1.5 py-1">
+          <div className="font-bold">{securityIssues.filter((i) => i.status === "resolved").length}</div>
+          <div className="opacity-70">resolved</div>
+        </div>
+      </div>
     </Link>
   )
 }

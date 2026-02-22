@@ -217,7 +217,7 @@ export default function WorkspaceRunRoute() {
 
     return () => {
       try {
-        abort.abort(new DOMException("workspace stream cleanup", "AbortError"))
+        abort.abort()
       } catch {
         // ignore cleanup abort noise
       }
@@ -242,7 +242,7 @@ export default function WorkspaceRunRoute() {
 
   return (
     <>
-      <div className="fixed right-3 top-3 z-[2000] rounded bg-black/70 px-2 py-1 text-[11px] text-white">
+      <div className="fixed left-[252px] top-3 z-[2000] rounded bg-black/70 px-2 py-1 text-[11px] text-white">
         {streamState === "live" ? "Live" : streamState === "polling" ? "Polling" : "Idle"}
       </div>
       <WorkspacePage
