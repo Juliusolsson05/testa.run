@@ -111,7 +111,7 @@ function SettingsContent() {
                     disabled={isLoading}
                     className="inline-flex items-center justify-center rounded-md bg-[#1a2a33] px-4 py-2 text-sm font-medium text-white hover:bg-black disabled:opacity-50"
                   >
-                    {isLoading ? "Loading..." : "Upgrade to Pro (£49/mo)"}
+                    {isLoading ? "Loading..." : "Upgrade to Pro ($29/mo)"}
                   </button>
                 )}
               </div>

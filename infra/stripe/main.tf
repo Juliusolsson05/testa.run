@@ -60,7 +60,7 @@ resource "stripe_price" "starter_monthly" {
 resource "stripe_price" "pro_monthly" {
   product     = stripe_product.pro.id
   currency    = "usd"
-  unit_amount = 4900 # $49.00
+  unit_amount = 2900 # $29.00
 
   recurring {
     interval       = "month"
@@ -76,7 +76,7 @@ resource "stripe_price" "pro_monthly" {
 resource "stripe_price" "pro_annual" {
   product     = stripe_product.pro.id
   currency    = "usd"
-  unit_amount = 47000 # $470.00/yr (~$39/mo, 2 months free)
+  unit_amount = 29000 # $290.00/yr (~$24/mo, 2 months free)
 
   recurring {
     interval       = "year"
@@ -128,13 +128,13 @@ resource "stripe_portal_configuration" "default" {
     }
 
     subscription_update {
-      enabled                = true
+      enabled                 = true
       default_allowed_updates = ["price"]
-      proration_behavior     = "create_prorations"
+      proration_behavior      = "create_prorations"
 
       products {
         product = stripe_product.pro.id
-        prices  = [
+        prices = [
           stripe_price.pro_monthly.id,
           stripe_price.pro_annual.id,
         ]

@@ -17,12 +17,12 @@ output "starter_monthly_price_id" {
 
 output "pro_monthly_price_id" {
   value       = stripe_price.pro_monthly.id
-  description = "Stripe price ID for Pro monthly ($49)"
+  description = "Stripe price ID for Pro monthly ($29)"
 }
 
 output "pro_annual_price_id" {
   value       = stripe_price.pro_annual.id
-  description = "Stripe price ID for Pro annual ($470)"
+  description = "Stripe price ID for Pro annual ($290)"
 }
 
 output "webhook_endpoint_id" {
