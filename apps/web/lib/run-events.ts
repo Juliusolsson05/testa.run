@@ -62,7 +62,9 @@ export async function listRunEvents(runId: string, afterSeq = 0, limit = 200) {
     take: Math.min(Math.max(limit, 1), 1000),
   })
 
-  return events.map((e) => ({
+  type EventItem = (typeof events)[number]
+
+  return events.map((e: EventItem) => ({
     runId: e.runId,
     seq: e.seq,
     at: e.createdAt.toISOString(),
