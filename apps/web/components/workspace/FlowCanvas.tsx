@@ -74,14 +74,22 @@ function autoLayoutNodes(nodes: Node<ScreenshotNodeData>[], edges: { source: str
     lanes.get(l)!.push(node.id)
   }
 
-  const xGap = 560
-  const yGap = 360
+  const widestNodeWidth = nodes.reduce((max, node) => {
+    const data = node.data as ScreenshotNodeData | undefined
+    const width = data && (data.isMain || data.isLarge) ? NODE_WIDE : NODE_WIDTH
+    return Math.max(max, width)
+  }, NODE_WIDTH)
+
+  // Keep a minimum horizontal corridor for edge labels between columns.
+  // Dynamic part scales with wide cards; baseline gives a slight global increase.
+  const xGap = Math.max(620, widestNodeWidth + 180)
+  const yGap = 380
   const minEdgeClearance = Math.round(yGap * 0.72)
 
   const baseYById = new Map<string, number>()
   const placedYById = new Map<string, number>()
 
-  for (const [lvl, lane] of lanes) {
+  for (const lane of lanes.values()) {
     lane.forEach((id, i) => {
       const y = 120 + i * yGap
       baseYById.set(id, y)
@@ -169,6 +177,7 @@ function FlowController() {
   const nodes = useNodes<Node>()
   const lastRef      = useRef<{ nodeId: string; height: number } | null>(null)
   const animatingRef = useRef(true)    // start true to block fitView from clearing seeded state
+  const focusZoomRef = useRef<number | null>(null)
 
   // Allow pan-to-clear after React Flow's initial fitView has had time to run
   useEffect(() => {
@@ -180,6 +189,7 @@ function FlowController() {
   useEffect(() => {
     if (!activeNodeId) {
       lastRef.current = null
+      focusZoomRef.current = null
       return
     }
 
@@ -198,6 +208,7 @@ function FlowController() {
       const nodeData = node.data as ScreenshotNodeData
       const nodeWidth = nodeData.isMain || nodeData.isLarge ? NODE_WIDE : NODE_WIDTH
       const targetZoom = Math.min((window.innerHeight * 0.8) / nodeHeight, MAX_ZOOM)
+      focusZoomRef.current = targetZoom
       const centerX = node.position.x + nodeWidth / 2
       const centerY = node.position.y + nodeHeight / 2
 
@@ -213,10 +224,17 @@ function FlowController() {
     return () => clearTimeout(timer)
   }, [activeNodeId, nodes, setCenter])
 
-  // ── Unfocus when user initiates any viewport move (pan or zoom) ──────────
+  // Keep selection during small zoom/pan adjustments, but clear focus if user zooms
+  // out too far from the focused zoom level.
   useOnViewportChange({
-    onStart: () => {
-      if (!animatingRef.current) clearSelection()
+    onChange: ({ zoom }) => {
+      if (animatingRef.current) return
+      if (!activeNodeId) return
+      const focusZoom = focusZoomRef.current
+      if (!focusZoom) return
+
+      const minFocusedZoom = Math.max(0.2, focusZoom * 0.82)
+      if (zoom < minFocusedZoom) clearSelection()
     },
   })
 

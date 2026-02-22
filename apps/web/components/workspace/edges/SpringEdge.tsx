@@ -144,6 +144,8 @@ export function SpringEdge({
   const targetEdgeOffset = edgeAnchor?.targetImageY != null
     ? targetScreenshotHeight * (edgeAnchor.targetImageY - targetBaseImageY)
     : 0
+  const anchorHint = edgeAnchor?.sourceImageY ?? edgeAnchor?.targetImageY
+  const placeLabelAbove = anchorHint != null && anchorHint < 0.5
 
   const laneOffset = hasReverseEdge ? (source < target ? -18 : 18) : 0
   const sx = sourceX
@@ -257,7 +259,10 @@ export function SpringEdge({
             {/* Label floats below the circle; absolutely positioned so it can't shift the circle */}
             {label && (
               <div
-                className="pointer-events-none absolute left-1/2 top-[calc(100%+7px)] -translate-x-1/2 rounded border border-[rgba(29,110,245,0.22)] bg-white/95 px-2 py-1 font-mono text-[11px] leading-tight text-[#1D4ED8] shadow-[0_1px_4px_rgba(29,110,245,0.1)] max-w-[320px] whitespace-normal break-words"
+                className={placeLabelAbove
+                  ? "pointer-events-none absolute bottom-[calc(100%+7px)] left-1/2 -translate-x-1/2 rounded border border-[rgba(29,110,245,0.22)] bg-white/95 px-2 py-1 font-mono text-[11px] leading-tight text-[#1D4ED8] shadow-[0_1px_4px_rgba(29,110,245,0.1)] max-w-[320px] whitespace-normal break-words"
+                  : "pointer-events-none absolute left-1/2 top-[calc(100%+7px)] -translate-x-1/2 rounded border border-[rgba(29,110,245,0.22)] bg-white/95 px-2 py-1 font-mono text-[11px] leading-tight text-[#1D4ED8] shadow-[0_1px_4px_rgba(29,110,245,0.1)] max-w-[320px] whitespace-normal break-words"
+                }
               >
                 {String(label)}
               </div>
@@ -272,7 +277,7 @@ export function SpringEdge({
           <div
             style={{
               position: "absolute",
-              transform: `translate(-50%, -50%) translate(${labelX}px, ${labelY}px)`,
+              transform: `translate(-50%, -50%) translate(${labelX}px, ${labelY + (placeLabelAbove ? -22 : 22)}px)`,
               pointerEvents: "none",
               ...(labelBgStyle as React.CSSProperties),
               padding: `${bgPadY}px ${bgPadX}px`,

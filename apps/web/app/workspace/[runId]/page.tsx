@@ -267,6 +267,7 @@ export default function WorkspaceRunRoute() {
         nodes={nodes}
         edges={effectivePayload.edges}
         issues={effectivePayload.issues}
+        loading={!payload}
         initialIssueId={search.get("issueId") ?? undefined}
         initialNodeId={search.get("nodeId") ?? undefined}
       />

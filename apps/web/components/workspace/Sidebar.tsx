@@ -12,7 +12,11 @@ import { useIssueContext } from "@/context/issue-context"
 import { useWorkspaceData } from "@/context/workspace-data-context"
 import { cn } from "@/lib/utils"
 
-export function Sidebar() {
+function SidebarSkeleton({ className = "" }: { className?: string }) {
+  return <div className={cn("animate-pulse rounded-none bg-white/10", className)} />
+}
+
+export function Sidebar({ loading = false }: { loading?: boolean }) {
   const {
     selectIssue, selectNode, activeIssueId, activeNodeId, clearSelection,
     issues, issuesByNodeId, openIssues, resolvedIssues,
@@ -50,7 +54,56 @@ export function Sidebar() {
     >
       <Wordmark variant="dark" className="text-[22px] font-normal" />
 
-      {activeIssue ? (
+      {loading ? (
+        <>
+          <Card className="rounded-none border-white/10 bg-white/5 text-white">
+            <CardContent className="flex items-center gap-3 p-3">
+              <SidebarSkeleton className="h-6 w-6" />
+              <div className="min-w-0 flex-1">
+                <SidebarSkeleton className="h-4 w-32" />
+                <SidebarSkeleton className="mt-2 h-3 w-24" />
+              </div>
+              <SidebarSkeleton className="h-2 w-2 rounded-full" />
+            </CardContent>
+          </Card>
+
+          <Card className="rounded-none border-white/10 bg-white/5 text-white">
+            <CardContent className="flex flex-col gap-2 p-3">
+              <SidebarSkeleton className="h-3 w-20" />
+              <SidebarSkeleton className="h-3 w-32" />
+              <SidebarSkeleton className="h-3 w-28" />
+              <SidebarSkeleton className="mt-1 h-6 w-20" />
+            </CardContent>
+          </Card>
+
+          <Separator className="bg-white/10" />
+
+          <div className="text-[10px] font-bold uppercase tracking-[0.6px] text-white/50">Stats</div>
+          <div className="grid grid-cols-2 gap-2">
+            {Array.from({ length: 4 }).map((_, idx) => (
+              <Card key={idx} className="rounded-none border-white/10 bg-white/5 text-white">
+                <CardContent className="flex flex-col gap-2 p-3">
+                  <SidebarSkeleton className="h-6 w-10" />
+                  <SidebarSkeleton className="h-3 w-16" />
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+
+          <Separator className="bg-white/10" />
+
+          <div className="flex items-center justify-between text-[10px] font-bold uppercase tracking-[0.6px] text-white/50">
+            <span>Issues</span>
+            <SidebarSkeleton className="h-5 w-8" />
+          </div>
+
+          <div className="grid grid-cols-2 gap-2">
+            {Array.from({ length: 4 }).map((_, idx) => (
+              <SidebarSkeleton key={idx} className="h-20 w-full" />
+            ))}
+          </div>
+        </>
+      ) : activeIssue ? (
         // ── ISSUE DETAIL VIEW ───────────────────────────────────────────────
         <div key={activeIssueId} className="node-focus-in flex w-[440px] flex-col gap-4">
           {/* Back */}
@@ -456,25 +509,34 @@ export function Sidebar() {
 
       {/* Footer — always visible */}
       <div className="mt-auto flex items-center gap-2 rounded-none border border-white/10 bg-white/5 px-3 py-2 text-[12px] text-white/60">
-        <span
-          className={cn(
-            "h-2 w-2 rounded-full",
-            run.status === "running"
-              ? "bg-[#1d6ef5] shadow-[0_0_6px_#1d6ef5]"
+        {loading ? (
+          <>
+            <SidebarSkeleton className="h-2 w-2 rounded-full" />
+            <SidebarSkeleton className="h-3 w-24" />
+          </>
+        ) : (
+          <>
+            <span
+              className={cn(
+                "h-2 w-2 rounded-full",
+                run.status === "running"
+                  ? "bg-[#1d6ef5] shadow-[0_0_6px_#1d6ef5]"
+                  : run.status === "passed"
+                    ? "bg-emerald-500"
+                    : run.status === "warning"
+                      ? "bg-amber-400"
+                      : "bg-red-500"
+              )}
+            />
+            {run.status === "running"
+              ? "Agent running"
               : run.status === "passed"
-                ? "bg-emerald-500"
+                ? "Run completed"
                 : run.status === "warning"
-                  ? "bg-amber-400"
-                  : "bg-red-500"
-          )}
-        />
-        {run.status === "running"
-          ? "Agent running"
-          : run.status === "passed"
-            ? "Run completed"
-            : run.status === "warning"
-              ? "Run completed with warnings"
-              : "Run failed"}
+                  ? "Run completed with warnings"
+                  : "Run failed"}
+          </>
+        )}
       </div>
     </aside>
   )

@@ -17,6 +17,7 @@ export function WorkspacePage({
   issues,
   initialIssueId,
   initialNodeId,
+  loading = false,
 }: {
   run: WorkspaceRun
   nodes: Node<ScreenshotNodeData>[]
@@ -24,12 +25,13 @@ export function WorkspacePage({
   issues: Issue[]
   initialIssueId?: string
   initialNodeId?: string
+  loading?: boolean
 }) {
   return (
     <WorkspaceDataProvider value={{ run, nodes, edges, issues }}>
       <IssueProvider initialIssueId={initialIssueId} initialNodeId={initialNodeId}>
         <main className="flex h-dvh w-full overflow-hidden bg-[#eff6ff]">
-          <Sidebar />
+          <Sidebar loading={loading} />
           <div className="relative flex flex-1 overflow-hidden">
             <FloatingNav />
             <SecurityOverlay />
