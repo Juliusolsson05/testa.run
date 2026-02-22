@@ -10,6 +10,8 @@ type FinalizeInput = {
 export async function finalizeRun(runId: string, input: FinalizeInput) {
   const run = await db.testRun.findUnique({ where: { id: runId } })
   if (!run) throw new Error('Run not found')
+  // Idempotency/safety: never re-finalize an already terminal run.
+  if (run.finishedAt) return run
 
   const now = new Date()
   const durationMs = input.durationMs != null

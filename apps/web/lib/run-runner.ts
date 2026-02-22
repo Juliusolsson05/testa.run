@@ -151,8 +151,37 @@ export function startRunExecution(input: {
 
   void (async () => {
     let finalized = false
+    let lastEventAt = Date.now()
+    const startedAt = Date.now()
+
+    const finalizeOnce = async (status: 'passed' | 'failed' | 'warning', securitySynopsis?: string | null) => {
+      if (finalized) return
+      finalized = true
+      await finalizeRun(input.runId, { status, securitySynopsis: securitySynopsis ?? null })
+    }
+
+    const heartbeatTimer = setInterval(() => {
+      if (finalized) return
+      void appendRunEvent(input.runId, 'run.heartbeat', { at: new Date().toISOString() })
+    }, 30000)
+
+    const watchdogTimer = setInterval(() => {
+      if (finalized) return
+      const now = Date.now()
+      if (now - startedAt > 12 * 60 * 1000) {
+        handle.cancel()
+        void finalizeOnce('failed', 'Run exceeded max runtime (12m watchdog).')
+        return
+      }
+      if (now - lastEventAt > 90 * 1000) {
+        handle.cancel()
+        void finalizeOnce('failed', 'Run stalled: no events received for 90s.')
+      }
+    }, 15000)
+
     try {
       for await (const evt of handle.events) {
+        lastEventAt = Date.now()
         if (evt.type === 'step.progress') {
           await appendRunEvent(input.runId, 'step.progress', {
             stepKey: evt.stepKey,
@@ -179,20 +208,15 @@ export function startRunExecution(input: {
 
         if (evt.type === 'run.failed') {
           await appendRunEvent(input.runId, 'run.warning', { message: evt.error.message, at: evt.at })
-          await finalizeRun(input.runId, {
-            status: 'failed',
-            securitySynopsis: evt.error.message,
-          })
-          finalized = true
+          await finalizeOnce('failed', evt.error.message)
           continue
         }
 
         if (evt.type === 'run.completed') {
-          await finalizeRun(input.runId, {
-            status: evt.result.run.status === 'failed' ? 'failed' : evt.result.run.status === 'warning' ? 'warning' : 'passed',
-            securitySynopsis: evt.result.run.securitySynopsis,
-          })
-          finalized = true
+          await finalizeOnce(
+            evt.result.run.status === 'failed' ? 'failed' : evt.result.run.status === 'warning' ? 'warning' : 'passed',
+            evt.result.run.securitySynopsis
+          )
           continue
         }
 
@@ -205,16 +229,13 @@ export function startRunExecution(input: {
       await handle.result
 
       if (!finalized) {
-        await finalizeRun(input.runId, {
-          status: 'passed',
-        })
+        await finalizeOnce('passed')
       }
     } catch (error) {
-      await finalizeRun(input.runId, {
-        status: 'failed',
-        securitySynopsis: error instanceof Error ? error.message : 'Runner execution failed.',
-      })
+      await finalizeOnce('failed', error instanceof Error ? error.message : 'Runner execution failed.')
     } finally {
+      clearInterval(heartbeatTimer)
+      clearInterval(watchdogTimer)
       globalRunner.__testaRunJobs?.delete(input.runId)
     }
   })()

@@ -19,7 +19,12 @@ export async function applyAgentEvents(runId: string, events: AgentEvent[]) {
   let skipped = 0
   let lastSeq: number | null = null
 
-  for (const [index, evt] of events.entries()) {
+  // Two-pass processing improves resilience when events arrive out of order.
+  const withIndex = events.map((evt, index) => ({ evt, index }))
+  const passA = withIndex.filter(({ evt }) => evt.type === 'node.upsert' || evt.type === 'step.create')
+  const passB = withIndex.filter(({ evt }) => evt.type === 'edge.upsert' || evt.type === 'issue.create' || evt.type === 'artifact.create')
+
+  for (const { evt, index } of [...passA, ...passB]) {
     try {
       switch (evt.type) {
         case 'node.upsert': {
@@ -95,56 +100,6 @@ export async function applyAgentEvents(runId: string, events: AgentEvent[]) {
           break
         }
 
-        case 'edge.upsert': {
-          const e = evt.edge
-          const sourceId = await resolveNodeId(String(e.sourceNodeKey ?? e.source))
-          const targetId = await resolveNodeId(String(e.targetNodeKey ?? e.target))
-          if (!sourceId || !targetId) {
-            skipped += 1
-            break
-          }
-
-          const edge = await db.flowEdge.upsert({
-            where: { runId_edgeKey: { runId, edgeKey: String(e.edgeKey ?? e.id) } },
-            update: {
-              sourceNodeId: sourceId,
-              targetNodeId: targetId,
-              type: e.type ? String(e.type) : null,
-              label: e.label ? String(e.label) : null,
-              zIndex: e.zIndex != null ? Number(e.zIndex) : null,
-              style: (e.style as object) ?? null,
-            },
-            create: {
-              runId,
-              edgeKey: String(e.edgeKey ?? e.id),
-              sourceNodeId: sourceId,
-              targetNodeId: targetId,
-              type: e.type ? String(e.type) : null,
-              label: e.label ? String(e.label) : null,
-              zIndex: e.zIndex != null ? Number(e.zIndex) : null,
-              style: (e.style as object) ?? null,
-            },
-          })
-
-          const sourceNode = await db.flowNode.findUnique({ where: { id: edge.sourceNodeId }, select: { nodeKey: true } })
-          const targetNode = await db.flowNode.findUnique({ where: { id: edge.targetNodeId }, select: { nodeKey: true } })
-
-          const event = await appendRunEvent(runId, 'edge.upserted', {
-            edge: {
-              id: edge.edgeKey,
-              source: sourceNode?.nodeKey ?? edge.sourceNodeId,
-              target: targetNode?.nodeKey ?? edge.targetNodeId,
-              type: edge.type,
-              label: edge.label,
-              zIndex: edge.zIndex,
-              style: edge.style,
-            },
-          })
-          lastSeq = event.seq
-          accepted += 1
-          break
-        }
-
         case 'step.create': {
           const s = evt.step
           const nodeId = await resolveNodeId(String(s.nodeKey))
@@ -200,20 +155,96 @@ export async function applyAgentEvents(runId: string, events: AgentEvent[]) {
           break
         }
 
+        case 'edge.upsert': {
+          const e = evt.edge
+          const sourceId = await resolveNodeId(String(e.sourceNodeKey ?? e.source))
+          const targetId = await resolveNodeId(String(e.targetNodeKey ?? e.target))
+          if (!sourceId || !targetId) {
+            skipped += 1
+            break
+          }
+
+          const edge = await db.flowEdge.upsert({
+            where: { runId_edgeKey: { runId, edgeKey: String(e.edgeKey ?? e.id) } },
+            update: {
+              sourceNodeId: sourceId,
+              targetNodeId: targetId,
+              type: e.type ? String(e.type) : null,
+              label: e.label ? String(e.label) : null,
+              zIndex: e.zIndex != null ? Number(e.zIndex) : null,
+              style: (e.style as object) ?? null,
+            },
+            create: {
+              runId,
+              edgeKey: String(e.edgeKey ?? e.id),
+              sourceNodeId: sourceId,
+              targetNodeId: targetId,
+              type: e.type ? String(e.type) : null,
+              label: e.label ? String(e.label) : null,
+              zIndex: e.zIndex != null ? Number(e.zIndex) : null,
+              style: (e.style as object) ?? null,
+            },
+          })
+
+          const sourceNode = await db.flowNode.findUnique({ where: { id: edge.sourceNodeId }, select: { nodeKey: true } })
+          const targetNode = await db.flowNode.findUnique({ where: { id: edge.targetNodeId }, select: { nodeKey: true } })
+
+          const event = await appendRunEvent(runId, 'edge.upserted', {
+            edge: {
+              id: edge.edgeKey,
+              source: sourceNode?.nodeKey ?? edge.sourceNodeId,
+              target: targetNode?.nodeKey ?? edge.targetNodeId,
+              type: edge.type,
+              label: edge.label,
+              zIndex: edge.zIndex,
+              style: edge.style,
+            },
+          })
+          lastSeq = event.seq
+          accepted += 1
+          break
+        }
+
         case 'issue.create': {
           const i = evt.issue
-          const nodeId = await resolveNodeId(String(i.nodeKey))
+
+          // Prefer step-based attribution for correctness; fallback to nodeKey.
+          let stepId: string | null = null
+          let nodeId: string | null = null
+          if (i.stepIndex != null) {
+            const step = await db.runStep.findUnique({
+              where: { runId_index: { runId, index: Number(i.stepIndex) } },
+              select: { id: true, nodeId: true },
+            })
+            stepId = step?.id ?? null
+            nodeId = step?.nodeId ?? null
+          }
+          if (!nodeId && i.nodeKey != null) {
+            nodeId = await resolveNodeId(String(i.nodeKey))
+          }
           if (!nodeId) {
             skipped += 1
             break
           }
 
-          let stepId: string | null = null
-          if (i.stepIndex != null) {
-            const step = await db.runStep.findUnique({
-              where: { runId_index: { runId, index: Number(i.stepIndex) } },
-            })
-            stepId = step?.id ?? null
+          const title = String(i.title ?? '')
+          const element = String(i.element ?? '')
+
+          // Lightweight dedupe for retries/replays.
+          const duplicate = await db.issue.findFirst({
+            where: {
+              runId,
+              nodeId,
+              stepId,
+              title,
+              element,
+              status: 'open',
+            },
+            select: { id: true },
+          })
+          if (duplicate) {
+            skipped += 1
+            break
           }
 
           const created = await db.issue.create({
@@ -223,10 +254,10 @@ export async function applyAgentEvents(runId: string, events: AgentEvent[]) {
               stepId,
               category: (i.category as never) ?? 'other',
               severity: (i.severity as never) ?? 'warning',
-              title: String(i.title ?? ''),
+              title,
               description: String(i.description ?? ''),
               reasoning: String(i.reasoning ?? ''),
-              element: String(i.element ?? ''),
+              element,
             },
             include: {
               node: { select: { nodeKey: true, label: true } },
