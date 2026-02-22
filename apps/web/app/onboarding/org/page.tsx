@@ -1,7 +1,7 @@
 "use client"
 
 import { useMemo, useState } from "react"
-import { useRouter } from "next/navigation"
+import { useRouter, useSearchParams } from "next/navigation"
 import { useAuth } from "@/components/auth/AuthProvider"
 import { useAppDispatch } from "@/store/hooks"
 import { bootstrapAppContext } from "@/store/app-thunks"
@@ -18,6 +18,7 @@ function slugify(input: string) {
 
 export default function OnboardingOrgPage() {
   const router = useRouter()
+  const params = useSearchParams()
   const dispatch = useAppDispatch()
   const { accessToken } = useAuth()
 
@@ -67,7 +68,8 @@ export default function OnboardingOrgPage() {
     }
 
     await dispatch(bootstrapAppContext())
-    router.replace("/onboarding/project")
+    const next = params.get("next")
+    router.replace(next || "/onboarding/project")
   }
 
   return (

@@ -56,11 +56,20 @@ export default function OnboardingProjectPage() {
       })
       if (!res.ok) return
       const data = await res.json()
-      setOrgId(data.orgs?.[0]?.id ?? null)
+      const firstOrgId = data.orgs?.[0]?.id ?? null
+      setOrgId(firstOrgId)
+
+      if (!firstOrgId) {
+        const incomingTargetUrl = params.get("targetUrl")
+        const next = incomingTargetUrl
+          ? `/onboarding/project?targetUrl=${encodeURIComponent(incomingTargetUrl)}`
+          : "/onboarding/project"
+        router.replace(`/onboarding/org?next=${encodeURIComponent(next)}`)
+      }
     }
 
     void loadOrg()
-  }, [accessToken, orgId])
+  }, [accessToken, orgId, params, router])
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault()
