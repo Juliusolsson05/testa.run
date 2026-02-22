@@ -47,11 +47,13 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ issueI
       where: { runId: issue.runId, status: 'open' },
       _count: true,
     })
+    type OpenCount = (typeof openCounts)[number]
+
     await db.testRun.update({
       where: { id: issue.runId },
       data: {
-        openErrors: openCounts.find((c) => c.severity === 'error')?._count ?? 0,
-        openWarnings: openCounts.find((c) => c.severity === 'warning')?._count ?? 0,
+        openErrors: openCounts.find((c: OpenCount) => c.severity === 'error')?._count ?? 0,
+        openWarnings: openCounts.find((c: OpenCount) => c.severity === 'warning')?._count ?? 0,
       },
     })
   }
