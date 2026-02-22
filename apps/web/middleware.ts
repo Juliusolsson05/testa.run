@@ -10,10 +10,9 @@ export function middleware(req: NextRequest) {
   const ua = req.headers.get("user-agent") || ""
 
   if (isNonDesktop(ua)) {
-    return new NextResponse(
-      "This dashboard is currently available on desktop/laptop only.",
-      { status: 403, headers: { "content-type": "text/plain; charset=utf-8" } }
-    )
+    const url = req.nextUrl.clone()
+    url.pathname = "/unsupported"
+    return NextResponse.redirect(url)
   }
 
   return NextResponse.next()
