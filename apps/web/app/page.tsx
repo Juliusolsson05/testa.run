@@ -12,7 +12,11 @@ import type { Run, RunStatus } from "@/types/domain"
 import { cn } from "@/lib/utils"
 
 const statusConfig = {
-  running: { label: "Running", dot: "bg-amber-400 shadow-[0_0_6px_#f59e0b]", badge: "bg-amber-400/10 text-amber-600" },
+  running: {
+    label: "Running",
+    dot: "bg-amber-400 shadow-[0_0_6px_#f59e0b]",
+    badge: "bg-amber-400/10 text-amber-600",
+  },
   passed: { label: "Passed", dot: "bg-emerald-500 shadow-[0_0_6px_#22c55e]", badge: "bg-emerald-500/10 text-emerald-600" },
   warning: { label: "Warning", dot: "bg-amber-400 shadow-[0_0_6px_#f59e0b]", badge: "bg-amber-400/10 text-amber-600" },
   failed: { label: "Failed", dot: "bg-red-500 shadow-[0_0_6px_#ef4444]", badge: "bg-red-500/10 text-red-600" },
@@ -302,8 +306,14 @@ function RunsHome() {
                   <Link
                     key={run.id}
                     href={`/workspace/${run.id}`}
-                    className="group flex items-center gap-5 border border-ui-border bg-white px-5 py-4 transition-shadow hover:shadow-[0_4px_16px_rgba(29,110,245,0.12)]"
+                    className="group relative flex items-center gap-5 border border-ui-border bg-white px-5 py-4 transition-shadow hover:shadow-[0_4px_16px_rgba(29,110,245,0.12)]"
                   >
+                    {run.status === "running" && (
+                      <>
+                        <span className="absolute left-0 top-0 h-full w-1 bg-amber-400/90" />
+                        <span className="pointer-events-none absolute inset-y-0 left-0 w-[42%] animate-[pulse_1.6s_ease-in-out_infinite] bg-gradient-to-r from-amber-300/20 via-amber-200/40 to-transparent" />
+                      </>
+                    )}
                     <span className={cn("h-2.5 w-2.5 shrink-0 rounded-full", s.dot)} />
 
                     <div className="min-w-0 flex-1">
@@ -338,7 +348,10 @@ function RunsHome() {
                       )}
                     </div>
 
-                    <span className={cn("shrink-0 rounded px-2.5 py-1 text-[11px] font-semibold", s.badge)}>{s.label}</span>
+                    <span className={cn("shrink-0 rounded px-2.5 py-1 text-[11px] font-semibold", s.badge)}>
+                      {run.status === "running" && <span className="mr-1 inline-block h-2.5 w-2.5 animate-spin rounded-full border border-amber-500 border-t-transparent align-[-1px]" />}
+                      {s.label}
+                    </span>
 
                     <span className="text-ui-muted opacity-0 transition-opacity group-hover:opacity-100">→</span>
                   </Link>
