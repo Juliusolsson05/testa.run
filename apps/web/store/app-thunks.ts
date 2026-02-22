@@ -1,7 +1,7 @@
 import { createAsyncThunk } from "@reduxjs/toolkit"
 import { setOnboardingState } from "@/store/onboarding-slice"
 import { setActiveOrgId, setActiveProjectId } from "@/store/workspace-slice"
-import { setBilling } from "@/store/billing-slice"
+import { setBilling, setBillingUsage, setBillingUsageStatus } from "@/store/billing-slice"
 import type { RootState } from "@/store"
 
 type AuthMeResponse = {
@@ -59,6 +59,15 @@ export const bootstrapAppContext = createAsyncThunk<void, void, { state: RootSta
         dispatch(setOnboardingState({ stage: "select-plan", needsPlan: true, blockReason: "plan_required" }))
         return
       }
+    }
+
+    dispatch(setBillingUsageStatus("loading"))
+    const usageRes = await fetch(`/api/billing/usage?orgId=${org.id}`, { headers, cache: "no-store" })
+    if (usageRes.ok) {
+      const usageJson = await usageRes.json()
+      dispatch(setBillingUsage(usageJson.usage ?? null))
+    } else {
+      dispatch(setBillingUsageStatus("error"))
     }
 
     dispatch(setOnboardingState({

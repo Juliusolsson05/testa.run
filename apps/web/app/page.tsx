@@ -11,6 +11,7 @@ import { RequireAuth } from "@/components/auth/RequireAuth"
 import { useAuth } from "@/components/auth/AuthProvider"
 import { InlineLoading } from "@/components/loading/InlineLoading"
 import { useProjectRuns } from "@/components/workspace/useProjectRuns"
+import { useAppSelector } from "@/store/hooks"
 import type { Run, RunStatus } from "@/types/domain"
 import { cn } from "@/lib/utils"
 
@@ -90,14 +91,6 @@ function mapApiRunToUi(run: ApiRun, nowMs: number): Run {
   }
 }
 
-type UsageState = {
-  plan: "starter" | "pro"
-  monthlyLimit: number | null
-  used: number
-  remaining: number | null
-  resetAt: string
-}
-
 function RunsHome() {
   const router = useRouter()
   const { accessToken } = useAuth()
@@ -105,7 +98,8 @@ function RunsHome() {
   const [showConfirm, setShowConfirm] = useState(false)
   const [starting, setStarting] = useState(false)
   const { loading: loadingRuns, project, runs: projectRuns } = useProjectRuns(undefined, 30)
-  const [usage, setUsage] = useState<UsageState | null>(null)
+  const usage = useAppSelector((s) => s.billing.usage)
+  const usageStatus = useAppSelector((s) => s.billing.usageStatus)
   const [nowMs, setNowMs] = useState(() => Date.now())
 
   useEffect(() => {
@@ -125,7 +119,8 @@ function RunsHome() {
     [projectRuns]
   )
   const hasProject = !!project
-  const runLocked = usage?.remaining === 0
+  const usageReady = usageStatus === "loaded"
+  const runLocked = usageReady && usage?.remaining === 0
 
   const totalRunning = runs.filter((r) => r.status === "running").length
   const totalPassed = runs.filter((r) => r.status === "passed").length
@@ -136,33 +131,8 @@ function RunsHome() {
     [issueCounts]
   )
 
-  useEffect(() => {
-    async function loadUsage() {
-      if (!accessToken || !project?.id) return
-
-      const projectRes = await fetch(`/api/projects/${project.id}`, {
-        headers: { Authorization: `Bearer ${accessToken}` },
-        cache: "no-store",
-      })
-      if (!projectRes.ok) return
-      const projectData = await projectRes.json()
-      const orgId = projectData?.project?.orgId as string | undefined
-      if (!orgId) return
-
-      const usageRes = await fetch(`/api/billing/usage?orgId=${orgId}`, {
-        headers: { Authorization: `Bearer ${accessToken}` },
-        cache: "no-store",
-      })
-      if (!usageRes.ok) return
-      const usageData = await usageRes.json()
-      setUsage(usageData.usage ?? null)
-    }
-
-    void loadUsage()
-  }, [accessToken, project?.id])
-
   const startNewRun = useCallback(async () => {
-    if (!accessToken || !project?.id || runLocked) return
+    if (!accessToken || !project?.id || !usageReady || runLocked) return
     setStarting(true)
     try {
       const res = await fetch(`/api/projects/${project.id}/runs/start`, {
@@ -188,7 +158,7 @@ function RunsHome() {
     } catch {
       setStarting(false)
     }
-  }, [accessToken, project?.id, router, runLocked])
+  }, [accessToken, project?.id, router, runLocked, usageReady])
 
   const filtered = filter === "all" ? runs : runs.filter((r) => r.status === filter)
 
@@ -245,22 +215,24 @@ function RunsHome() {
             {hasProject && (
               <button
                 onClick={() => setShowConfirm(true)}
-                disabled={runLocked}
+                disabled={!usageReady || runLocked}
                 className="flex items-center gap-2 rounded bg-[#1d6ef5] px-4 py-2 text-[13px] font-semibold text-white transition-colors hover:bg-[#1557d0] disabled:cursor-not-allowed disabled:opacity-50"
-                title={runLocked ? "No runs remaining on Starter this month" : undefined}
+                title={!usageReady ? "Checking plan access..." : runLocked ? "No runs remaining on Starter this month" : undefined}
               >
                 <Play className="h-3.5 w-3.5" />
-                New Run
+                {!usageReady ? "Checking plan..." : "New Run"}
               </button>
             )}
           </div>
 
-          {usage && (
+          {!usageReady ? (
+            <div className="mb-4 rounded border border-ui-border bg-white p-3 text-xs text-ui-muted">Checking your plan access…</div>
+          ) : usage ? (
             <div className="mb-4 rounded border border-ui-border bg-white p-3 text-xs text-ui-muted">
               <span className="font-semibold text-[#1a2a33]">Plan:</span> {usage.plan.toUpperCase()} · {usage.monthlyLimit == null ? "Unlimited runs" : `${usage.used}/${usage.monthlyLimit} runs used this month`}
               {runLocked && <span className="ml-2 font-semibold text-red-600">No credits left — upgrade to Pro to continue.</span>}
             </div>
-          )}
+          ) : null}
 
           {showConfirm && (
             <div className="fixed inset-0 z-[9000] flex items-center justify-center bg-black/40">
@@ -283,7 +255,7 @@ function RunsHome() {
                   </button>
                   <button
                     onClick={() => void startNewRun()}
-                    disabled={starting}
+                    disabled={starting || !usageReady || runLocked}
                     className="flex-1 rounded bg-[#1d6ef5] px-3 py-2 text-sm font-semibold text-white disabled:opacity-60"
                   >
                     {starting ? "Starting…" : "Start Run"}
