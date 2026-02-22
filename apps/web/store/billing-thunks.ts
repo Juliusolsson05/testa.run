@@ -2,9 +2,9 @@ import { createAsyncThunk } from "@reduxjs/toolkit"
 import { setCheckoutStatus } from "@/store/billing-slice"
 import type { RootState } from "@/store"
 
-export const createCheckoutSession = createAsyncThunk<string, { orgId: string; priceId: string }, { state: RootState }>(
+export const createCheckoutSession = createAsyncThunk<string, { orgId: string }, { state: RootState }>(
   "billing/createCheckoutSession",
-  async ({ orgId, priceId }, { getState, dispatch, rejectWithValue }) => {
+  async ({ orgId }, { getState, dispatch, rejectWithValue }) => {
     const token = getState().auth.accessToken
     if (!token) return rejectWithValue("No auth token") as never
 
