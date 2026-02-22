@@ -8,6 +8,7 @@ import { AppSidebar } from "@/components/workspace/AppSidebar"
 import { Badge } from "@/components/ui/badge"
 import { RequireAuth } from "@/components/auth/RequireAuth"
 import { useAuth } from "@/components/auth/AuthProvider"
+import { InlineLoading } from "@/components/loading/InlineLoading"
 import type { Run, RunStatus } from "@/types/domain"
 import { cn } from "@/lib/utils"
 
@@ -290,7 +291,7 @@ function RunsHome() {
           )}
 
           {loadingRuns ? (
-            <div className="text-sm text-ui-muted">Loading runs…</div>
+            <InlineLoading label="Loading runs…" cubeSize={56} className="min-h-[360px]" />
           ) : !hasProject ? (
             <div className="rounded border border-ui-border bg-white p-4 text-sm text-ui-muted">
               You are signed in but do not have a project yet.

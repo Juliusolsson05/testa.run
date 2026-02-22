@@ -5,6 +5,7 @@ import { useParams, useSearchParams } from "next/navigation"
 import type { Edge, Node } from "@xyflow/react"
 import { WorkspacePage } from "@/components/workspace/WorkspacePage"
 import { useAuth } from "@/components/auth/AuthProvider"
+import { InlineLoading } from "@/components/loading/InlineLoading"
 import type { Issue, NodeStatus } from "@/types/domain"
 import type { ScreenshotNodeData } from "@/types/flow"
 import type { WorkspaceRun } from "@/context/workspace-data-context"
@@ -230,7 +231,11 @@ export default function WorkspaceRunRoute() {
   }
 
   if (!payload) {
-    return <div className="flex h-dvh items-center justify-center bg-app-bg text-ui-muted">Loading workspace…</div>
+    return (
+      <div className="flex h-dvh items-center justify-center bg-app-bg">
+        <InlineLoading label="Loading workspace…" cubeSize={70} className="min-h-[60vh]" />
+      </div>
+    )
   }
 
   const nodes: Node<ScreenshotNodeData>[] = payload.nodes.map((n) => ({
