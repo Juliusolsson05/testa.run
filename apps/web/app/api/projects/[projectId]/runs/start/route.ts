@@ -2,8 +2,9 @@ import { NextResponse } from 'next/server'
 import { requireAppUser, requireOrgMember } from '@/lib/auth'
 import { db } from '@/lib/db'
 import { appendRunEvent } from '@/lib/run-events'
+import { startRunExecution } from '@/lib/run-runner'
 
-// POST /api/projects/:projectId/runs/start — create a new run (user-auth)
+// POST /api/projects/:projectId/runs/start — create and start a new run (user-auth)
 export async function POST(req: Request, { params }: { params: Promise<{ projectId: string }> }) {
   const user = await requireAppUser()
   if (user instanceof NextResponse) return user
@@ -15,17 +16,20 @@ export async function POST(req: Request, { params }: { params: Promise<{ project
   const member = await requireOrgMember(user.id, project.orgId)
   if (!member) return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
 
+  if (!process.env.TESTING_ENGINE_URL) {
+    return NextResponse.json({ error: 'TESTING_ENGINE_URL is not configured.' }, { status: 500 })
+  }
+
   const body = await req.json().catch(() => null)
   const name = String(body?.name || 'Manual Test Run').trim()
-  const category = String(body?.category || 'ux').trim()
-
+  const category = String(body?.category || 'ux').trim() as 'security' | 'buttons' | 'ux'
   const label = body?.label || `#${Date.now().toString(36)}`
 
   const run = await db.testRun.create({
     data: {
       projectId,
       name,
-      category: category as never,
+      category,
       status: 'running',
       targetUrl: project.targetUrl,
       label,
@@ -43,6 +47,14 @@ export async function POST(req: Request, { params }: { params: Promise<{ project
       startedAt: run.startedAt.toISOString(),
       targetUrl: run.targetUrl,
     },
+  })
+
+  startRunExecution({
+    runId: run.id,
+    url: run.targetUrl || project.targetUrl,
+    prompt: typeof body?.prompt === 'string' ? body.prompt : undefined,
+    runName: run.name,
+    category,
   })
 
   return NextResponse.json({ run: { id: run.id } }, { status: 201 })
