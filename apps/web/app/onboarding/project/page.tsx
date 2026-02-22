@@ -58,14 +58,6 @@ export default function OnboardingProjectPage() {
       const data = await res.json()
       const firstOrgId = data.orgs?.[0]?.id ?? null
       setOrgId(firstOrgId)
-
-      if (!firstOrgId) {
-        const incomingTargetUrl = params.get("targetUrl")
-        const next = incomingTargetUrl
-          ? `/onboarding/project?targetUrl=${encodeURIComponent(incomingTargetUrl)}`
-          : "/onboarding/project"
-        router.replace(`/onboarding/org?next=${encodeURIComponent(next)}`)
-      }
     }
 
     void loadOrg()
