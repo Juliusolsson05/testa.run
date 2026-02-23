@@ -2,7 +2,7 @@
 
 AI-powered QA and security testing that works.
 
-Winner of the Security track at [HackEurope 2026](https://hackeurope2025.devpost.com/) — Europe's first multi-country in-person hackathon with 750+ participants across three cities (Dublin, Paris, Stockholm). We competed from Stockholm and won one of four tracks.
+Winner of the Security track at [HackEurope 2026](https://www.hackeurope.com/) — Europe's first multi-country in-person hackathon with 750+ participants across three cities (Dublin, Paris, Stockholm). We competed from Stockholm and won one of four tracks.
 
 ## About
 
